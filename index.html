@@ -461,6 +461,7 @@
         </div>
         <div class="planner-title-actions">
           <button class="secondary-action" id="plResetGw">Reset this GW</button>
+          <button class="secondary-action danger-soft" id="plClearSquad">Clear squad</button>
         </div>
       </div>
 
@@ -823,13 +824,27 @@
           <h3>Keep planning without an account</h3>
           <p>Your drafts already save automatically on this device. Sign in only if you want them available on other devices.</p>
         </div>
-        <label class="account-email-label" for="accountEmail">Email address</label>
-        <div class="account-email-row">
-          <input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com">
-          <button class="primary-action" id="accountSendLink">Email sign-in link</button>
+        <div id="accountEmailForm">
+          <label class="account-email-label" for="accountEmail">Email address</label>
+          <div class="account-email-row">
+            <input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com">
+            <button class="primary-action" id="accountSendLink">Send secure sign-in link</button>
+          </div>
+          <div class="account-message" id="accountMessage"></div>
         </div>
-        <div class="account-message" id="accountMessage"></div>
-        <p class="account-fineprint">No FPL password is ever requested. Authentication is handled by Supabase and is separate from your Fantasy Premier League account.</p>
+        <div class="account-email-sent" id="accountEmailSent" style="display:none">
+          <div class="account-email-sent-icon" aria-hidden="true">✓</div>
+          <div>
+            <h3>Check your email</h3>
+            <p>We sent a secure FPL Peek sign-in link to <b id="accountSentTo"></b>.</p>
+            <p class="account-email-help">Open that email and follow the button to return here signed in. If this is your first FPL Peek account, the email may ask you to confirm your address first.</p>
+          </div>
+          <div class="account-email-sent-actions">
+            <button class="secondary-action" id="accountResendLink" disabled>Resend in 60s</button>
+            <button class="secondary-action" id="accountUseDifferent">Use a different email</button>
+          </div>
+        </div>
+        <p class="account-fineprint">Your FPL Peek account is only for syncing Planner drafts between devices. No Fantasy Premier League password is requested or stored.</p>
       </div>
       <div id="accountSignedIn" style="display:none">
         <div class="account-user-card">

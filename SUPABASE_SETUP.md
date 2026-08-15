@@ -36,8 +36,8 @@ Edit `js/supabase-config.js`:
 
 ```js
 window.FPLPeekConfig = {
-  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
-  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_YOUR_KEY"
+  SUPABASE_URL: "https://prilfnfijgxzohbynogc.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_eIGtwV3_Ql8NPXtw3Yy3jw_I4ykeQYt"
 };
 ```
 
@@ -54,6 +54,41 @@ Deploy to Netlify, then:
 5. The local draft should be uploaded to the account automatically.
 6. Open FPL Peek in another browser/device, sign in with the same email, and confirm the draft appears.
 
-## Production email note
+## 6. Brand the authentication email
 
-For public sign-in, configure a custom SMTP provider in Supabase Auth. The built-in Supabase email service is intended for testing, can restrict delivery to project-team addresses, and has strict rate limits.
+The app includes ready-to-paste templates in `supabase/email-templates/`:
+
+- `confirmation.html` — first-time email confirmation
+- `magic-link.html` — returning-user sign-in link
+
+In **Authentication > Email Templates** set the recommended subjects:
+
+- Confirm signup: `Confirm your FPL Peek account`
+- Magic Link: `Sign in to FPL Peek`
+
+Then paste the matching HTML templates.
+
+## 7. Send from an @fplpeek.com address
+
+This cannot be changed by frontend JavaScript. Configure **Authentication > SMTP Settings** in Supabase with an SMTP provider or an existing mailbox provider that supports authenticated SMTP.
+
+Recommended identity:
+
+- Sender name: `FPL Peek`
+- Sender email: `account@fplpeek.com`
+
+Enter the SMTP host, port, username and password supplied by your email provider. Supabase Auth supports custom SMTP and will use this sender for Auth messages.
+
+For production deliverability, configure the SPF, DKIM and DMARC DNS records requested by your mail provider. Because `fplpeek.com` already has mail-related DNS records, do **not** blindly replace an existing SPF record; merge/adjust it according to your provider's instructions.
+
+Supabase's built-in mail service is suitable for development/testing, not public production delivery.
+
+## 8. Test the complete sign-in flow
+
+1. Deploy to `https://fplpeek.com/`.
+2. Request a sign-in link.
+3. Confirm the UI switches to the **Check your email** state and prevents repeated sends for 60 seconds.
+4. Open the email and confirm the sender name/address are branded as FPL Peek.
+5. Follow the email button back to FPL Peek.
+6. Confirm the sidebar reports Planner sync enabled.
+7. Test the same account in a second browser/device.

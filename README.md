@@ -108,7 +108,10 @@ Planner drafts are saved automatically in browser `localStorage` under `fplpeek_
 - import the latest squad that the public FPL API exposes for a Team ID
 - plan transfers across the next 8 gameweeks
 - view the squad on an FPL-style pitch with kits, fixtures, captain/vice markers and a bench row
-- set planned captain / vice-captain and chips per gameweek
+- manually substitute players between the starting XI and bench while enforcing valid FPL formations
+- choose captain / vice-captain from dedicated lineup selectors; only the selected players display C/VC badges
+- clear the base squad or reset an individual gameweek
+- set planned chips per gameweek
 - create, duplicate, rename and delete multiple plans
 
 The Planner uses current public player prices. Exact FPL selling values can differ after price changes; imported public squads use the selling prices exposed by the public picks endpoint when available.
@@ -132,8 +135,8 @@ Accounts are optional. FPL Peek remains fully usable without registration; Supab
 
 ```js
 window.FPLPeekConfig = {
-  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
-  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_YOUR_KEY"
+  SUPABASE_URL: "https://prilfnfijgxzohbynogc.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_eIGtwV3_Ql8NPXtw3Yy3jw_I4ykeQYt"
 };
 ```
 
@@ -145,4 +148,4 @@ window.FPLPeekConfig = {
 
 **Never** put a Supabase `service_role` or secret key in frontend code. FPL Peek only needs the browser-safe publishable key.
 
-Before opening email sign-in to the public, configure a custom SMTP provider in Supabase Auth. Supabase's built-in email service is intended for testing and may only deliver to authorized project-team addresses, with strict rate limits.
+Before opening email sign-in to the public, configure custom SMTP in Supabase Auth and use the branded templates in `supabase/email-templates/`. A suitable sender identity is `FPL Peek <account@fplpeek.com>`.
