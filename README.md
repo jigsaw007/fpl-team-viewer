@@ -80,7 +80,7 @@ Push the project to GitHub and connect the repository to Netlify.
 
 Every push can deploy directly. Node 20 is selected in `netlify.toml` for the functions runtime.
 
-Unofficial tool - not affiliated with the Premier League.
+Data is provided via the official Fantasy Premier League API. FPL Peek operates independently and is not affiliated with or endorsed by the Premier League.
 
 ## SEO and site identity
 
@@ -96,3 +96,53 @@ Production metadata is configured for `https://fplpeek.com/`:
 - `sitemap.xml`
 
 The social metadata currently uses the supplied 512x512 FPL Peek app icon. A dedicated 1200x630 social preview image can be added later without changing the rest of the SEO setup.
+
+## Gameweek Planner
+
+The Planner is intentionally a **simulation only**. It never logs in to Fantasy Premier League and never submits transfers, captain changes, chips or squad changes to the official game.
+
+Planner drafts are saved automatically in browser `localStorage` under `fplpeek_plans_v1`. Users can:
+
+- start from an empty squad
+- copy a completed Team Builder draft
+- import the latest squad that the public FPL API exposes for a Team ID
+- plan transfers across the next 8 gameweeks
+- view the squad on an FPL-style pitch with kits, fixtures, captain/vice markers and a bench row
+- set planned captain / vice-captain and chips per gameweek
+- create, duplicate, rename and delete multiple plans
+
+The Planner uses current public player prices. Exact FPL selling values can differ after price changes; imported public squads use the selling prices exposed by the public picks endpoint when available.
+
+## Optional Supabase accounts / cross-device sync
+
+Accounts are optional. FPL Peek remains fully usable without registration; Supabase is only used to sync Planner drafts across devices.
+
+### Supabase setup
+
+1. Create a Supabase project.
+2. Open **SQL Editor** and run `supabase/setup.sql` from this repository.
+3. In **Authentication > URL Configuration**, set:
+   - Site URL: `https://fplpeek.com/`
+   - Additional redirect URL for local development: `http://localhost:8888/`
+4. Keep the Email auth provider enabled. The app uses passwordless email Magic Links.
+5. Open **Project Settings > API** and copy:
+   - Project URL
+   - **Publishable key** (`sb_publishable_...`; a legacy anon key also works if your project still uses it)
+6. Put them in `js/supabase-config.js`:
+
+```js
+window.FPLPeekConfig = {
+  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_YOUR_KEY"
+};
+```
+
+7. Deploy the site. The Sign in / Cloud sync UI appears automatically once both values are configured.
+
+### Security
+
+`supabase/setup.sql` enables Row Level Security on `profiles` and `plans`. Every read/write policy checks the authenticated user's `auth.uid()`, so one account cannot read or modify another account's plans.
+
+**Never** put a Supabase `service_role` or secret key in frontend code. FPL Peek only needs the browser-safe publishable key.
+
+Before opening email sign-in to the public, configure a custom SMTP provider in Supabase Auth. Supabase's built-in email service is intended for testing and may only deliver to authorized project-team addresses, with strict rate limits.

@@ -152,7 +152,7 @@ function makeShareCard(){
   }
   // footer
   x.fillStyle="#929aa4"; x.font="500 24px Inter, sans-serif";
-  x.fillText("Fantasy Premier League · unofficial", cx, H-70);
+  x.fillText("Fantasy Premier League data · FPL Peek", cx, H-70);
   // download
   c.toBlob(blob=>{
     const url=URL.createObjectURL(blob);

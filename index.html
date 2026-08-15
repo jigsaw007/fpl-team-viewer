@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FPL Peek | FPL Team Analyzer, Transfers & Fixtures</title>
-<meta name="description" content="FPL Peek is a free Fantasy Premier League workspace for team analysis, transfer comparisons, fixture planning, player scouting, captain picks, price watch and live gameweek tools.">
+<meta name="description" content="FPL Peek is a free Fantasy Premier League workspace for multi-gameweek planning, team analysis, transfer comparisons, fixtures, player scouting, captain picks, price watch and live gameweek tools.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="author" content="FPL Peek">
 <meta name="application-name" content="FPL Peek">
@@ -26,7 +26,7 @@
 <meta property="og:locale" content="en_GB">
 <meta property="og:url" content="https://fplpeek.com/">
 <meta property="og:title" content="FPL Peek | FPL Team Analyzer, Transfers & Fixtures">
-<meta property="og:description" content="Analyze your FPL team, compare transfers, plan fixtures, scout players and follow the gameweek from one clean workspace.">
+<meta property="og:description" content="Plan future gameweeks, analyze your FPL team, compare transfers, scout players and follow the gameweek from one clean workspace.">
 <meta property="og:image" content="https://fplpeek.com/android-chrome-512x512.png">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
@@ -34,7 +34,7 @@
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FPL Peek | FPL Team Analyzer, Transfers & Fixtures">
-<meta name="twitter:description" content="Analyze your FPL team, compare transfers, plan fixtures, scout players and follow the gameweek from one clean workspace.">
+<meta name="twitter:description" content="Plan future gameweeks, analyze your FPL team, compare transfers, scout players and follow the gameweek from one clean workspace.">
 <meta name="twitter:image" content="https://fplpeek.com/android-chrome-512x512.png">
 <meta name="twitter:image:alt" content="FPL Peek logo">
 
@@ -44,7 +44,7 @@
   "@type": "WebApplication",
   "name": "FPL Peek",
   "url": "https://fplpeek.com/",
-  "description": "A free Fantasy Premier League workspace for team analysis, transfer comparisons, fixture planning, player scouting, captain picks, price watch and live gameweek tools.",
+  "description": "A free Fantasy Premier League workspace for multi-gameweek planning, team analysis, transfer comparisons, fixture planning, player scouting, captain picks, price watch and live gameweek tools.",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Web",
   "isAccessibleForFree": true,
@@ -54,6 +54,7 @@
     "priceCurrency": "GBP"
   },
   "featureList": [
+    "Multi-gameweek FPL planner",
     "FPL team analyzer",
     "Transfer analyzer",
     "Fixture planner",
@@ -100,6 +101,7 @@
 
     <div class="tab-label">Planning</div>
     <button class="tab" data-tab="builder">Team Builder</button>
+    <button class="tab" data-tab="planner">Planner</button>
     <button class="tab" data-tab="scout">Scout</button>
     <button class="tab" data-tab="transfer">Transfer Analyzer</button>
     <button class="tab" data-tab="fixtures">Fixtures</button>
@@ -118,6 +120,13 @@
 
     <div class="tab-label">Live</div>
     <button class="tab" data-tab="live">Live Center</button>
+
+    <div class="sidebar-account" id="accountPanel" style="display:none">
+      <div class="sidebar-account-status" id="accountStatus">
+        <b>Cloud sync</b><span>Sign in to sync plans</span>
+      </div>
+      <button id="accountButton" class="sidebar-account-btn">Sign in</button>
+    </div>
   </div>
 
 
@@ -175,12 +184,13 @@
         </div>
       </div>
       <div class="home-tools">
-        <button class="home-tool" data-home-tab="analyzer"><span class="home-tool-icon">01</span><span><b>Team Analyzer</b><small>Find weak spots, captain options and upgrade ideas</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="transfer"><span class="home-tool-icon">02</span><span><b>Transfer Analyzer</b><small>Compare two players, fixtures and short-term profile</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="compare"><span class="home-tool-icon">03</span><span><b>Manager Compare</b><small>Compare two FPL managers and their squads</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="builder"><span class="home-tool-icon">04</span><span><b>Team Builder</b><small>Build and rate a &pound;100m squad</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="scout"><span class="home-tool-icon">05</span><span><b>Scout</b><small>Find players worth targeting</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="captains"><span class="home-tool-icon">06</span><span><b>Captain Picks</b><small>See who top managers trust</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="planner"><span class="home-tool-icon">01</span><span><b>Gameweek Planner</b><small>Plan future transfers, captains and chips without touching your FPL account</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="analyzer"><span class="home-tool-icon">02</span><span><b>Team Analyzer</b><small>Find weak spots, captain options and upgrade ideas</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="transfer"><span class="home-tool-icon">03</span><span><b>Transfer Analyzer</b><small>Compare two players, fixtures and short-term profile</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="compare"><span class="home-tool-icon">04</span><span><b>Manager Compare</b><small>Compare two FPL managers and their squads</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="builder"><span class="home-tool-icon">05</span><span><b>Team Builder</b><small>Build and rate a &pound;100m squad</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="scout"><span class="home-tool-icon">06</span><span><b>Scout</b><small>Find players worth targeting</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="captains"><span class="home-tool-icon">07</span><span><b>Captain Picks</b><small>See who top managers trust</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
       </div>
     </div>
   </section>
@@ -380,6 +390,133 @@
       <p>See which players the leading overall FPL managers are trusting with the armband.</p>
     </div>
     <div id="captainBody"></div>
+  </section>
+
+  <!-- ============ GAMEWEEK PLANNER TAB ============ -->
+  <section class="tabpanel" id="tab-planner">
+    <div class="thead planner-head">
+      <div>
+        <h2>Gameweek Planner</h2>
+        <p>Plan transfers, captains and chips across future gameweeks. Everything here is a private simulation and never changes your real Fantasy Premier League team.</p>
+      </div>
+    </div>
+
+    <div class="planner-notice">
+      <b>Planning only</b>
+      <span>FPL Peek never signs in to, submits transfers to, or changes your Fantasy Premier League account.</span>
+    </div>
+
+    <div class="planner-toolbar">
+      <div class="planner-plan-select">
+        <label for="plPlanSelect">Plan</label>
+        <select id="plPlanSelect"><option value="">No saved plans</option></select>
+      </div>
+      <div class="planner-toolbar-actions">
+        <button class="secondary-action" id="plNew">New plan</button>
+        <button class="secondary-action" id="plDuplicate" disabled>Duplicate</button>
+        <button class="secondary-action" id="plRename" disabled>Rename</button>
+        <button class="secondary-action danger-soft" id="plDelete" disabled>Delete</button>
+      </div>
+      <div class="planner-sync" id="plSyncStatus">Saved on this device</div>
+    </div>
+
+    <div id="plEmpty" class="planner-empty">
+      <div class="planner-empty-copy">
+        <span class="analysis-eyebrow">Start a plan</span>
+        <h3>Choose your starting squad</h3>
+        <p>You can import the latest squad that FPL exposes publicly, reuse your Team Builder draft, or start with an empty £100m squad.</p>
+      </div>
+      <div class="planner-start-grid">
+        <div class="planner-start-card">
+          <span class="planner-start-num">01</span>
+          <h4>Use my FPL team</h4>
+          <p>Import your latest publicly available squad. Any planning after import stays inside FPL Peek.</p>
+          <div class="planner-import-row">
+            <input id="plTeamId" type="number" inputmode="numeric" placeholder="FPL Team ID" aria-label="FPL Team ID">
+            <button class="primary-action" id="plImportTeam">Import</button>
+          </div>
+          <small id="plImportHint"></small>
+        </div>
+        <div class="planner-start-card">
+          <span class="planner-start-num">02</span>
+          <h4>Use Team Builder draft</h4>
+          <p>Copy your current 15-player Team Builder squad into a new multi-gameweek plan.</p>
+          <button class="secondary-action" id="plImportBuilder">Use builder squad</button>
+        </div>
+        <div class="planner-start-card">
+          <span class="planner-start-num">03</span>
+          <h4>Start from scratch</h4>
+          <p>Create an empty plan and build the base squad using the player picker.</p>
+          <button class="secondary-action" id="plBlank">Start blank</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="plWorkspace" class="planner-workspace" style="display:none">
+      <div class="planner-title-row">
+        <div>
+          <span class="analysis-eyebrow" id="plSource">Local plan</span>
+          <h3 id="plTitle">My plan</h3>
+          <p id="plMeta">Saved automatically.</p>
+        </div>
+        <div class="planner-title-actions">
+          <button class="secondary-action" id="plResetGw">Reset this GW</button>
+        </div>
+      </div>
+
+      <div class="planner-gw-strip" id="plGwStrip" aria-label="Planned gameweeks"></div>
+
+      <div class="planner-summary" id="plSummary"></div>
+
+      <div class="planner-layout">
+        <div class="planner-main">
+          <div class="planner-section-head">
+            <div>
+              <span class="home-section-kicker">Squad plan</span>
+              <h3 id="plGwHeading">Gameweek</h3>
+            </div>
+            <div class="planner-chip-wrap">
+              <label for="plChip">Planned chip</label>
+              <select id="plChip">
+                <option value="">None</option>
+                <option value="WC">Wildcard</option>
+                <option value="FH">Free Hit</option>
+                <option value="BB">Bench Boost</option>
+                <option value="TC">Triple Captain</option>
+              </select>
+            </div>
+          </div>
+          <div id="plTransfers" class="planner-transfers"></div>
+          <div id="plSquad" class="planner-squad"></div>
+        </div>
+
+        <aside class="planner-picker">
+          <div class="planner-picker-head">
+            <div>
+              <span class="home-section-kicker" id="plPickerKicker">Player picker</span>
+              <h3 id="plPickerTitle">Build your squad</h3>
+            </div>
+            <button id="plCancelOut" class="ta-clear-selected" style="display:none">Cancel</button>
+          </div>
+          <div id="plOutCard"></div>
+          <div class="planner-search">
+            <input id="plannerSearch" type="search" placeholder="Search player…" autocomplete="off">
+          </div>
+          <div class="planner-filters">
+            <select id="plannerPos" aria-label="Position filter">
+              <option value="0">All positions</option>
+              <option value="1">Goalkeepers</option>
+              <option value="2">Defenders</option>
+              <option value="3">Midfielders</option>
+              <option value="4">Forwards</option>
+            </select>
+            <select id="plannerTeam" aria-label="Team filter"><option value="0">All clubs</option></select>
+          </div>
+          <div class="planner-player-list" id="plPlayerList"></div>
+          <div class="planner-price-note">Planner uses current public FPL prices. A manager's exact in-game selling value can differ after price rises.</div>
+        </aside>
+      </div>
+    </div>
   </section>
 
     <!-- ============ TEAM BUILDER TAB ============ -->
@@ -653,6 +790,7 @@
 <div class="mobile-more-sheet" id="mobileMoreSheet" aria-hidden="true">
   <div class="mobile-more-head"><b>More tools</b><button id="mobileMoreClose" aria-label="Close more tools">Close</button></div>
   <div class="mobile-more-grid">
+    <button data-mobile-tab="planner">Planner</button>
     <button data-mobile-tab="analyzer">Team Analyzer</button>
     <button data-mobile-tab="transfer">Transfer Analyzer</button>
     <button data-mobile-tab="compare">Manager Compare</button>
@@ -664,6 +802,46 @@
     <button data-mobile-tab="prices">Price Watch</button>
     <button data-mobile-tab="preseason">Pre-season</button>
     <button data-mobile-tab="live">Live Center</button>
+    <button id="mobileAccountBtn" class="mobile-account-btn" style="display:none">Account & sync</button>
+  </div>
+</div>
+
+
+<!-- account / cloud sync modal -->
+<div class="modal" id="accountModal">
+  <div class="modal-card account-modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">FPL Peek account</div>
+        <div class="modal-sub">Optional cloud sync for Planner drafts.</div>
+      </div>
+      <button class="modal-x" id="accountClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="accountSignedOut">
+        <div class="account-intro">
+          <h3>Keep planning without an account</h3>
+          <p>Your drafts already save automatically on this device. Sign in only if you want them available on other devices.</p>
+        </div>
+        <label class="account-email-label" for="accountEmail">Email address</label>
+        <div class="account-email-row">
+          <input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com">
+          <button class="primary-action" id="accountSendLink">Email sign-in link</button>
+        </div>
+        <div class="account-message" id="accountMessage"></div>
+        <p class="account-fineprint">No FPL password is ever requested. Authentication is handled by Supabase and is separate from your Fantasy Premier League account.</p>
+      </div>
+      <div id="accountSignedIn" style="display:none">
+        <div class="account-user-card">
+          <span class="account-avatar" id="accountAvatar">A</span>
+          <div><b id="accountUserEmail">Signed in</b><small id="accountSyncSummary">Planner drafts are synced.</small></div>
+        </div>
+        <div class="account-actions">
+          <button class="secondary-action" id="accountSyncNow">Sync now</button>
+          <button class="secondary-action danger-soft" id="accountSignOut">Sign out</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -697,12 +875,15 @@
 <script defer src="/js/compare.js"></script>
 <script defer src="/js/preseason.js"></script>
 <script defer src="/js/builder.js"></script>
+<script defer src="/js/planner.js"></script>
 <script defer src="/js/fixtures.js"></script>
 <script defer src="/js/players.js"></script>
 <script defer src="/js/injuries.js"></script>
 <script defer src="/js/setpieces.js"></script>
 <script defer src="/js/prices.js"></script>
 <script defer src="/js/live.js"></script>
+<script defer src="/js/supabase-config.js"></script>
+<script defer src="/js/account.js"></script>
 <script defer src="/js/app.js"></script>
 </body>
 </html>
