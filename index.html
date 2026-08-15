@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPL Peek | FPL Team Analyzer, Transfers & Fixtures</title>
+<meta name="description" content="FPL Peek is a free Fantasy Premier League workspace for team analysis, transfer comparisons, fixture planning, player scouting, captain picks, price watch and live gameweek tools.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="author" content="FPL Peek">
+<meta name="application-name" content="FPL Peek">
+<meta name="theme-color" content="#079669">
+<meta name="color-scheme" content="light">
+
+<link rel="canonical" href="https://fplpeek.com/">
+<link rel="alternate" hreflang="en" href="https://fplpeek.com/">
+<link rel="alternate" hreflang="x-default" href="https://fplpeek.com/">
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FPL Peek">
+<meta property="og:locale" content="en_GB">
+<meta property="og:url" content="https://fplpeek.com/">
+<meta property="og:title" content="FPL Peek | FPL Team Analyzer, Transfers & Fixtures">
+<meta property="og:description" content="Analyze your FPL team, compare transfers, plan fixtures, scout players and follow the gameweek from one clean workspace.">
+<meta property="og:image" content="https://fplpeek.com/android-chrome-512x512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="FPL Peek logo">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FPL Peek | FPL Team Analyzer, Transfers & Fixtures">
+<meta name="twitter:description" content="Analyze your FPL team, compare transfers, plan fixtures, scout players and follow the gameweek from one clean workspace.">
+<meta name="twitter:image" content="https://fplpeek.com/android-chrome-512x512.png">
+<meta name="twitter:image:alt" content="FPL Peek logo">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "FPL Peek",
+  "url": "https://fplpeek.com/",
+  "description": "A free Fantasy Premier League workspace for team analysis, transfer comparisons, fixture planning, player scouting, captain picks, price watch and live gameweek tools.",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Web",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "GBP"
+  },
+  "featureList": [
+    "FPL team analyzer",
+    "Transfer analyzer",
+    "Fixture planner",
+    "Player scouting",
+    "Captain picks",
+    "Price watch",
+    "Live gameweek tools",
+    "Manager comparison"
+  ]
+}
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HRG9QW2NGC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-HRG9QW2NGC');
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="nav">
+    <div class="brand">
+      <div class="mark">P</div>
+      <div>
+        <h1>FPL Peek</h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabbar" aria-label="FPL Peek tools">
+    <div class="sidebar-deadline countdown" id="countdown" style="display:none" aria-live="polite"></div>
+    <div class="tab-label">Overview</div>
+    <button class="tab active" data-tab="home">Home</button>
+    <button class="tab" data-tab="team">My Team</button>
+
+    <div class="tab-label">Planning</div>
+    <button class="tab" data-tab="builder">Team Builder</button>
+    <button class="tab" data-tab="scout">Scout</button>
+    <button class="tab" data-tab="transfer">Transfer Analyzer</button>
+    <button class="tab" data-tab="fixtures">Fixtures</button>
+    <button class="tab" data-tab="players">Players</button>
+    <button class="tab" data-tab="preseason">Pre-season</button>
+
+    <div class="tab-label">Gameweek</div>
+    <button class="tab" data-tab="captains">Captain Picks</button>
+    <button class="tab" data-tab="injuries">Injuries</button>
+    <button class="tab" data-tab="setpieces">Set Pieces</button>
+    <button class="tab" data-tab="prices">Price Watch</button>
+
+    <div class="tab-label">Analysis</div>
+    <button class="tab" data-tab="analyzer">Team Analyzer</button>
+    <button class="tab" data-tab="compare">Manager Compare</button>
+
+    <div class="tab-label">Live</div>
+    <button class="tab" data-tab="live">Live Center</button>
+  </div>
+
+
+  <!-- ============ HOME TAB ============ -->
+  <section class="tabpanel active" id="tab-home">
+    <div class="home-hero">
+      <div class="home-eyebrow">Overview</div>
+      <h2>Your FPL workspace</h2>
+      <p>Check the deadline, your squad and the decisions that matter before the next gameweek.</p>
+      <div class="search home-search">
+        <div class="field">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="homeTeamId" type="number" inputmode="numeric" placeholder="Enter your FPL Team ID" />
+        </div>
+        <button id="homeGo">View my team</button>
+      </div>
+      <div class="home-recent" id="homeRecent"></div>
+    </div>
+
+    <div class="home-status-grid">
+      <div class="home-status-card" id="homeSavedTeam">
+        <div class="home-card-label">Your team</div>
+        <div class="home-card-loading">Checking saved team…</div>
+      </div>
+      <div class="home-status-card" id="homeGameweek">
+        <div class="home-card-label">Gameweek</div>
+        <div class="home-card-loading">Loading…</div>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <div class="home-insights" id="homeInsights">
+        <div class="home-skeleton"></div><div class="home-skeleton"></div><div class="home-skeleton"></div><div class="home-skeleton"></div>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <div class="home-section-head">
+        <div>
+          <div class="home-section-kicker">Fixture radar</div>
+          <h3>Best fixtures ahead</h3>
+        </div>
+        <button class="home-link-btn" data-home-tab="fixtures">Open fixture planner →</button>
+      </div>
+      <div class="home-fixtures" id="homeFixtures">
+        <div class="home-skeleton wide"></div>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <div class="home-section-head">
+        <div>
+          <div class="home-section-kicker">Explore</div>
+          <h3>Quick tools</h3>
+        </div>
+      </div>
+      <div class="home-tools">
+        <button class="home-tool" data-home-tab="analyzer"><span class="home-tool-icon">01</span><span><b>Team Analyzer</b><small>Find weak spots, captain options and upgrade ideas</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="transfer"><span class="home-tool-icon">02</span><span><b>Transfer Analyzer</b><small>Compare two players, fixtures and short-term profile</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="compare"><span class="home-tool-icon">03</span><span><b>Manager Compare</b><small>Compare two FPL managers and their squads</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="builder"><span class="home-tool-icon">04</span><span><b>Team Builder</b><small>Build and rate a &pound;100m squad</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="scout"><span class="home-tool-icon">05</span><span><b>Scout</b><small>Find players worth targeting</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="captains"><span class="home-tool-icon">06</span><span><b>Captain Picks</b><small>See who top managers trust</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TEAM TAB ============ -->
+  <section class="tabpanel" id="tab-team">
+  <div class="hero">
+    <h2>Scout any FPL team</h2>
+    <p>Enter a Team ID for a full breakdown — squad, season form, history and colour-coded fixtures.</p>
+
+    <div class="search">
+      <div class="field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="tid" type="number" inputmode="numeric" placeholder="Enter Team ID (e.g. 701419)" />
+      </div>
+      <button id="go">View Team</button>
+    </div>
+    <div class="hint">Find your ID in the FPL URL: <code>fantasy.premierleague.com/entry/<b>YOUR-ID</b>/</code></div>
+    <div class="recent" id="recent"></div>
+  </div>
+
+  <div id="msg"></div>
+
+  <div class="app" id="app">
+    <!-- manager header -->
+    <div class="mhead reveal" id="mhead"></div>
+    <!-- stat grid -->
+    <div class="grid reveal" id="grid"></div>
+
+    <!-- weekly recap -->
+    <div class="reveal" id="recapSec" style="display:none">
+      <div class="sec"><h3>Last gameweek recap</h3><span class="ln"></span><span class="badge" id="recapGw"></span></div>
+      <div class="panel" id="recap"></div>
+    </div>
+
+    <!-- mini leagues -->
+    <div class="reveal" id="leaguesSec" style="display:none">
+      <div class="sec"><h3>Mini-leagues</h3><span class="ln"></span><span class="badge" id="leaguesCount"></span></div>
+      <div class="panel" id="leagues"></div>
+    </div>
+
+    <!-- squad -->
+    <div class="reveal">
+      <div class="sec"><h3>Squad</h3><span class="ln"></span><span class="badge" id="formationBadge"></span></div>
+      <div class="pitch" id="pitch"></div>
+      <div class="bench-wrap"><div class="bench-lbl">Substitutes</div><div class="bench" id="bench"></div></div>
+      <div class="legend">
+        <span class="legend-title">Next 5 fixtures:</span>
+        <span><b class="fdr1"></b>Easy</span>
+        <span><b style="background:var(--fdr3)"></b>Average</span>
+        <span><b class="fdr4"></b>Hard</span>
+        <span><b class="fdr5"></b>Very hard</span>
+        <span class="legend-sep">home = UPPERCASE, away = lowercase</span>
+      </div>
+    </div>
+
+    <!-- season charts -->
+    <div class="reveal" id="seasonSec" style="display:none">
+      <div class="sec"><h3>Season progress</h3><span class="ln"></span><span class="badge" id="chartToggleBadge">points per gameweek</span></div>
+      <div class="chart-tabs" id="chartTabs">
+        <button class="ct active" data-c="points">Points / GW</button>
+        <button class="ct" data-c="rank">Overall rank</button>
+        <button class="ct" data-c="value">Team value</button>
+      </div>
+      <div class="panel spark-wrap"><div id="spark"></div><div class="spark-tip" id="sparkTip"></div></div>
+    </div>
+
+    <!-- two-col: history + chips -->
+    <div class="reveal" id="histSec" style="display:none">
+      <div class="sec"><h3>Past seasons</h3><span class="ln"></span><span class="badge">points by season</span></div>
+      <div class="panel" id="history"></div>
+    </div>
+
+    <div class="reveal" id="capSec" style="display:none">
+      <div class="sec"><h3>Captaincy &amp; differentials</h3><span class="ln"></span></div>
+      <div class="panel" id="captaincy"></div>
+    </div>
+
+    <div class="reveal" id="chipsSec" style="display:none">
+      <div class="sec"><h3>Chips</h3><span class="ln"></span></div>
+      <div class="panel" id="chips"></div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ============ SCOUT TAB ============ -->
+  <section class="tabpanel" id="tab-scout">
+    <div class="thead">
+      <h2>Scout</h2>
+      <p>Computed insights the raw app doesn't give you — best fixtures to target, market trends, and the template.</p>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="scoutView">
+        <button data-v="buy" class="active">Who to buy</button>
+        <button data-v="trends">Transfer trends</button>
+        <button data-v="template">Template team</button>
+        <button data-v="value">Best value</button>
+      </div>
+    </div>
+    <div class="ad-slot" data-slot="scout-top"></div>
+    <div id="scoutBody"></div>
+  </section>
+
+
+
+  <!-- ============ TEAM ANALYZER TAB ============ -->
+  <section class="tabpanel" id="tab-analyzer">
+    <div class="thead">
+      <h2>Team Analyzer</h2>
+      <p>Run a focused squad check: availability, fixture quality, captain options and possible areas to improve.</p>
+    </div>
+    <div class="tool-form">
+      <div class="field tool-field">
+        <input id="anTeamId" type="number" inputmode="numeric" placeholder="FPL Team ID" aria-label="FPL Team ID for team analyzer" />
+      </div>
+      <button class="primary-action" id="anRun">Analyze team</button>
+    </div>
+    <div id="analyzerBody" class="tool-output"><div class="tool-empty">Enter a Team ID to run a squad check.</div></div>
+  </section>
+
+  <!-- ============ TRANSFER ANALYZER TAB ============ -->
+  <section class="tabpanel" id="tab-transfer">
+    <div class="thead">
+      <h2>Transfer Analyzer</h2>
+      <p>Compare two players side by side using price, form, availability and the next five fixtures.</p>
+    </div>
+    <div class="transfer-form">
+      <div class="ta-picker" id="taFromPicker">
+        <div class="ta-picker-head">
+          <label for="taFrom">Player out / current</label>
+          <button type="button" class="ta-clear-selected" id="taFromClear" hidden>Clear</button>
+        </div>
+        <div class="ta-selected" id="taFromSelected" hidden></div>
+        <div class="ta-searchbox">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input id="taFrom" placeholder="Search player name" autocomplete="off" aria-autocomplete="list" aria-controls="taFromResults" />
+          <button type="button" class="ta-clear-search" id="taFromSearchClear" aria-label="Clear player search" hidden>&times;</button>
+        </div>
+        <div class="ta-filter-row">
+          <select id="taFromPos" aria-label="Filter player out by position">
+            <option value="0">All positions</option><option value="1">Goalkeepers</option><option value="2">Defenders</option><option value="3">Midfielders</option><option value="4">Forwards</option>
+          </select>
+          <select id="taFromTeam" aria-label="Filter player out by team"><option value="0">All teams</option></select>
+        </div>
+        <div class="ta-results" id="taFromResults" role="listbox" hidden></div>
+      </div>
+
+      <button type="button" class="swap-action" id="taSwap" title="Swap selected players" aria-label="Swap selected players">&harr;</button>
+
+      <div class="ta-picker" id="taToPicker">
+        <div class="ta-picker-head">
+          <label for="taTo">Player in / alternative</label>
+          <button type="button" class="ta-clear-selected" id="taToClear" hidden>Clear</button>
+        </div>
+        <div class="ta-selected" id="taToSelected" hidden></div>
+        <div class="ta-searchbox">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input id="taTo" placeholder="Search player name" autocomplete="off" aria-autocomplete="list" aria-controls="taToResults" />
+          <button type="button" class="ta-clear-search" id="taToSearchClear" aria-label="Clear player search" hidden>&times;</button>
+        </div>
+        <div class="ta-filter-row">
+          <select id="taToPos" aria-label="Filter player in by position">
+            <option value="0">All positions</option><option value="1">Goalkeepers</option><option value="2">Defenders</option><option value="3">Midfielders</option><option value="4">Forwards</option>
+          </select>
+          <select id="taToTeam" aria-label="Filter player in by team"><option value="0">All teams</option></select>
+        </div>
+        <div class="ta-results" id="taToResults" role="listbox" hidden></div>
+      </div>
+
+      <div class="ta-form-actions">
+        <button type="button" class="secondary-action" id="taReset">Reset</button>
+        <button class="primary-action" id="taRun" disabled>Compare players</button>
+      </div>
+    </div>
+    <div id="transferBody" class="tool-output"><div class="tool-empty">Pick a player on each side. Search by name or narrow the list by position and club.</div></div>
+  </section>
+
+  <!-- ============ MANAGER COMPARE TAB ============ -->
+  <section class="tabpanel" id="tab-compare">
+    <div class="thead">
+      <h2>Manager Compare</h2>
+      <p>Compare rank, points, history and - once squads are public - the players and captains that separate two managers.</p>
+    </div>
+    <div class="compare-form">
+      <div class="field tool-field"><input id="cmpA" type="number" inputmode="numeric" placeholder="Manager A Team ID" aria-label="Manager A Team ID" /></div>
+      <div class="compare-vs">vs</div>
+      <div class="field tool-field"><input id="cmpB" type="number" inputmode="numeric" placeholder="Manager B Team ID" aria-label="Manager B Team ID" /></div>
+      <button class="primary-action" id="cmpRun">Compare managers</button>
+    </div>
+    <div id="compareBody" class="tool-output"><div class="tool-empty">Enter two Team IDs to compare managers.</div></div>
+  </section>
+
+  <!-- ============ CAPTAIN PICKS TAB ============ -->
+  <section class="tabpanel" id="tab-captains">
+    <div class="thead">
+      <h2>Top Captain Picks</h2>
+      <p>See which players the leading overall FPL managers are trusting with the armband.</p>
+    </div>
+    <div id="captainBody"></div>
+  </section>
+
+    <!-- ============ TEAM BUILDER TAB ============ -->
+  <section class="tabpanel" id="tab-builder">
+    <div class="thead">
+      <h2>Team Builder</h2>
+      <p>Draft a 15-player squad under the real rules and get an instant Squad Score. Swap players and watch it move.</p>
+    </div>
+
+    <div class="bld-top">
+      <div class="bld-gauge" id="bldGauge">
+        <div class="bld-grade" id="bldGrade">–</div>
+        <div class="bld-num" id="bldNum">0<span>/99</span></div>
+      </div>
+      <div class="bld-topmid">
+        <div class="bld-score-txt" id="bldScoreTxt">Pick 15 players to see your score.</div>
+        <div class="bld-statrow">
+          <span class="bld-stat"><b id="bldPicked">0/15</b> picked</span>
+          <span class="bld-stat"><b id="bldValue">£0.0</b> value</span>
+          <span class="bld-stat"><b id="bldBank">£100.0</b> bank</span>
+        </div>
+      </div>
+      <div class="bld-actions">
+        <div class="seg" id="bldRange">
+          <button data-n="1">1</button>
+          <button data-n="3">3</button>
+          <button data-n="5" class="active">5 GW</button>
+        </div>
+        <button class="bld-btn ghost" id="bldClear">Clear</button>
+      </div>
+    </div>
+    <div class="bld-warn" id="bldWarn"></div>
+
+    <div class="bld-cols">
+      <div class="bld-pitch-wrap">
+        <div class="pitch bld-pitch" id="bldPitch"></div>
+      </div>
+      <div class="bld-picker">
+        <div class="bld-search-row">
+          <div class="field" style="flex:1;min-width:0">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="bldSearch" type="text" placeholder="Search…" />
+          </div>
+          <button class="bld-reset" id="bldReset" title="Reset filters">↻</button>
+        </div>
+        <div class="seg bld-pos" id="bldPos">
+          <button data-p="0" class="active">All</button>
+          <button data-p="1">GK</button>
+          <button data-p="2">DEF</button>
+          <button data-p="3">MID</button>
+          <button data-p="4">FWD</button>
+        </div>
+        <select id="bldTeam" class="bld-select bld-team-sel"><option value="0">All teams</option></select>
+        <div class="bld-sliders">
+          <div class="bld-filter">
+            <div class="bld-filter-hd"><span>Price</span><span id="bldPriceVal">≤ max</span></div>
+            <input type="range" id="bldPrice" min="38" max="150" value="150" step="1">
+          </div>
+          <div class="bld-filter">
+            <div class="bld-filter-hd"><span>Owned</span><span id="bldOwnVal">≤ 100%</span></div>
+            <input type="range" id="bldOwn" min="0" max="100" value="100" step="1">
+          </div>
+        </div>
+        <div class="bld-colhead" id="bldColhead">
+          <span class="ch-name">Player</span>
+          <span class="ch-sort" data-s="cost">£<span class="ch-ar" data-for="cost"></span></span>
+          <span class="ch-sort" data-s="own">Own<span class="ch-ar" data-for="own"></span></span>
+          <span class="ch-sort active" data-s="pred">Est<span class="ch-ar" data-for="pred">↓</span></span>
+          <span class="ch-add"></span>
+        </div>
+        <div class="bld-list" id="bldList"></div>
+      </div>
+    </div>
+
+    <!-- how it works -->
+    <div class="bld-info">
+      <h3 class="bld-info-h">How the Team Builder works</h3>
+      <div class="bld-info-grid">
+        <div class="bld-info-card">
+          <div class="bld-info-ic">01</div>
+          <h4>Squad rules</h4>
+          <p>A valid squad is <b>15 players</b> within a <b>£100.0m</b> budget, with at most <b>3 players from any one club</b>. You must pick exactly:</p>
+          <ul class="bld-rules">
+            <li><span class="rp gk">GK</span> 2 goalkeepers</li>
+            <li><span class="rp de">DEF</span> 5 defenders</li>
+            <li><span class="rp mi">MID</span> 5 midfielders</li>
+            <li><span class="rp fw">FWD</span> 3 forwards</li>
+          </ul>
+        </div>
+        <div class="bld-info-card">
+          <div class="bld-info-ic">02</div>
+          <h4>How the score is built</h4>
+          <p>From your 15, we pick the <b>best-scoring legal starting XI</b> (min. 1 GK, 3 DEF, 1 FWD) and <b>double your highest scorer as captain</b> — just like real FPL. That total is measured over your chosen <b>1, 3 or 5 gameweek</b> window.</p>
+          <p>Your squad is then compared to the <b>best possible squad</b> we can assemble under the same budget and club limits. Your score is how close you get, on a <b>0–99</b> scale.</p>
+        </div>
+        <div class="bld-info-card">
+          <div class="bld-info-ic">03</div>
+          <h4>Grades</h4>
+          <p>The percentage of optimal maps to a letter grade:</p>
+          <div class="bld-grades">
+            <span class="gg" style="--c:#00e57a">S</span>
+            <span class="gg" style="--c:#4ade80">A</span>
+            <span class="gg" style="--c:#12d8e3">B</span>
+            <span class="gg" style="--c:#f59e0b">C</span>
+            <span class="gg" style="--c:#fb923c">D</span>
+            <span class="gg" style="--c:#ff8098">E</span>
+            <span class="gg" style="--c:#f43f5e">F</span>
+          </div>
+          <p class="bld-info-sm"><b>S</b> is near-optimal; <b>F</b> means lots of room to improve. The grade moves as you swap players in and out.</p>
+        </div>
+        <div class="bld-info-card bld-info-caveat">
+          <div class="bld-info-ic">04</div>
+          <h4>An honest note on the numbers</h4>
+          <p>The per-player estimate is <b>our own transparent formula</b> — recent form, how easy the upcoming fixtures are, and whether the player is fit and starting. It is <b>not a trained prediction model</b>, so treat the score as a smart guide for comparing squads, not a guaranteed forecast.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRE-SEASON TAB ============ -->
+  <section class="tabpanel" id="tab-preseason">
+    <div class="thead">
+      <h2>Pre-season planner</h2>
+      <p>Build your opening squad with confidence — who has the kindest start, and who delivered last year.</p>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="psView">
+        <button data-v="openers" class="active">Season-opener fixtures</button>
+        <button data-v="last">Last season's best</button>
+      </div>
+      <div class="seg" id="psRange" data-for="openers">
+        <button data-n="3" class="active">First 3</button>
+        <button data-n="5">First 5</button>
+      </div>
+    </div>
+    <div id="psBody"></div>
+  </section>
+
+  <!-- ============ FIXTURES TAB ============ -->
+  <section class="tabpanel" id="tab-fixtures">
+    <div class="thead">
+      <h2>Fixture difficulty</h2>
+      <p>Every club's upcoming schedule, shaded by difficulty. Darker green = easier, red = tougher.</p>
+    </div>
+    <div class="ctl">
+      <label class="ctl-lbl">Gameweeks</label>
+      <div class="seg" id="fxRange">
+        <button data-n="5" class="active">Next 5</button>
+        <button data-n="8">Next 8</button>
+        <button data-n="10">Next 10</button>
+      </div>
+      <label class="ctl-lbl" style="margin-left:auto">Sort</label>
+      <div class="seg" id="fxSort">
+        <button data-s="team" class="active">A–Z</button>
+        <button data-s="easy">Easiest run</button>
+      </div>
+    </div>
+    <div id="fxGrid" class="fx-scroll"></div>
+  </section>
+
+  <!-- ============ PLAYERS TAB ============ -->
+  <section class="tabpanel" id="tab-players">
+    <div class="thead">
+      <h2>Player explorer</h2>
+      <p>Sort and filter every player — price, form, points, ownership, and set-piece duties.</p>
+    </div>
+    <div class="ctl">
+      <div class="field" style="max-width:240px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="plSearch" type="text" placeholder="Search player…" />
+      </div>
+      <div class="seg" id="plPos">
+        <button data-p="0" class="active">All</button>
+        <button data-p="1">GKP</button>
+        <button data-p="2">DEF</button>
+        <button data-p="3">MID</button>
+        <button data-p="4">FWD</button>
+      </div>
+      <button class="watch-toggle" id="plColsBtn">☰ Columns</button>
+      <button class="watch-toggle" id="plWatchOnly">★ Watchlist only</button>
+    </div>
+    <div class="plcols-panel" id="plColsPanel" style="display:none"></div>
+    <div class="tbl-scroll-top" id="plScrollTop"><div id="plScrollTopInner"></div></div>
+    <div class="tbl-scroll" id="plScrollMain"><table class="dt" id="plTable"></table></div>
+    <div class="more-wrap"><button class="lm-more" id="plMore" style="max-width:220px">Show more</button></div>
+  </section>
+
+  <!-- ============ INJURIES TAB ============ -->
+  <section class="tabpanel" id="tab-injuries">
+    <div class="thead">
+      <h2>Injuries &amp; availability</h2>
+      <p>Players who are ruled out, doubtful, or carrying a flag for the upcoming gameweek.</p>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="injFilter">
+        <button data-f="all" class="active">All flagged</button>
+        <button data-f="out">Ruled out</button>
+        <button data-f="doubt">Doubtful</button>
+      </div>
+      <div class="field" style="max-width:220px;margin-left:auto">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="injSearch" type="text" placeholder="Search player…" />
+      </div>
+    </div>
+    <div id="injBody"></div>
+  </section>
+
+  <!-- ============ SET PIECES TAB ============ -->
+  <section class="tabpanel" id="tab-setpieces">
+    <div class="thead">
+      <h2>Set-piece takers</h2>
+      <p>First-choice penalty, free-kick, and corner takers for every club, as listed by FPL.</p>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="spFilter">
+        <button data-f="all" class="active">All</button>
+        <button data-f="pen">Penalties</button>
+        <button data-f="fk">Free-kicks</button>
+        <button data-f="ck">Corners</button>
+      </div>
+    </div>
+    <div id="spBody"></div>
+  </section>
+
+  <!-- ============ PRICE WATCH TAB ============ -->
+  <section class="tabpanel" id="tab-prices">
+    <div class="thead">
+      <h2>Price watch</h2>
+      <p>Who's rising and falling. Season change is since launch; live shows this gameweek's movement.</p>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="prMode">
+        <button data-m="season" class="active">Season change</button>
+        <button data-m="event">This gameweek</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div><div class="col-h up">▲ Risers</div><div id="prUp"></div></div>
+      <div><div class="col-h down">▼ Fallers</div><div id="prDown"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ LIVE TAB ============ -->
+  <section class="tabpanel" id="tab-live">
+    <div class="thead">
+      <h2>Live gameweek</h2>
+      <p id="liveSub">In-play bonus points and top scorers for the current gameweek.</p>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="liveView">
+        <button data-v="bonus" class="active">Bonus (BPS)</button>
+        <button data-v="points">Top scorers</button>
+      </div>
+      <button class="lm-more" id="liveRefresh" style="max-width:130px;margin-left:auto">↻ Refresh</button>
+    </div>
+    <div id="liveBody"></div>
+  </section>
+
+  <footer>
+    Data provided via the official Fantasy Premier League API. FPL Peek operates independently and is not affiliated with or endorsed by the Premier League.
+  </footer>
+</div>
+
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+  <button class="mobile-nav-item active" data-mobile-tab="home">Home</button>
+  <button class="mobile-nav-item" data-mobile-tab="team">Team</button>
+  <button class="mobile-nav-item" data-mobile-tab="scout">Scout</button>
+  <button class="mobile-nav-item" data-mobile-tab="builder">Builder</button>
+  <button class="mobile-nav-item" id="mobileMore" aria-expanded="false">More</button>
+</nav>
+<div class="mobile-more-sheet" id="mobileMoreSheet" aria-hidden="true">
+  <div class="mobile-more-head"><b>More tools</b><button id="mobileMoreClose" aria-label="Close more tools">Close</button></div>
+  <div class="mobile-more-grid">
+    <button data-mobile-tab="analyzer">Team Analyzer</button>
+    <button data-mobile-tab="transfer">Transfer Analyzer</button>
+    <button data-mobile-tab="compare">Manager Compare</button>
+    <button data-mobile-tab="captains">Captain Picks</button>
+    <button data-mobile-tab="fixtures">Fixtures</button>
+    <button data-mobile-tab="players">Players</button>
+    <button data-mobile-tab="injuries">Injuries</button>
+    <button data-mobile-tab="setpieces">Set Pieces</button>
+    <button data-mobile-tab="prices">Price Watch</button>
+    <button data-mobile-tab="preseason">Pre-season</button>
+    <button data-mobile-tab="live">Live Center</button>
+  </div>
+</div>
+
+<!-- league standings modal -->
+<div class="modal" id="leagueModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="lmTitle">League</div>
+        <div class="modal-sub" id="lmSub"></div>
+      </div>
+      <button class="modal-x" id="lmClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="lmBody"></div>
+    <div class="modal-foot">
+      <button class="lm-more" id="lmMore" style="display:none">Load more</button>
+    </div>
+  </div>
+</div>
+
+<script defer src="/js/core.js"></script>
+<script defer src="/js/team.js"></script>
+<script defer src="/js/leagues.js"></script>
+<script defer src="/js/player.js"></script>
+<script defer src="/js/tabs.js"></script>
+<script defer src="/js/home.js"></script>
+<script defer src="/js/scout.js"></script>
+<script defer src="/js/captains.js"></script>
+<script defer src="/js/analyzer.js"></script>
+<script defer src="/js/transfer-analyzer.js"></script>
+<script defer src="/js/compare.js"></script>
+<script defer src="/js/preseason.js"></script>
+<script defer src="/js/builder.js"></script>
+<script defer src="/js/fixtures.js"></script>
+<script defer src="/js/players.js"></script>
+<script defer src="/js/injuries.js"></script>
+<script defer src="/js/setpieces.js"></script>
+<script defer src="/js/prices.js"></script>
+<script defer src="/js/live.js"></script>
+<script defer src="/js/app.js"></script>
+</body>
+</html>

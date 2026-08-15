@@ -1,0 +1,185 @@
+/* ============ home dashboard ============ */
+let _homeReady=false;
+
+async function initHome(){
+  bindHomeActions();
+  renderHomeRecent();
+  renderHomeSavedTeam();
+  if(_homeReady) return;
+  _homeReady=true;
+  try{
+    const [b, fixtures]=await Promise.all([loadBoot(), get("/fixtures/")]);
+    renderHomeGameweek(b);
+    renderHomeInsights(b);
+    renderHomeBestFixtures(b, fixtures);
+    await enrichHomeSavedTeam();
+  }catch(e){
+    const msg=`<div class="home-empty">Couldn’t load live FPL data right now. <button class="home-inline-btn" onclick="_homeReady=false;initHome()">Try again</button></div>`;
+    if($("homeInsights")) $("homeInsights").innerHTML=msg;
+    if($("homeFixtures")) $("homeFixtures").innerHTML=msg;
+  }
+}
+
+function bindHomeActions(){
+  if(!$("homeGo") || $("homeGo").dataset.bound) return;
+  $("homeGo").dataset.bound="1";
+  const openTeam=()=>{
+    const id=String($("homeTeamId").value||"").trim();
+    if(!id) return;
+    $("tid").value=id;
+    switchTab("team");
+    view(id);
+  };
+  $("homeGo").onclick=openTeam;
+  $("homeTeamId").addEventListener("keydown",e=>{ if(e.key==="Enter") openTeam(); });
+  document.querySelectorAll("[data-home-tab]").forEach(btn=>{
+    btn.onclick=()=>switchTab(btn.dataset.homeTab);
+  });
+}
+
+function renderHomeRecent(){
+  const el=$("homeRecent"); if(!el) return;
+  const rows=recentIds().slice(0,4);
+  if(!rows.length){ el.innerHTML=`<span class="home-recent-hint">Tip: your Team ID is the number after <b>/entry/</b> in your FPL URL.</span>`; return; }
+  el.innerHTML=`<span class="home-recent-label">Recent</span>${rows.map(r=>`<button class="home-recent-chip" data-id="${esc(r.id)}">${esc(r.name||r.id)}</button>`).join("")}`;
+  el.querySelectorAll(".home-recent-chip").forEach(btn=>btn.onclick=()=>{
+    $("homeTeamId").value=btn.dataset.id;
+    $("tid").value=btn.dataset.id;
+    switchTab("team"); view(btn.dataset.id);
+  });
+}
+
+function renderHomeSavedTeam(){
+  const el=$("homeSavedTeam"); if(!el) return;
+  const st=savedTeam();
+  if(!st||!st.id){
+    el.innerHTML=`<div class="home-card-label">Your team</div><div class="home-card-value small">Not linked yet</div><div class="home-card-sub">Enter your Team ID above to save it on this device.</div>`;
+    return;
+  }
+  el.innerHTML=`<div class="home-card-label">Your team</div><div class="home-card-value small">${esc(st.name||`Team ${st.id}`)}</div><div class="home-card-sub">Team ID ${esc(st.id)}</div><div class="home-card-actions"><button class="home-card-action" id="homeSavedOpen">View team</button><button class="home-card-action secondary" id="homeSavedAnalyze">Analyze</button></div>`;
+  $("homeSavedOpen").onclick=()=>{ $("tid").value=st.id; switchTab("team"); view(st.id); };
+  $("homeSavedAnalyze").onclick=()=>{ switchTab("analyzer"); $("anTeamId").value=st.id; runTeamAnalyzer(st.id); };
+}
+
+async function enrichHomeSavedTeam(){
+  const st=savedTeam(); if(!st||!st.id||!$("homeSavedTeam")) return;
+  try{
+    const [entry, history]=await Promise.all([
+      get(`/entry/${st.id}/`),
+      get(`/entry/${st.id}/history/`).catch(()=>null)
+    ]);
+    const pts=entry.summary_overall_points||0;
+    const rank=entry.summary_overall_rank;
+    const past=(history&&history.past)||[];
+    const careerPts=past.reduce((sum,row)=>sum+(row.total_points||0),0);
+    const best=past.length?past.reduce((a,row)=>(row.total_points||0)>(a.total_points||0)?row:a):null;
+    const manager=[entry.player_first_name,entry.player_last_name].filter(Boolean).join(" ");
+    const currentLine=(pts||rank)?`<div class="home-current-season"><span>This season</span><b>${pts?short(pts):"—"} pts</b><b>${rank?short(rank):"—"} rank</b></div>`:"";
+    const careerGrid=past.length?`<div class="home-career-grid">
+        <div><span>Career pts</span><b>${short(careerPts)}</b></div>
+        <div><span>Best season</span><b>${best?short(best.total_points):"—"}</b><small>${best?esc(best.season_name):""}</small></div>
+        <div><span>Best rank</span><b>${best&&best.rank?short(best.rank):"—"}</b></div>
+        <div><span>Seasons</span><b>${past.length}</b></div>
+      </div>`:"";
+    $("homeSavedTeam").innerHTML=`
+      <div class="home-card-label">Your team</div>
+      <div class="home-card-value small">${esc(entry.name||st.name||`Team ${st.id}`)}</div>
+      ${manager?`<div class="home-manager-name">${esc(manager)}${entry.player_region_name?` · ${esc(entry.player_region_name)}`:""}</div>`:""}
+      ${currentLine}
+      ${careerGrid}
+      <div class="home-card-actions"><button class="home-card-action" id="homeSavedOpen">View team</button><button class="home-card-action secondary" id="homeSavedAnalyze">Analyze</button></div>`;
+    $("homeSavedOpen").onclick=()=>{ $("tid").value=st.id; switchTab("team"); view(st.id); };
+    $("homeSavedAnalyze").onclick=()=>{ switchTab("analyzer"); $("anTeamId").value=st.id; runTeamAnalyzer(st.id); };
+  }catch(_){ /* saved-team shell is still useful */ }
+}
+
+function renderHomeGameweek(b){
+  const el=$("homeGameweek"); if(!el) return;
+  const events=b.events||[];
+  const current=events.find(e=>e.is_current);
+  const next=events.find(e=>e.is_next);
+  const previous=[...events].reverse().find(e=>e.finished);
+  const total=b.total_players?short(b.total_players):"—";
+
+  // Before GW1 starts, avoid showing an empty-looking statistics card.
+  if(!current && next && !previous){
+    el.innerHTML=`
+      <div class="home-card-label">Gameweek status</div>
+      <div class="home-gw-status-row"><div class="home-card-value small">GW${next.id} is next</div><span class="home-gw-pill">Pre-season</span></div>
+      <div class="home-card-sub">The season hasn’t started yet.</div>
+      <div class="home-gw-note">Average score, highest score and live Gameweek stats will appear here after the first deadline.</div>
+      <div class="home-gw-meta">${total} managers registered</div>`;
+    return;
+  }
+
+  const ev=current||previous||next||events[0];
+  if(!ev){
+    el.innerHTML=`<div class="home-card-label">Gameweek status</div><div class="home-card-value small">Season setup</div><div class="home-card-sub">Gameweek data is not available yet.</div>`;
+    return;
+  }
+
+  const live=current && !current.finished;
+  const avg=Number(ev.average_entry_score||0);
+  const high=Number(ev.highest_score||0);
+  const status=live?"Live":ev.finished?"Finished":ev.is_next?"Up next":"Gameweek";
+  el.innerHTML=`
+    <div class="home-card-label">Gameweek status</div>
+    <div class="home-gw-status-row"><div class="home-card-value small">GW${ev.id}</div><span class="home-gw-pill${live?" live":""}">${status}</span></div>
+    <div class="home-gw-stats">
+      <div><span>Average</span><b>${avg?avg:"—"}</b></div>
+      <div><span>Highest</span><b>${high?high:"—"}</b></div>
+      <div><span>Managers</span><b>${total}</b></div>
+    </div>
+    ${!avg&&!high?`<div class="home-gw-note">Scores will populate once Gameweek data is available.</div>`:""}`;
+}
+
+function homeInsightCard(kind, title, e, t, value, sub){
+  if(!e) return `<div class="home-insight"><div class="home-insight-type">${esc(kind)}</div><div class="home-insight-name">No data yet</div><div class="home-insight-sub">Check back after the market starts moving.</div></div>`;
+  return `<div class="home-insight">
+    <div class="home-insight-type">${esc(kind)}</div>
+    <div class="home-insight-player">${teamKitImg(t,"home-kit",`${t.name||"Club"} kit`)}<div><div class="home-insight-name">${esc(e.web_name)}</div><div class="home-insight-meta">${esc(t.short_name||"")} · ${POS[e.element_type]} · ${money(e.now_cost)}</div></div></div>
+    <div class="home-insight-value">${esc(value)}</div>
+    <div class="home-insight-sub">${esc(sub)}</div>
+  </div>`;
+}
+
+function renderHomeInsights(b){
+  const el=$("homeInsights"); if(!el) return;
+  const teams=Object.fromEntries((b.teams||[]).map(t=>[t.id,t]));
+  const players=b.elements||[];
+  const available=players.filter(e=>e.status==="a");
+  const transferCandidate=[...available].sort((a,c)=>(c.transfers_in_event||0)-(a.transfers_in_event||0))[0];
+  const transfer=(transferCandidate && (transferCandidate.transfers_in_event||0)>0)?transferCandidate:null;
+  const popular=[...available].sort((a,c)=>parseFloat(c.selected_by_percent||0)-parseFloat(a.selected_by_percent||0))[0];
+  let riser=[...players].filter(e=>(e.cost_change_event||0)>0).sort((a,c)=>(c.cost_change_event||0)-(a.cost_change_event||0))[0];
+  let priceSub="Price rise this gameweek";
+  if(!riser){ riser=[...players].filter(e=>(e.cost_change_start||0)>0).sort((a,c)=>(c.cost_change_start||0)-(a.cost_change_start||0))[0]; priceSub="Up since season launch"; }
+  const transferVal=transfer?`+${short(transfer.transfers_in_event||0)}`:"—";
+  const popularVal=popular?`${popular.selected_by_percent}%`:"—";
+  const riseVal=riser?`+£${((riser.cost_change_event||riser.cost_change_start||0)/10).toFixed(1)}`:"—";
+  el.innerHTML=[
+    homeInsightCard("Transfer trend","Most bought",transfer,transfer&&teams[transfer.team],transferVal,transfer?"transfers in this GW":"Starts after GW transfer activity"),
+    homeInsightCard("Template watch","Most owned",popular,popular&&teams[popular.team],popularVal,"selected by managers"),
+    homeInsightCard("Price watch","Riser",riser,riser&&teams[riser.team],riseVal,priceSub)
+  ].join("");
+}
+
+function renderHomeBestFixtures(b, fixtures){
+  const el=$("homeFixtures"); if(!el) return;
+  const events=b.events||[];
+  const start=(events.find(e=>e.is_current)||events.find(e=>e.is_next)||events[0]||{}).id||1;
+  const map=buildFixtureMap(fixtures,start);
+  const rows=(b.teams||[]).map(t=>{
+    const fx=(map[t.id]||[]).slice(0,3);
+    const avg=fx.length?fx.reduce((a,f)=>a+(f.fdr||3),0)/fx.length:99;
+    return {t,fx,avg};
+  }).filter(x=>x.fx.length).sort((a,c)=>a.avg-c.avg).slice(0,4);
+  if(!rows.length){ el.innerHTML=`<div class="home-empty">Fixture data will appear here once the schedule is available.</div>`; return; }
+  el.innerHTML=rows.map(({t,fx,avg},i)=>`<div class="home-fixture-row">
+      <div class="home-fixture-rank">${i+1}</div>
+      ${teamKitImg(t,"home-fixture-kit")}
+      <div class="home-fixture-team"><b>${esc(t.name)}</b><small>${esc(t.short_name)}</small></div>
+      <div class="home-fixture-run">${fx.map(f=>{ const opp=(b.teams||[]).find(z=>z.id===f.opp)||{}; const code=f.home?(opp.short_name||""):(opp.short_name||"").toLowerCase(); return `<span class="fdr${f.fdr}" title="GW${f.gw} · ${esc(opp.name||"")}">${esc(code)}</span>`; }).join("")}</div>
+      <div class="home-fixture-avg"><b>${avg.toFixed(2)}</b><small>avg FDR</small></div>
+    </div>`).join("");
+}
