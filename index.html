@@ -118,6 +118,7 @@
     <div class="tab-label">Analysis</div>
     <button class="tab" data-tab="analyzer">Team Analyzer</button>
     <button class="tab" data-tab="compare">Manager Compare</button>
+    <button class="tab" data-tab="cards">Card Creator</button>
 
     <div class="tab-label">Live</div>
     <button class="tab" data-tab="live">Live Center</button>
@@ -192,6 +193,7 @@
         <button class="home-tool" data-home-tab="builder"><span class="home-tool-icon">05</span><span><b>Team Builder</b><small>Build and rate a &pound;100m squad</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="scout"><span class="home-tool-icon">06</span><span><b>Scout</b><small>Find players worth targeting</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="captains"><span class="home-tool-icon">07</span><span><b>Captain Picks</b><small>See who top managers trust</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="cards"><span class="home-tool-icon">08</span><span><b>Card Creator</b><small>Create Gameweek, Career and Rivalry cards to share</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
       </div>
     </div>
   </section>
@@ -199,8 +201,8 @@
   <!-- ============ TEAM TAB ============ -->
   <section class="tabpanel" id="tab-team">
   <div class="hero">
-    <h2>Scout any FPL team</h2>
-    <p>Enter a Team ID for a full breakdown — squad, season form, history and colour-coded fixtures.</p>
+    <h2>My FPL Team</h2>
+    <p>Enter your Team ID to view your squad, season history, leagues and upcoming fixtures.</p>
 
     <div class="search">
       <div class="field">
@@ -382,6 +384,37 @@
       <button class="primary-action" id="cmpRun">Compare managers</button>
     </div>
     <div id="compareBody" class="tool-output"><div class="tool-empty">Enter two Team IDs to compare managers.</div></div>
+  </section>
+
+  <!-- ============ CARD CREATOR TAB ============ -->
+  <section class="tabpanel" id="tab-cards">
+    <div class="thead">
+      <h2>Card Creator</h2>
+      <p>Turn public FPL manager statistics into clean, shareable cards. Choose a Gameweek report, Career history or head-to-head Rivalry.</p>
+    </div>
+    <div class="card-type-switch" id="ccTypes">
+      <button class="active" data-type="gameweek"><b>Gameweek</b><span>Score, rank, captain, transfers and bench points.</span></button>
+      <button data-type="career"><b>Career</b><span>Seasons, career points, best rank and best season.</span></button>
+      <button data-type="rivalry"><b>Rivalry</b><span>Compare two managers and their head-to-head record.</span></button>
+    </div>
+    <div class="card-creator-layout">
+      <div class="card-control-panel">
+        <div class="card-mode-head"><span>Selected card</span><h3 id="ccModeTitle">Gameweek card</h3><p id="ccModeSub">Latest score, rank movement, captaincy, transfers and bench points.</p></div>
+        <div class="card-field"><label id="ccPrimaryLabel" for="ccTeamA">FPL Team ID</label><input id="ccTeamA" type="number" inputmode="numeric" placeholder="e.g. 701419"></div>
+        <div class="card-field" id="ccRivalField" hidden><label for="ccTeamB">Manager B Team ID</label><input id="ccTeamB" type="number" inputmode="numeric" placeholder="Rival Team ID"></div>
+        <div class="card-field" id="ccGwField"><label for="ccGw">Gameweek</label><select id="ccGw"></select></div>
+        <button class="primary-action card-create-btn" id="ccCreate">Create card</button>
+        <div class="card-creator-status" id="ccStatus" aria-live="polite"></div>
+        <div class="card-privacy-note">Cards use public Fantasy Premier League manager data. Creating a card never signs in to or changes an FPL account.</div>
+      </div>
+      <div class="card-preview-panel">
+        <div class="card-preview-stage">
+          <div class="card-preview-empty" id="ccPreviewEmpty"><b>Your card will appear here</b><span>Enter the Team ID, choose a card type and create a share-ready image.</span></div>
+          <canvas id="ccCanvas" width="1080" height="1350" hidden></canvas>
+        </div>
+        <div class="card-export-actions" id="ccActions" hidden><button class="primary-action" id="ccDownload" disabled>Download PNG</button><button class="secondary-action" id="ccShare" disabled>Share image</button><button class="secondary-action" id="ccCopy" disabled>Copy image</button></div>
+      </div>
+    </div>
   </section>
 
   <!-- ============ CAPTAIN PICKS TAB ============ -->
@@ -835,15 +868,16 @@
   <button class="mobile-nav-item" data-mobile-tab="team">Team</button>
   <button class="mobile-nav-item" data-mobile-tab="scout">Scout</button>
   <button class="mobile-nav-item" data-mobile-tab="builder">Builder</button>
-  <button class="mobile-nav-item" id="mobileMore" aria-expanded="false">More</button>
+  <button class="mobile-nav-item mobile-menu-item" id="mobileMore" aria-expanded="false" aria-controls="mobileMoreSheet">More</button>
 </nav>
 <div class="mobile-more-sheet" id="mobileMoreSheet" aria-hidden="true">
-  <div class="mobile-more-head"><b>More tools</b><button id="mobileMoreClose" aria-label="Close more tools">Close</button></div>
+  <div class="mobile-more-head"><div><b>More from FPL Peek</b><span>Tools, gameweek pages and account options</span></div><button id="mobileMoreClose" aria-label="Close more options">Done</button></div>
   <div class="mobile-more-grid">
     <button data-mobile-tab="planner">Planner</button>
     <button data-mobile-tab="analyzer">Team Analyzer</button>
     <button data-mobile-tab="transfer">Transfer Analyzer</button>
     <button data-mobile-tab="compare">Manager Compare</button>
+    <button data-mobile-tab="cards">Card Creator</button>
     <button data-mobile-tab="captains">Captain Picks</button>
     <button data-mobile-tab="fixtures">Fixtures &amp; Results</button>
     <button data-mobile-tab="players">Players</button>
@@ -937,6 +971,7 @@
 <script defer src="/js/analyzer.js"></script>
 <script defer src="/js/transfer-analyzer.js"></script>
 <script defer src="/js/compare.js"></script>
+<script defer src="/js/card-creator.js"></script>
 <script defer src="/js/preseason.js"></script>
 <script defer src="/js/builder.js"></script>
 <script defer src="/js/planner.js"></script>

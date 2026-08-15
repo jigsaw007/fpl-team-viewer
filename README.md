@@ -157,3 +157,7 @@ Before opening email sign-in to the public, configure custom SMTP in Supabase Au
 - FDR planner retained as a dedicated view.
 - Premier League standings calculated from completed FPL fixture results.
 - Mobile table safeguards, compact standings columns, and a smaller player-history table in the player modal.
+
+
+## Card Creator
+FPL Peek includes shareable Gameweek, Career and Rivalry manager cards. Cards are rendered locally in the browser as PNG images using public FPL manager data.
