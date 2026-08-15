@@ -149,3 +149,11 @@ window.FPLPeekConfig = {
 **Never** put a Supabase `service_role` or secret key in frontend code. FPL Peek only needs the browser-safe publishable key.
 
 Before opening email sign-in to the public, configure custom SMTP in Supabase Auth and use the branded templates in `supabase/email-templates/`. A suitable sender identity is `FPL Peek <account@fplpeek.com>`.
+
+## V10 interface update
+
+- Clearer desktop sidebar section hierarchy and active-section highlighting.
+- Fixtures & Results match centre with Gameweek navigation, scheduled fixtures and completed scores.
+- FDR planner retained as a dedicated view.
+- Premier League standings calculated from completed FPL fixture results.
+- Mobile table safeguards, compact standings columns, and a smaller player-history table in the player modal.

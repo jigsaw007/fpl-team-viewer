@@ -30,13 +30,13 @@ async function openPlayer(pid){
     // recent gameweek history
     const hist=(sum.history||[]).slice(-8).reverse();
     const histTbl=hist.length?`<div class="lg-cat" style="margin-top:18px">Recent gameweeks</div>
-      <table class="dt"><thead><tr><th class="left">GW</th><th>Pts</th><th>Min</th><th>xGI</th><th>ICT</th><th class="left">Opp</th></tr></thead>
+      <div class="compact-table-scroll"><table class="dt compact-dt"><thead><tr><th class="left">GW</th><th>Pts</th><th>Min</th><th>xGI</th><th>ICT</th><th class="left">Opp</th></tr></thead>
       <tbody>${hist.map(h=>{
         const opp=b.teams.find(z=>z.id===h.opponent_team)||{};
         return `<tr><td class="left">GW${h.round}</td><td>${h.total_points}</td><td>${h.minutes}</td>
           <td>${num(h.expected_goal_involvements)}</td><td>${num(h.ict_index)}</td>
           <td class="left">${esc(opp.short_name||"")} ${h.was_home?"(H)":"(A)"}</td></tr>`;
-      }).join("")}</tbody></table>`:"";
+      }).join("")}</tbody></table></div>`:"";
     // upcoming fixtures
     const fix=(sum.fixtures||[]).slice(0,5);
     const fixTbl=fix.length?`<div class="lg-cat" style="margin-top:18px">Next fixtures</div>

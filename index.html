@@ -89,6 +89,7 @@
       <div class="mark">P</div>
       <div>
         <h1>FPL Peek</h1>
+        <span class="brand-sub">Fantasy workspace</span>
       </div>
     </div>
   </div>
@@ -104,7 +105,7 @@
     <button class="tab" data-tab="planner">Planner</button>
     <button class="tab" data-tab="scout">Scout</button>
     <button class="tab" data-tab="transfer">Transfer Analyzer</button>
-    <button class="tab" data-tab="fixtures">Fixtures</button>
+    <button class="tab" data-tab="fixtures">Fixtures &amp; Results</button>
     <button class="tab" data-tab="players">Players</button>
     <button class="tab" data-tab="preseason">Pre-season</button>
 
@@ -658,24 +659,66 @@
 
   <!-- ============ FIXTURES TAB ============ -->
   <section class="tabpanel" id="tab-fixtures">
-    <div class="thead">
-      <h2>Fixture difficulty</h2>
-      <p>Every club's upcoming schedule, shaded by difficulty. Darker green = easier, red = tougher.</p>
-    </div>
-    <div class="ctl">
-      <label class="ctl-lbl">Gameweeks</label>
-      <div class="seg" id="fxRange">
-        <button data-n="5" class="active">Next 5</button>
-        <button data-n="8">Next 8</button>
-        <button data-n="10">Next 10</button>
+    <div class="thead fixtures-head">
+      <div>
+        <span class="section-kicker">Match centre</span>
+        <h2>Fixtures &amp; results</h2>
+        <p>Browse every gameweek, check completed scores, compare fixture difficulty and follow the league table.</p>
       </div>
-      <label class="ctl-lbl" style="margin-left:auto">Sort</label>
-      <div class="seg" id="fxSort">
-        <button data-s="team" class="active">A–Z</button>
-        <button data-s="easy">Easiest run</button>
+      <div class="seg fixtures-view-tabs" id="fxView" aria-label="Fixtures views">
+        <button data-v="matches" class="active">Matches</button>
+        <button data-v="fdr">FDR planner</button>
+        <button data-v="table">Table</button>
       </div>
     </div>
-    <div id="fxGrid" class="fx-scroll"></div>
+
+    <div class="fx-view" id="fxMatchesPanel">
+      <div class="fx-match-toolbar">
+        <button class="fx-nav-btn" id="fxPrev" aria-label="Previous gameweek">&larr;</button>
+        <div class="fx-gw-heading">
+          <span>Gameweek</span>
+          <select id="fxGwSelect" aria-label="Choose gameweek"></select>
+          <small id="fxGwStatus"></small>
+        </div>
+        <button class="fx-nav-btn" id="fxNext" aria-label="Next gameweek">&rarr;</button>
+        <div class="seg fx-match-filter" id="fxMatchFilter" aria-label="Match status filter">
+          <button data-f="all" class="active">All</button>
+          <button data-f="fixtures">Fixtures</button>
+          <button data-f="results">Results</button>
+        </div>
+      </div>
+      <div id="fxMatches" class="fx-match-list"></div>
+    </div>
+
+    <div class="fx-view" id="fxFdrPanel" hidden>
+      <div class="ctl fixtures-fdr-controls">
+        <label class="ctl-lbl">Gameweeks</label>
+        <div class="seg" id="fxRange">
+          <button data-n="5" class="active">Next 5</button>
+          <button data-n="8">Next 8</button>
+          <button data-n="10">Next 10</button>
+        </div>
+        <label class="ctl-lbl fixtures-sort-label">Sort</label>
+        <div class="seg" id="fxSort">
+          <button data-s="team" class="active">A–Z</button>
+          <button data-s="easy">Easiest run</button>
+        </div>
+      </div>
+      <div id="fxGrid" class="fx-scroll"></div>
+    </div>
+
+    <div class="fx-view" id="fxTablePanel" hidden>
+      <div class="fx-table-head">
+        <div>
+          <span class="section-kicker">Premier League</span>
+          <h3>Standings</h3>
+        </div>
+        <small id="fxTableMeta">Calculated from completed fixtures.</small>
+      </div>
+      <div class="fx-table-scroll">
+        <table class="fx-table" id="fxTable" aria-label="Premier League standings"></table>
+      </div>
+    </div>
   </section>
 
   <!-- ============ PLAYERS TAB ============ -->
@@ -776,8 +819,14 @@
     <div id="liveBody"></div>
   </section>
 
-  <footer>
-    Data provided via the official Fantasy Premier League API. FPL Peek operates independently and is not affiliated with or endorsed by the Premier League.
+  <footer class="site-footer">
+    <nav class="site-footer-links" aria-label="Footer">
+      <a href="/about.html">About</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="mailto:account@fplpeek.com">Contact</a>
+    </nav>
+    <div class="site-footer-note">Data provided via the official Fantasy Premier League API. FPL Peek operates independently and is not affiliated with or endorsed by the Premier League.</div>
   </footer>
 </div>
 
@@ -796,7 +845,7 @@
     <button data-mobile-tab="transfer">Transfer Analyzer</button>
     <button data-mobile-tab="compare">Manager Compare</button>
     <button data-mobile-tab="captains">Captain Picks</button>
-    <button data-mobile-tab="fixtures">Fixtures</button>
+    <button data-mobile-tab="fixtures">Fixtures &amp; Results</button>
     <button data-mobile-tab="players">Players</button>
     <button data-mobile-tab="injuries">Injuries</button>
     <button data-mobile-tab="setpieces">Set Pieces</button>

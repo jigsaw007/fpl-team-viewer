@@ -1,7 +1,16 @@
 /* ============ tab system ============ */
 const _tabLoaded={};
+function markActiveSidebarGroup(name){
+  document.querySelectorAll(".tab-label").forEach(l=>l.classList.remove("active-group"));
+  const active=document.querySelector(`.tab[data-tab="${name}"]`);
+  if(!active) return;
+  let node=active.previousElementSibling;
+  while(node && !node.classList.contains("tab-label")) node=node.previousElementSibling;
+  if(node) node.classList.add("active-group");
+}
 function switchTab(name){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
+  markActiveSidebarGroup(name);
   document.querySelectorAll(".tabpanel").forEach(p=>p.classList.toggle("active",p.id==="tab-"+name));
   document.querySelectorAll("[data-mobile-tab]").forEach(t=>t.classList.toggle("active",t.dataset.mobileTab===name));
   const primaryMobile=["home","team","scout","builder"];
@@ -43,3 +52,5 @@ if($("mobileMore")) $("mobileMore").addEventListener("click",()=>{
   sheet.classList.toggle("open",open);sheet.setAttribute("aria-hidden",open?"false":"true");$("mobileMore").setAttribute("aria-expanded",open?"true":"false");
 });
 if($("mobileMoreClose")) $("mobileMoreClose").addEventListener("click",closeMobileMore);
+
+markActiveSidebarGroup("home");
