@@ -113,26 +113,27 @@
 
     <div class="tab-label">Planning</div>
     <button class="tab" data-tab="insights">Insights</button>
-    <button class="tab" data-tab="builder">Team Builder</button>
-    <button class="tab" data-tab="planner">Planner</button>
+    <button class="tab hot-tab" data-tab="builder">Team Builder <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
+    <button class="tab hot-tab" data-tab="planner">Planner <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="scout">Scout</button>
-    <button class="tab" data-tab="transfer">Player Compare</button>
+    <button class="tab hot-tab" data-tab="transfer">Player Compare <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="fixtures">Fixtures &amp; Results</button>
     <button class="tab" data-tab="players">Players</button>
     <button class="tab" data-tab="preseason">Pre-season</button>
 
     <div class="tab-label">Gameweek</div>
-    <button class="tab" data-tab="captains">Captain Picks</button>
+    <button class="tab hot-tab" data-tab="captains">Captain Picks <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="injuries">Injuries</button>
     <button class="tab" data-tab="setpieces">Set Pieces</button>
     <button class="tab" data-tab="prices">Price Watch</button>
 
     <div class="tab-label">Analysis</div>
-    <button class="tab" data-tab="analyzer">Team Rating</button>
+    <button class="tab hot-tab" data-tab="analyzer">Team Rating <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="compare">Manager Compare</button>
     <button class="tab" data-tab="cards">Card Creator</button>
 
     <div class="tab-label">Live</div>
+    <button class="tab" data-tab="peekteam">FPL Peek Team</button>
     <button class="tab" data-tab="live">Live Center</button>
 
     <div class="sidebar-account" id="accountPanel" style="display:none">
@@ -217,8 +218,9 @@
         <button class="home-tool" data-home-tab="compare"><span class="home-tool-icon">04</span><span><b>Manager Compare</b><small>Compare two FPL managers and their squads</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="builder"><span class="home-tool-icon">05</span><span><b>Team Builder</b><small>Build and rate a &pound;100m squad</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="scout"><span class="home-tool-icon">06</span><span><b>Scout</b><small>Find players worth targeting</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="captains"><span class="home-tool-icon">07</span><span><b>Captain Picks</b><small>See who top managers trust</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="cards"><span class="home-tool-icon">08</span><span><b>Card Creator</b><small>Create Gameweek, Career and Rivalry cards to share</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="peekteam"><span class="home-tool-icon">07</span><span><b>FPL Peek Team</b><small>See our Gameweek squad, captain and running record</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="captains"><span class="home-tool-icon">08</span><span><b>Captain Picks</b><small>See who top managers trust</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="cards"><span class="home-tool-icon">09</span><span><b>Card Creator</b><small>Create Gameweek, Career and Rivalry cards to share</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
       </div>
     </div>
   </section>
@@ -474,6 +476,39 @@
         <div class="card-export-actions" id="ccActions" hidden><button class="primary-action" id="ccDownload" disabled>Download PNG</button><button class="secondary-action" id="ccShare" disabled>Share image</button><button class="secondary-action" id="ccCopy" disabled>Copy image</button></div>
       </div>
     </div>
+  </section>
+
+  <!-- ============ FPL PEEK TEAM TAB ============ -->
+  <section class="tabpanel" id="tab-peekteam">
+    <div class="thead peek-team-head">
+      <div>
+        <div class="home-eyebrow">FPL Peek challenge</div>
+        <h2 id="peekTeamTitle">FPL Peek Team</h2>
+        <p>Our own 15-player Fantasy Premier League squad for one Gameweek at a time. It can change completely from one round to the next.</p>
+      </div>
+      <button class="secondary-action peek-current-btn" id="peekCurrentBtn" type="button">Current Gameweek</button>
+    </div>
+    <div class="peek-team-status" id="peekTeamStatus"><b>Building the squad…</b></div>
+    <div class="peek-team-body" id="peekTeamBody">
+      <div class="peek-team-summary">
+        <div class="peek-team-meta" id="peekTeamMeta"></div>
+        <div class="peek-team-rule">15 players · £100.0m max · max 3 per club · official FPL formations</div>
+      </div>
+      <div class="peek-pitch" id="peekTeamPitch"></div>
+      <div class="peek-bench-wrap"><div class="peek-bench-title"><span>Bench</span><small>Order matters for valid FPL autosubs</small></div><div class="peek-bench" id="peekBench"></div></div>
+    </div>
+    <div class="tool-guide peek-method" aria-label="How FPL Peek Team works">
+      <div class="tool-guide-title"><span>How it works</span><h3>A fresh squad for each Gameweek</h3><p id="peekMethodBody">FPL Peek uses public FPL data to build a squad for the selected round.</p></div>
+      <div class="tool-guide-grid">
+        <article><b>Strict FPL rules</b><p>Exactly 2 goalkeepers, 5 defenders, 5 midfielders and 3 forwards, within £100.0m and no more than 3 players from one club.</p></article>
+        <article><b>Starting XI + bench</b><p>The strongest valid formation becomes the XI. The four remaining players form an ordered bench, including a reserve goalkeeper.</p></article>
+        <article><b>Captain &amp; vice</b><p>The captain is selected from the starting XI. If the captain does not play, the vice-captain takes the double-points role.</p></article>
+        <article><b>Gameweek score</b><p>After the round, the page applies official player points, captaincy and valid autosubs to show how FPL Peek performed.</p></article>
+      </div>
+    </div>
+    <div class="peek-archive-head"><div><span>FPL Peek record</span><h3 id="peekArchiveTitle">Gameweek record</h3><p>Open any completed round to see that Gameweek's squad, captain and score.</p></div></div>
+    <div class="peek-archive" id="peekArchive"><div class="peek-empty">Scores will appear after completed Gameweeks.</div></div>
+    <p class="peek-disclaimer">For entertainment and comparison only. FPL Peek Team is generated from public Fantasy Premier League data and is not an official FPL entry.</p>
   </section>
 
   <!-- ============ CAPTAIN PICKS TAB ============ -->
@@ -942,18 +977,19 @@
   <div class="mobile-more-head"><div><b>More from FPL Peek</b><span>Tools, gameweek pages and account options</span></div><button id="mobileMoreClose" aria-label="Close more options">Done</button></div>
   <div class="mobile-more-grid">
     <button data-mobile-tab="insights">Insights</button>
-    <button data-mobile-tab="planner">Planner</button>
-    <button data-mobile-tab="analyzer">Team Rating</button>
-    <button data-mobile-tab="transfer">Player Compare</button>
+    <button class="hot-mobile" data-mobile-tab="planner">Planner <span class="tab-hot" aria-hidden="true">🔥</span></button>
+    <button class="hot-mobile" data-mobile-tab="analyzer">Team Rating <span class="tab-hot" aria-hidden="true">🔥</span></button>
+    <button class="hot-mobile" data-mobile-tab="transfer">Player Compare <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button data-mobile-tab="compare">Manager Compare</button>
     <button data-mobile-tab="cards">Card Creator</button>
-    <button data-mobile-tab="captains">Captain Picks</button>
+        <button class="hot-mobile" data-mobile-tab="captains">Captain Picks <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button data-mobile-tab="fixtures">Fixtures &amp; Results</button>
     <button data-mobile-tab="players">Players</button>
     <button data-mobile-tab="injuries">Injuries</button>
     <button data-mobile-tab="setpieces">Set Pieces</button>
     <button data-mobile-tab="prices">Price Watch</button>
     <button data-mobile-tab="preseason">Pre-season</button>
+    <button data-mobile-tab="peekteam">FPL Peek Team</button>
     <button data-mobile-tab="live">Live Center</button>
     <button id="mobileAccountBtn" class="mobile-account-btn" style="display:none">Account & sync</button>
   </div>
@@ -1036,6 +1072,7 @@
 <script defer src="/js/tabs.js"></script>
 <script defer src="/js/home.js"></script>
 <script defer src="/js/scout.js"></script>
+<script defer src="/js/peek-team.js"></script>
 <script defer src="/js/captains.js"></script>
 <script defer src="/js/analyzer.js"></script>
 <script defer src="/js/transfer-analyzer.js"></script>

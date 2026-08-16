@@ -210,3 +210,6 @@ Added Team Rating, Rotation Planner, Captaincy Matrix, optional 3-player compari
 
 ## V24 dark-mode completeness pass
 Dark mode now covers nested comparison cards, manager comparison tables, Planner toolbar/player rows, Home career stat tiles, Insights lead stories, standalone Insights pages, and Team Builder player labels while preserving the green football pitch and exported share-card artwork.
+
+## V27 - FPL Peek Team
+Adds a public-data-only FPL Peek Team challenge. The page builds one valid 15-player squad for the active/upcoming Gameweek, selects a legal starting XI plus ordered bench, captain and vice-captain, and shows live/final points with valid autosubs. Completed Gameweeks are available in the on-page record and are reconstructed from earlier-round public FPL data where possible. No real FPL account is used or changed.
