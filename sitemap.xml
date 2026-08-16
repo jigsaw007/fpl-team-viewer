@@ -4,4 +4,9 @@
   <url><loc>https://fplpeek.com/about.html</loc><lastmod>2026-08-15</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://fplpeek.com/privacy.html</loc><lastmod>2026-08-15</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://fplpeek.com/terms.html</loc><lastmod>2026-08-15</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url>
+    <loc>https://fplpeek.com/insights/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

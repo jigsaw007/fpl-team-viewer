@@ -96,6 +96,6 @@
       client.auth.onAuthStateChange((_event,newSession)=>{session=newSession;renderPanel();renderModal();if(session?.user)setTimeout(()=>syncAll().catch(console.warn),0)});
     }catch(e){console.warn("FPL Peek cloud sync disabled:",e.message);renderPanel()}
   }
-  window.FPLPeekCloud={isConfigured:configured,isSignedIn:()=>!!session?.user,open:openModal,syncAll,savePlan,deletePlan};
+  window.FPLPeekCloud={isConfigured:configured,isSignedIn:()=>!!session?.user,getSession:()=>session,getClient:()=>client,open:openModal,syncAll,savePlan,deletePlan};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();

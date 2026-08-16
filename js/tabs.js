@@ -22,6 +22,7 @@ function switchTab(name){
 async function lazyLoadTab(name){
   try{
     if(name==="home") await initHome();
+    else if(name==="insights") await initInsights();
     else if(name==="scout") await initScout();
     else if(name==="captains") await initCaptains();
     else if(name==="analyzer") await initAnalyzer();

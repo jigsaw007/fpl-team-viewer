@@ -161,3 +161,31 @@ Before opening email sign-in to the public, configure custom SMTP in Supabase Au
 
 ## Card Creator
 FPL Peek includes shareable Gameweek, Career and Rivalry manager cards. Cards are rendered locally in the browser as PNG images using public FPL manager data.
+
+## V18.1 Live Insights
+
+FPL Peek now includes a lightweight, zero-maintenance **Insights** briefing powered directly by the public Fantasy Premier League data feed.
+
+- no OpenAI API key
+- no scheduled functions
+- no editorial database
+- no manual publishing
+- no repeated article template
+- past completed Gameweeks available at `/insights/gw/<number>/`
+
+`/insights/` is server-rendered by `netlify/functions/insights.js` for a crawlable public page. The in-app Insights tab reads the same structured briefing from `netlify/functions/insights-data.js`. Both use `netlify/lib/live-insights.js` to choose useful sections from current Gameweek points, ownership, transfers, form, availability and official fixture difficulty.
+
+The briefing changes with the state of the season. After a completed Gameweek it can highlight top returns and popular blanks; before the next deadline it can surface players on the radar, differentials, captain watch, fixture runs and transfer movement. Sections with no useful signal are omitted.
+
+The short editorial-style notes use transparent rules and never claim to have watched matches or to know statistics that are not present in the public FPL feed. Past Gameweek archive pages are rebuilt on demand from final FPL event data, so no separate article database is needed. Historical transfer and ownership snapshots are intentionally omitted because the public feed does not preserve every past market value.
+
+## V18.2 Insights presentation
+- Longer editorial-style lead copy for previews, live rounds, completed reviews and archived Gameweeks.
+- Club kits appear beside club/player rows using the existing lightweight official FPL shirt assets.
+- A single featured player headshot is used in the main Insights story when available; it is lazy-loaded through the existing cached same-origin player-photo function to avoid loading a wall of portraits.
+- Home and public Insights layouts now use a more distinctive editorial treatment with a featured story, numbered story cards, accent rails and a clearer Gameweek archive.
+
+
+## V18.4
+- Removed the explanatory Current / Selective / Transparent cards from the in-app Insights page.
+- Mixed-topic preview leads intentionally use a neutral Gameweek visual. Player portraits remain reserved for player-led stories, while club-led stories use club visuals.

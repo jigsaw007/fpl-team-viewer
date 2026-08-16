@@ -99,6 +99,7 @@
     <div class="tab-label">Overview</div>
     <button class="tab active" data-tab="home">Home</button>
     <button class="tab" data-tab="team">My Team</button>
+    <button class="tab" data-tab="insights">Insights</button>
 
     <div class="tab-label">Planning</div>
     <button class="tab" data-tab="builder">Team Builder</button>
@@ -168,6 +169,19 @@
     <div class="home-section">
       <div class="home-section-head">
         <div>
+          <div class="home-section-kicker">FPL Peek journal</div>
+          <h3>Latest Insights</h3>
+        </div>
+        <button class="home-link-btn" data-home-tab="insights">Open Insights →</button>
+      </div>
+      <div class="home-editorial" id="homeEditorialInsights">
+        <div class="home-skeleton wide"></div>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <div class="home-section-head">
+        <div>
           <div class="home-section-kicker">Fixture radar</div>
           <h3>Best fixtures ahead</h3>
         </div>
@@ -196,6 +210,26 @@
         <button class="home-tool" data-home-tab="cards"><span class="home-tool-icon">08</span><span><b>Card Creator</b><small>Create Gameweek, Career and Rivalry cards to share</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
       </div>
     </div>
+  </section>
+
+  <!-- ============ INSIGHTS TAB ============ -->
+  <section class="tabpanel" id="tab-insights">
+    <div class="insights-hero">
+      <div>
+        <div class="home-eyebrow">FPL Peek Insights</div>
+        <h2>What the Gameweek data is saying right now.</h2>
+        <p>A live briefing built from public FPL data, focused on the stories and signals that matter around each Gameweek.</p>
+      </div>
+      <div class="insights-hero-actions">
+        <button class="insights-public-link" id="insightsRefresh" type="button">Refresh data</button>
+        <a class="insights-public-link" href="/insights/">Open public page ↗</a>
+      </div>
+    </div>
+    <div class="insights-live-lead" id="insightsLead"><span>Live insights</span><h3>Reading the latest FPL data…</h3></div>
+    <div class="insights-section-head"><div><span>Gameweek notebook</span><h3>Review, preview &amp; watchlist</h3><p id="insightsUpdated"></p></div></div>
+    <div class="insights-grid" id="insightsList"></div>
+    <div class="insights-section-head insights-archive-head"><div><span>Archive</span><h3>Past Gameweeks</h3><p>Revisit final Gameweek summaries from earlier rounds.</p></div></div>
+    <div class="insights-archive" id="insightsArchive"></div>
   </section>
 
   <!-- ============ TEAM TAB ============ -->
@@ -873,6 +907,7 @@
 <div class="mobile-more-sheet" id="mobileMoreSheet" aria-hidden="true">
   <div class="mobile-more-head"><div><b>More from FPL Peek</b><span>Tools, gameweek pages and account options</span></div><button id="mobileMoreClose" aria-label="Close more options">Done</button></div>
   <div class="mobile-more-grid">
+    <button data-mobile-tab="insights">Insights</button>
     <button data-mobile-tab="planner">Planner</button>
     <button data-mobile-tab="analyzer">Team Analyzer</button>
     <button data-mobile-tab="transfer">Transfer Analyzer</button>
@@ -981,6 +1016,7 @@
 <script defer src="/js/setpieces.js"></script>
 <script defer src="/js/prices.js"></script>
 <script defer src="/js/live.js"></script>
+<script defer src="/js/insights.js"></script>
 <script defer src="/js/supabase-config.js"></script>
 <script defer src="/js/account.js"></script>
 <script defer src="/js/app.js"></script>

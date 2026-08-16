@@ -1,3 +1,15 @@
+[[redirects]]
+  from = "/insights/*"
+  to = "/.netlify/functions/insights/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/insights"
+  to = "/.netlify/functions/insights"
+  status = 200
+  force = true
+
 [build]
   publish = "."
   functions = "netlify/functions"

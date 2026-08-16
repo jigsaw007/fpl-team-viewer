@@ -1,16 +1,16 @@
 /* ============ PLAYERS tab ============ */
-let _plSort="total_points", _plDir=-1, _plPos=0, _plQuery="", _plLimit=40, _plWatchOnly=false;
+let _pxSort="total_points", _pxDir=-1, _pxPos=0, _pxQuery="", _pxLimit=40, _pxWatchOnly=false;
 async function initPlayers(){
   await loadBoot();
-  $("plSearch").addEventListener("input",e=>{_plQuery=e.target.value.toLowerCase();_plLimit=40;drawPlayers();});
+  $("plSearch").addEventListener("input",e=>{_pxQuery=e.target.value.toLowerCase();_pxLimit=40;drawPlayers();});
   $("plPos").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;
     $("plPos").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");
-    _plPos=+x.dataset.p;_plLimit=40;drawPlayers();});
+    _pxPos=+x.dataset.p;_pxLimit=40;drawPlayers();});
   $("plWatchOnly").addEventListener("click",()=>{
-    _plWatchOnly=!_plWatchOnly; _plLimit=40;
-    $("plWatchOnly").classList.toggle("on",_plWatchOnly); drawPlayers();
+    _pxWatchOnly=!_pxWatchOnly; _pxLimit=40;
+    $("plWatchOnly").classList.toggle("on",_pxWatchOnly); drawPlayers();
   });
-  $("plMore").addEventListener("click",()=>{_plLimit+=40;drawPlayers();});
+  $("plMore").addEventListener("click",()=>{_pxLimit+=40;drawPlayers();});
   // columns panel
   $("plColsBtn").addEventListener("click",()=>{
     const p=$("plColsPanel"); const open=p.style.display!=="none";
@@ -26,20 +26,20 @@ async function initPlayers(){
   drawPlayers();
 }
 function renderColsPanel(){
-  const vis=_plCols||plVisible();
+  const vis=_pxCols||plVisible();
   $("plColsPanel").innerHTML=`<div class="plcols-hd">Show columns</div>
     <div class="plcols-grid">${PL_COLS.filter(c=>c.k!=="status").map(c=>`
       <label class="plcol-chk"><input type="checkbox" data-col="${c.k}" ${vis.has(c.k)?"checked":""}> ${esc(c.label)}</label>
     `).join("")}</div>
     <div class="plcols-actions"><button class="bld-reset" id="plColsReset">Reset to default</button></div>`;
   $("plColsPanel").querySelectorAll("input[data-col]").forEach(cb=>cb.addEventListener("change",()=>{
-    const set=_plCols||plVisible();
+    const set=_pxCols||plVisible();
     if(cb.checked) set.add(cb.dataset.col); else set.delete(cb.dataset.col);
-    _plCols=set; plSaveVisible(set); drawPlayers();
+    _pxCols=set; plSaveVisible(set); drawPlayers();
   }));
   $("plColsReset").addEventListener("click",()=>{
-    _plCols=new Set(PL_COLS.filter(c=>c.def).map(c=>c.k));
-    plSaveVisible(_plCols); renderColsPanel(); drawPlayers();
+    _pxCols=new Set(PL_COLS.filter(c=>c.def).map(c=>c.k));
+    plSaveVisible(_pxCols); renderColsPanel(); drawPlayers();
   });
 }
 const PL_COLS=[
@@ -86,30 +86,30 @@ function plVisible(){
   return new Set(PL_COLS.filter(c=>c.def).map(c=>c.k));
 }
 function plSaveVisible(set){ try{localStorage.setItem("fpl_plcols",JSON.stringify([...set]))}catch{} }
-let _plCols=null;
+let _pxCols=null;
 function drawPlayers(){
   const b=boot;
   let list=b.elements.filter(e=>e.element_type>0);
-  if(_plWatchOnly){ const w=watchlist(); list=list.filter(e=>w.includes(e.id)); }
-  if(_plPos) list=list.filter(e=>e.element_type===_plPos);
-  if(_plQuery) list=list.filter(e=>e.web_name.toLowerCase().includes(_plQuery));
-  if(_plWatchOnly && !list.length){ $("plTable").innerHTML=`<tbody><tr><td style="padding:30px;text-align:center;color:var(--dim)">No players in your watchlist yet. Tap ☆ on any player to add them.</td></tr></tbody>`; $("plMore").style.display="none"; return; }
+  if(_pxWatchOnly){ const w=watchlist(); list=list.filter(e=>w.includes(e.id)); }
+  if(_pxPos) list=list.filter(e=>e.element_type===_pxPos);
+  if(_pxQuery) list=list.filter(e=>e.web_name.toLowerCase().includes(_pxQuery));
+  if(_pxWatchOnly && !list.length){ $("plTable").innerHTML=`<tbody><tr><td style="padding:30px;text-align:center;color:var(--dim)">No players in your watchlist yet. Tap ☆ on any player to add them.</td></tr></tbody>`; $("plMore").style.display="none"; return; }
   const num=v=>typeof v==="string"?parseFloat(v)||0:(v||0);
   list.sort((a,c)=>{
-    if(_plSort==="web_name") return _plDir*String(a.web_name).localeCompare(String(c.web_name));
-    if(_plSort==="team"){const tx=b.teams.find(t=>t.id===a.team)?.short_name||"";const ty=b.teams.find(t=>t.id===c.team)?.short_name||"";return _plDir*tx.localeCompare(ty);}
-    return _plDir*(num(a[_plSort])-num(c[_plSort]));
+    if(_pxSort==="web_name") return _pxDir*String(a.web_name).localeCompare(String(c.web_name));
+    if(_pxSort==="team"){const tx=b.teams.find(t=>t.id===a.team)?.short_name||"";const ty=b.teams.find(t=>t.id===c.team)?.short_name||"";return _pxDir*tx.localeCompare(ty);}
+    return _pxDir*(num(a[_pxSort])-num(c[_pxSort]));
   });
   const total=list.length;
-  list=list.slice(0,_plLimit);
-  if(!_plCols) _plCols=plVisible();
-  const cols=PL_COLS.filter(c=>_plCols.has(c.k));
-  const sortMark=k=>_plSort===k?`<span class="ar">${_plDir<0?'▼':'▲'}</span>`:"";
+  list=list.slice(0,_pxLimit);
+  if(!_pxCols) _pxCols=plVisible();
+  const cols=PL_COLS.filter(c=>_pxCols.has(c.k));
+  const sortMark=k=>_pxSort===k?`<span class="ar">${_pxDir<0?'▼':'▲'}</span>`:"";
   const head=`<thead><tr>
     <th class="star-col"></th>
-    <th class="left ${_plSort==='web_name'?'sorted':''}" data-k="web_name">Player${sortMark("web_name")}</th>
-    <th class="left ${_plSort==='team'?'sorted':''}" data-k="team">Team${sortMark("team")}</th>
-    ${cols.map(c=>`<th class="${c.left?'left':''} ${_plSort===c.k?'sorted':''}" data-k="${c.k}" title="${esc(c.label)}">${c.label}${sortMark(c.k)}</th>`).join("")}
+    <th class="left ${_pxSort==='web_name'?'sorted':''}" data-k="web_name">Player${sortMark("web_name")}</th>
+    <th class="left ${_pxSort==='team'?'sorted':''}" data-k="team">Team${sortMark("team")}</th>
+    ${cols.map(c=>`<th class="${c.left?'left':''} ${_pxSort===c.k?'sorted':''}" data-k="${c.k}" title="${esc(c.label)}">${c.label}${sortMark(c.k)}</th>`).join("")}
   </tr></thead>`;
   const body=`<tbody>${list.map(e=>{
     const t=b.teams.find(z=>z.id===e.team)||{};
@@ -126,7 +126,7 @@ function drawPlayers(){
   $("plTable").innerHTML=head+body;
   $("plTable").querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{
     const k=th.dataset.k;
-    if(_plSort===k) _plDir*=-1; else {_plSort=k; _plDir=(k==="web_name"||k==="team")?1:-1;}
+    if(_pxSort===k) _pxDir*=-1; else {_pxSort=k; _pxDir=(k==="web_name"||k==="team")?1:-1;}
     drawPlayers();
   });
   $("plTable").querySelectorAll(".star").forEach(btn=>btn.addEventListener("click",ev=>{

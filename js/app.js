@@ -12,7 +12,10 @@ _tabLoaded.home=true;
 initHome();
 // The deadline is a global workspace element in the desktop sidebar.
 loadBoot().then(startCountdown).catch(()=>{});
-const q=new URLSearchParams(location.search).get("id");
+const params=new URLSearchParams(location.search);
+const tool=params.get("tool");
+if(tool && document.getElementById("tab-"+tool)){ switchTab(tool); }
+const q=params.get("id");
 if(q){
   $("tid").value=q;
   if($("homeTeamId")) $("homeTeamId").value=q;
