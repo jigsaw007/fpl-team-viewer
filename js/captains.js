@@ -19,9 +19,14 @@ function captainMatrixHtml(){
     const price=(Number(e.now_cost)||50)/10;
     let safety,upside;
     if(pre){
-      const fixtureEase=6-fx,premium=Math.max(0,price-6),pens=(Number(e.penalties_order)>0&&Number(e.penalties_order)<=2)?1:0;
-      safety=own*.11+premium*.85+fixtureEase*1.15+pens*.8;
-      upside=premium*1.15+fixtureEase*1.35+Math.max(0,18-own)*.035+pens*1.1;
+      const first=(_capFixtureMap[e.team]||[])[0]||null;
+      const home=first?.home?.55:0,fixtureEase=({1:2.0,2:1.45,3:.78,4:.25,5:-.25})[first?.fdr||Math.round(fx)]??.78;
+      const premium=Math.max(0,price-8)*.16,pens=(Number(e.penalties_order)>0&&Number(e.penalties_order)<=2)?.92:0;
+      const ppg=parseFloat(e.points_per_game||0)||0,xgi=parseFloat(e.expected_goal_involvements_per_90||0)||0,xg=parseFloat(e.expected_goals_per_90||0)||0,xa=parseFloat(e.expected_assists_per_90||0)||0;
+      const ep=Math.min(9,parseFloat(e.ep_next||0)||0),goalCeiling=Math.min(2.6,xg*1.35+xgi*.82+xa*.18);
+      const model=(ppg*.56+own*.009+premium+pens+fixtureEase+home+goalCeiling+ep*.20)*(Math.max(.55,Math.min(1.04,sec.score/100)));
+      safety=model+Math.min(.45,own/120)+sec.score/240;
+      upside=model+goalCeiling*.28+premium*.35+Math.max(0,16-own)*.012;
     }else{
       safety=proj*.58+(6-fx)*.65+Math.min(2.8,own/25)+sec.score/110;
       upside=proj*.78+(6-fx)*.82+Math.max(0,2.2-own/28);
@@ -30,7 +35,7 @@ function captainMatrixHtml(){
   }).sort((a,b)=>Math.max(b.safety,b.upside)-Math.max(a.safety,a.upside)).slice(0,10);
   const safe=[...candidates].sort((a,b)=>b.safety-a.safety)[0],up=[...candidates].sort((a,b)=>b.upside-a.upside)[0];
   const projectionHead=pre?"Early estimate":"Projection";
-  const intro=pre?"Before GW1, the shortlist uses price, ownership, set-piece role and the opening fixture. Current-season form and minutes are not available yet, so treat it as an early captain watchlist.":"Compare FPL Peek projected points, fixture difficulty, minutes security and ownership. The matrix is a shortlist, not a certainty.";
+  const intro=pre?"Before GW1, the model leans on proven FPL output, attacking involvement, penalties, expected minutes, price/ceiling, ownership and the opening fixture. It is still an estimate until current-season evidence arrives.":"Compare FPL Peek projected points, fixture difficulty, minutes security, attacking role and ownership. The matrix is a shortlist, not a certainty.";
   return `<section class="captain-matrix"><div class="captain-matrix-head"><div><span class="section-kicker">Captaincy matrix</span><h3>${pre?"Early captain watch":"Safety vs upside"}</h3><p>${intro}</p></div><div class="captain-matrix-picks"><span>${pre?"Safer profile":"Safer"} <b>${safe?esc(safe.e.web_name):"-"}</b></span><span>${pre?"Upside profile":"Upside"} <b>${up?esc(up.e.web_name):"-"}</b></span></div></div><div class="matrix-scroll"><table class="matrix-table"><thead><tr><th>Player</th><th>Fixture</th><th>${projectionHead}</th><th>${pre?"Context":"Minutes"}</th><th>Ownership</th><th>Profile</th></tr></thead><tbody>${candidates.map(x=>{const t=teams.find(z=>z.id===x.e.team)||{},fx=(_capFixtureMap[x.e.team]||[])[0],opp=fx?teams.find(z=>z.id===fx.opp)||{}:{};return `<tr><td><span class="matrix-player">${teamKitImg(t,"matrix-kit")}<span><b>${esc(x.e.web_name)}</b><small>${esc(t.short_name||"")} - ${money(x.e.now_cost)}</small></span></span></td><td>${fx?`${esc(opp.short_name||"")} ${fx.home?"H":"A"} - FDR ${fx.fdr}`:"-"}</td><td><b>${pre?x.proj.toFixed(1)+" est":x.proj.toFixed(1)}</b></td><td>${pre?"Pre-season":esc(x.sec.label)}</td><td>${x.own.toFixed(1)}%</td><td>${capStars(Math.max(x.safety,x.upside),pre?10:11)}</td></tr>`;}).join("")}</tbody></table></div></section>`;
 }
 async function drawCaptainPicks(){

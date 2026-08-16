@@ -3,16 +3,23 @@
   let data=null;
   const el=id=>document.getElementById(id);
   const h=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const safeImg=(src,cls,alt,extra='')=>src?`<img class="${cls}" src="${h(src)}" alt="${h(alt||'')}" loading="lazy" decoding="async" onerror="this.hidden=true" ${extra}>`:'';
+  const safeImg=(src,cls,alt,extra='')=>src?`<img class="${cls}" src="${h(src)}" alt="${h(alt||'')}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.hidden=true" ${extra}>`:'';
+  function playerAvatar(r){
+    const kit=r.kit_url?safeImg(r.kit_url,'insight-face-kit',`${r.team_name||r.team_short||''} kit`):'';
+    if(!r.photo_url) return r.kit_url?`<span class="insight-player-avatar photo-missing">${kit}</span>`:'<span class="insight-avatar-fallback" aria-hidden="true"></span>';
+    const face=`<img class="insight-face" src="${h(r.photo_url)}" alt="${h(r.name||'')}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.hidden=true;this.parentElement.classList.add('photo-missing')">`;
+    return `<span class="insight-player-avatar">${face}${kit}</span>`;
+  }
   function rowMedia(r){
     if(r.fixture_kits?.length) return `<span class="insight-row-kits">${r.fixture_kits.slice(0,2).map((u,i)=>safeImg(u,'insight-kit',i?'Away kit':'Home kit')).join('')}</span>`;
-    return r.kit_url?safeImg(r.kit_url,'insight-kit',`${r.team_name||r.team_short||''} kit`):'';
+    if(r.is_player || r.player_code || r.photo_url) return playerAvatar(r);
+    return r.kit_url?safeImg(r.kit_url,'insight-kit',`${r.team_name||r.team_short||''} kit`):'<span class="insight-avatar-fallback" aria-hidden="true"></span>';
   }
   function block(b,i){
     return `<article class="insight-card insight-${h(b.kind||'story')}">
       <div class="insight-card-top"><div class="insight-card-meta"><span>${h((b.kind||'Insight').replace(/\b\w/g,m=>m.toUpperCase()))}</span></div><em>${String(i+1).padStart(2,'0')}</em></div>
       <h3>${h(b.title)}</h3><p class="insight-card-intro">${h(b.intro||'')}</p>
-      <div class="insight-rows">${(b.rows||[]).map(r=>`<div class="insight-row"><div class="insight-row-main">${rowMedia(r)}<div><b>${h(r.name)}</b><small>${h(r.meta||'')}</small></div></div><span>${h(r.note||'')}</span></div>`).join('')}</div>
+      <div class="insight-rows">${(b.rows||[]).map((r,ri)=>`<div class="insight-row ${ri===0?'insight-row-featured':''}"><div class="insight-row-main">${rowMedia(r)}<div><b>${h(r.name)}</b><small>${h(r.meta||'')}</small></div></div><span>${h(r.note||'')}</span></div>`).join('')}</div>
     </article>`;
   }
   function leadMedia(lead){

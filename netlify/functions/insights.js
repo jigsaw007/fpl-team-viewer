@@ -1,13 +1,20 @@
 const { buildLiveInsights, buildHistoricalInsights } = require("../lib/live-insights");
 const SITE="https://fplpeek.com";
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const img=(src,cls,alt)=>src?`<img class="${cls}" src="${esc(src)}" alt="${esc(alt||"")}" loading="lazy" decoding="async" onerror="this.hidden=true">`:"";
+const img=(src,cls,alt)=>src?`<img class="${cls}" src="${esc(src)}" alt="${esc(alt||"")}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.hidden=true">`:"";
+function playerAvatar(r){
+  const kit=r.kit_url?img(r.kit_url,"row-face-kit",`${r.team_name||r.team_short||"Club"} kit`):"";
+  if(!r.photo_url) return r.kit_url?`<span class="row-player-avatar photo-missing">${kit}</span>`:`<span class="row-avatar-fallback" aria-hidden="true"></span>`;
+  const face=`<img class="row-face" src="${esc(r.photo_url)}" alt="${esc(r.name||"")}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.hidden=true;this.parentElement.classList.add('photo-missing')">`;
+  return `<span class="row-player-avatar">${face}${kit}</span>`;
+}
 function rowMedia(r){
   if(Array.isArray(r.fixture_kits)&&r.fixture_kits.length) return `<span class="row-kits">${r.fixture_kits.slice(0,2).map((u,i)=>img(u,"row-kit",i?"Away kit":"Home kit")).join("")}</span>`;
-  return r.kit_url?img(r.kit_url,"row-kit",`${r.team_name||r.team_short||"Club"} kit`):"";
+  if(r.is_player || r.player_code || r.photo_url) return playerAvatar(r);
+  return r.kit_url?img(r.kit_url,"row-kit",`${r.team_name||r.team_short||"Club"} kit`):`<span class="row-avatar-fallback" aria-hidden="true"></span>`;
 }
 function block(b,index){
-  const rows=(b.rows||[]).map(r=>`<li><div class="row-main">${rowMedia(r)}<div><b>${esc(r.name)}</b><span>${esc(r.meta||"")}</span></div></div><p>${esc(r.note||"")}</p></li>`).join("");
+  const rows=(b.rows||[]).map((r,ri)=>`<li class="${ri===0?'featured-row':''}"><div class="row-main">${rowMedia(r)}<div><b>${esc(r.name)}</b><span>${esc(r.meta||"")}</span></div></div><p>${esc(r.note||"")}</p></li>`).join("");
   return `<section class="live-block live-${esc(b.kind||"story")}"><header><div><span>${esc(b.kind||"Insight")}</span><em>${String(index+1).padStart(2,"0")}</em></div><h2>${esc(b.title)}</h2><p>${esc(b.intro||"")}</p></header><ul>${rows}</ul></section>`;
 }
 function archive(data,currentGw){

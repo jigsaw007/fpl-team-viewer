@@ -48,3 +48,30 @@ html[data-theme="dark"] .live-note,
 html[data-theme="dark"] .takeaway{background:#15231d;border-color:#2f5846;color:#f2f6f8}
 html[data-theme="dark"] .takeaway>p{color:#c7d4ce!important}
 html[data-theme="dark"] .pub-footer a{color:#8bdab8}
+
+/* V30 richer, lightweight insight rows */
+.row-featured-player{position:relative;width:48px;height:50px;display:flex;align-items:flex-end;justify-content:center;flex:0 0 48px;border:1px solid #dfe8e3;border-radius:10px;background:#f5f9f7;overflow:hidden}
+.row-face{width:44px;height:50px;object-fit:contain;object-position:bottom center}
+.row-face-kit{position:absolute;right:1px;bottom:1px;width:17px;height:21px;object-fit:contain;border:1px solid #d8e4de;border-radius:5px;background:#fff;padding:1px}
+.live-fixtures .row-kit{width:37px;height:46px}
+html[data-theme="dark"] .row-featured-player{background:#111920;border-color:#34414a}
+html[data-theme="dark"] .row-face-kit{background:#172129;border-color:#3a4a54}
+
+
+/* V31 compact player portraits across public Insights */
+.row-player-avatar{position:relative;width:44px;height:48px;display:flex;align-items:flex-end;justify-content:center;flex:0 0 44px;border:1px solid #dfe8e3;border-radius:10px;background:#f5f9f7;overflow:hidden}
+.row-player-avatar .row-face{position:relative;z-index:1;width:42px;height:48px;object-fit:contain;object-position:bottom center}
+.row-player-avatar .row-face-kit{position:absolute;z-index:2;right:1px;bottom:1px;width:15px;height:19px;object-fit:contain;border:1px solid #d8e4de;border-radius:5px;background:#fff;padding:1px}
+.row-avatar-fallback{position:relative;width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:#dce6e1;display:inline-block;overflow:hidden}
+.row-player-avatar>.row-avatar-fallback{position:absolute;left:5px;bottom:4px;width:34px;height:34px}
+.row-avatar-fallback:before{content:"";position:absolute;left:50%;top:6px;width:10px;height:10px;border-radius:50%;background:#7a8b82;transform:translateX(-50%)}
+.row-avatar-fallback:after{content:"";position:absolute;left:50%;bottom:4px;width:22px;height:12px;border-radius:12px 12px 7px 7px;background:#7a8b82;transform:translateX(-50%)}
+html[data-theme="dark"] .row-player-avatar{background:#111920;border-color:#34414a}
+html[data-theme="dark"] .row-player-avatar .row-face-kit{background:#172129;border-color:#3a4a54}
+html[data-theme="dark"] .row-avatar-fallback{background:#27343d}
+html[data-theme="dark"] .row-avatar-fallback:before,html[data-theme="dark"] .row-avatar-fallback:after{background:#70808b}
+
+/* V32 portrait fallback: a missing headshot becomes a clean club-kit avatar. */
+.row-player-avatar.photo-missing{align-items:center;justify-content:center}
+.row-player-avatar.photo-missing .row-face-kit{position:static!important;width:30px!important;height:38px!important;object-fit:contain!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important}
+html[data-theme="dark"] .row-player-avatar.photo-missing .row-face-kit{background:transparent!important;border:0!important}

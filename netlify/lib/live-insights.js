@@ -24,6 +24,8 @@ function decorateRows(blocks, players, teamById) {
       r.team_code = team?.code || null;
       r.kit_url = kitUrl(team);
       r.player_code = p.code || null;
+      r.is_player = true;
+      r.photo_url = playerPhotoUrl(p);
     }
   }
 }
@@ -91,6 +93,32 @@ function playerScore(p, fdr, seasonStarted) {
   const base = form * 1.1 + ppg * .75 + fixture * 1.65 + market + ownership * .35;
   if (seasonStarted && n(p.minutes) < 45) return base - 2.5;
   return base;
+}
+
+
+function captainScore(p, fixturesForTeam, seasonStarted) {
+  const first = (fixturesForTeam || [])[0] || null;
+  const fdr = n(first?.diff, 3);
+  const fixture = ({1:2.0,2:1.45,3:.78,4:.25,5:-.25})[fdr] ?? .78;
+  const home = first?.home ? .58 : 0;
+  const ep = Math.min(9, n(p.ep_next));
+  const form = n(p.form);
+  const ppg = n(p.points_per_game);
+  const xgi90 = n(p.expected_goal_involvements_per_90);
+  const xg90 = n(p.expected_goals_per_90);
+  const xa90 = n(p.expected_assists_per_90);
+  const price = n(p.now_cost, 40) / 10;
+  const own = Math.min(80, n(p.selected_by_percent));
+  const starts = Math.max(1, n(p.starts));
+  const minsPerStart = n(p.minutes) / starts;
+  const minutes = clamp(minsPerStart / 88, .45, 1.04);
+  const penalty = n(p.penalties_order) > 0 && n(p.penalties_order) <= 2 ? .92 : 0;
+  const setPieces = (n(p.direct_freekicks_order) > 0 && n(p.direct_freekicks_order) <= 2 ? .16 : 0) + (n(p.corners_and_indirect_freekicks_order) > 0 && n(p.corners_and_indirect_freekicks_order) <= 2 ? .08 : 0);
+  const premium = Math.max(0, price - 8) * .16;
+  const goalCeiling = Math.min(2.6, xg90 * 1.35 + xgi90 * .82 + xa90 * .18);
+  const stable = ppg * .56 + own * .009 + premium + penalty + setPieces + fixture + home + goalCeiling;
+  const liveSignal = seasonStarted ? ep * .58 + form * .48 : ep * .20;
+  return (stable + liveSignal) * minutes * (availability(p) ? 1 : .35);
 }
 
 function reviewLead(gw, top, popularBlanks, teamById) {
@@ -164,7 +192,13 @@ async function buildLiveInsights() {
   const fixtureSwings = teams.map(t=>({team:t.id,avg:teamFdr.get(t.id),fixtures:fmap.get(t.id)||[]})).filter(x=>x.fixtures.length).sort((a,b)=>a.avg-b.avg).slice(0,5);
   const watch = [...fitPlayers].map(p=>({p,score:playerScore(p,teamFdr.get(p.team)||3,seasonStarted)})).sort((a,b)=>b.score-a.score).slice(0,6).map(x=>x.p);
   const differentials = [...fitPlayers].filter(p=>n(p.selected_by_percent)>0.3 && n(p.selected_by_percent)<=10).map(p=>({p,score:playerScore(p,teamFdr.get(p.team)||3,seasonStarted)})).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.p);
-  const captains = [...fitPlayers].filter(p=>[3,4].includes(p.element_type) && n(p.selected_by_percent)>=5).map(p=>({p,score:playerScore(p,teamFdr.get(p.team)||3,seasonStarted)+n(p.selected_by_percent)/20})).sort((a,b)=>b.score-a.score).slice(0,4).map(x=>x.p);
+  const captainRanked = [...fitPlayers]
+    .filter(p=>[3,4].includes(p.element_type) && n(p.selected_by_percent)>=5)
+    .map(p=>({p,score:captainScore(p,fmap.get(p.team)||[],seasonStarted)}))
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,4);
+  const captains = captainRanked.map(x=>x.p);
+  const captainScoreById = new Map(captainRanked.map(x=>[x.p.id,x.score]));
 
   const blocks = [];
   let lead;
@@ -197,8 +231,8 @@ async function buildLiveInsights() {
     if (differentials.length) blocks.push(listBlock("differential","Differential watch", "Lower-owned players whose current profile and fixtures make them worth monitoring.", differentials.slice(0,4).map(p=>({
       name:sentenceName(p), meta:`${pct(p.selected_by_percent)}% owned · ${money(p.now_cost)}`, note:`Form ${n(p.form).toFixed(1)} · ${fixtureText(fmap.get(p.team),teamById,3)}`
     }))));
-    if (captains.length) blocks.push(listBlock("captain","Captain watch", "Not a prediction model: this combines established FPL involvement with short-term fixture quality.", captains.map(p=>({
-      name:sentenceName(p), meta:`${pct(p.selected_by_percent)}% owned · form ${n(p.form).toFixed(1)}`, note:`Next: ${fixtureText(fmap.get(p.team),teamById,1)}`
+    if (captains.length) blocks.push(listBlock("captain","FPL Peek captain ranking", "A predictive captain shortlist balancing expected return, goal involvement, penalties, minutes security, fixture, home advantage and proven FPL output.", captains.map((p,i)=>({
+      name:sentenceName(p), meta:`${i===0?"Top captain":"Captain option"} · ${pct(p.selected_by_percent)}% owned`, note:`Next: ${fixtureText(fmap.get(p.team),teamById,1)} · Captain Score ${captainScoreById.get(p.id).toFixed(1)}`
     }))));
   }
 
@@ -239,7 +273,7 @@ async function buildLiveInsights() {
     lead.paragraphs = [
       easy ? `${teamById.get(easy.team)?.name || "One club"} enters the opening stretch with one of the strongest short-term fixture profiles. That is useful because early-season decisions are often better when they start with schedule and expected minutes rather than ownership alone.` : `With no completed Gameweek yet, the strongest signals come from fixture quality, expected minutes, availability and how heavily managers are backing particular players.`,
       mover ? `${sentenceName(mover)} is attracting early transfer interest. That can be a useful clue about where the market is moving, but it is not enough by itself to make a transfer.` : `The transfer market is still quiet, so there is little value in forcing conclusions from movement that has not started yet.`,
-      cap ? `${sentenceName(cap)} sits near the top of the captain watch based on current FPL involvement and the next fixture. The final call should still wait for the latest availability and team news.` : `Captaincy becomes more meaningful once the final availability picture and opening fixtures are clear.`
+      cap ? `${sentenceName(cap)} leads the current FPL Peek captain ranking after balancing attacking ceiling, penalties, expected minutes, fixture and home/away context. The final call should still wait for the latest availability and team news.` : `Captaincy becomes more meaningful once the final availability picture and opening fixtures are clear.`
     ];
     lead.takeaway = easy ? `Start with the strongest fixture runs, then use market movement only as supporting evidence. Recheck availability close to the deadline before making the final call.` : "Start with fixtures and expected minutes, use market movement only as supporting evidence, and recheck availability close to the deadline.";
     lead.visual_mode = "neutral";
