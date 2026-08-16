@@ -189,3 +189,24 @@ The short editorial-style notes use transparent rules and never claim to have wa
 ## V18.4
 - Removed the explanatory Current / Selective / Transparent cards from the in-app Insights page.
 - Mixed-topic preview leads intentionally use a neutral Gameweek visual. Player portraits remain reserved for player-led stories, while club-led stories use club visuals.
+
+
+## V20 decision tools
+Added Team Rating, Rotation Planner, Captaincy Matrix, optional 3-player comparison, Minutes Tracker, and FPL Peek projected points. Projections are transparent rule-based estimates from public FPL data, not betting or guaranteed predictions.
+
+## V21 clarity and captaincy corrections
+- Corrected the pre-season Captaincy Matrix so low-cost players cannot rise to the top from fixture difficulty alone.
+- Removed unrealistic early-season double-digit projected points caused by tiny starts samples.
+- Renamed Team Rating 2.0 to Team Rating.
+- Added plain-language guides for Team Rating, Player Comparison, Captaincy Matrix, Rotation Planner, projected points and Minutes Tracker.
+- Clarified Rotation Planner as a goalkeeper/defender start-rotation tool between two owned clubs.
+- Updated Home Insights link styling so editorial headlines use the normal FPL Peek text palette rather than browser link purple.
+
+## V22 updates
+- Planner now has separate **Clear this GW changes** and **Clear all GWs** actions.
+- Player Explorer rows use a pointer cursor and keyboard focus treatment to make player profiles feel clickable.
+- Insights moved from the Overview group to Planning in the desktop sidebar.
+- Added persistent light/dark appearance mode. It follows the device preference on first visit and remembers the user's choice locally.
+
+## V24 dark-mode completeness pass
+Dark mode now covers nested comparison cards, manager comparison tables, Planner toolbar/player rows, Home career stat tiles, Insights lead stories, standalone Insights pages, and Team Builder player labels while preserving the green football pitch and exported share-card artwork.

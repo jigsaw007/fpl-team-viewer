@@ -41,17 +41,18 @@ function ccCaptainPhotoUrl(el){
   return el&&el.code?`/.netlify/functions/player-photo?code=${encodeURIComponent(el.code)}`:null;
 }
 function ccCaptainStat(x,px,py,w,h,el,points){
-  ccRR(x,px,py,w,h,20,"#f7faf8","#e3e9e6");
-  x.fillStyle="#7a8790";x.font="800 16px Inter, sans-serif";x.fillText("CAPTAIN",px+24,py+32);
+  const p=ccPalette();
+  ccRR(x,px,py,w,h,20,p.panel,p.lineSoft);
+  x.fillStyle=p.dim;x.font="800 16px Inter, sans-serif";x.fillText("CAPTAIN",px+24,py+32);
   const name=el?el.web_name:"-";
-  x.fillStyle="#17212b";const sz=ccFit(x,name,w-180,36,23,800);x.font=`800 ${sz}px Inter, sans-serif`;x.fillText(name,px+24,py+79);
+  x.fillStyle=p.ink;const sz=ccFit(x,name,w-180,36,23,800);x.font=`800 ${sz}px Inter, sans-serif`;x.fillText(name,px+24,py+79);
   const sub=points==null?"Captain points pending":`${points} captain points`;
-  x.fillStyle="#63717b";x.font="500 17px Inter, sans-serif";x.fillText(sub,px+24,py+h-22);
+  x.fillStyle=p.sub;x.font="500 17px Inter, sans-serif";x.fillText(sub,px+24,py+h-22);
 }
 function ccDrawCaptainPhoto(x,img,el,px,py,w,h){
   const boxX=px+w-122, boxY=py+12, boxW=98, boxH=h-24;
   x.save();
-  ccRR(x,boxX,boxY,boxW,boxH,16,"#e9f5ef",null);
+  ccRR(x,boxX,boxY,boxW,boxH,16,ccPalette().accentSoft,null);
   x.beginPath();
   x.roundRect(boxX,boxY,boxW,boxH,16);
   x.clip();
@@ -149,6 +150,19 @@ function ccCanvas(){
   const c=$("ccCanvas"); c.width=1080; c.height=1350; return c;
 }
 function ccCtx(c){const x=c.getContext("2d");x.textBaseline="alphabetic";return x;}
+
+function ccPalette(){
+  const dark=document.documentElement.getAttribute("data-theme")==="dark";
+  return dark ? {
+    outer:"#0d1318", card:"#171e24", panel:"#202830", panel2:"#13231d",
+    line:"#33404a", lineSoft:"#2b363f", ink:"#f2f6f8", sub:"#c2cbd2", dim:"#8f9ba6",
+    accent:"#27c486", accentSoft:"#17382d", white:"#ffffff"
+  } : {
+    outer:"#eef3f1", card:"#ffffff", panel:"#f7faf8", panel2:"#e9f5ef",
+    line:"#dfe7e3", lineSoft:"#e3e9e6", ink:"#17212b", sub:"#63717b", dim:"#7a8790",
+    accent:"#079b62", accentSoft:"#e9f5ef", white:"#ffffff"
+  };
+}
 function ccRR(x,px,py,w,h,r,fill,stroke){
   x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath();
   if(fill){x.fillStyle=fill;x.fill();} if(stroke){x.strokeStyle=stroke;x.lineWidth=2;x.stroke();}
@@ -159,25 +173,28 @@ function ccFit(x,text,maxWidth,startSize=54,minSize=28,weight=800){
   return s;
 }
 function ccBase(x,kicker,title,subtitle){
-  x.fillStyle="#eef3f1";x.fillRect(0,0,1080,1350);
-  ccRR(x,54,54,972,1242,34,"#ffffff","#dfe7e3");
-  x.fillStyle="#079b62";x.fillRect(54,54,14,1242);
-  x.fillStyle="#079b62";x.font="800 25px Inter, sans-serif";x.fillText("FPL PEEK",105,125);
-  x.fillStyle="#7a8790";x.font="800 19px Inter, sans-serif";x.fillText(kicker.toUpperCase(),105,183);
-  const sz=ccFit(x,title,860,58,34,800);x.fillStyle="#17212b";x.font=`800 ${sz}px Inter, sans-serif`;x.fillText(title,105,250);
-  x.fillStyle="#63717b";x.font="500 25px Inter, sans-serif";x.fillText(subtitle,105,294);
-  x.strokeStyle="#e5ebe8";x.lineWidth=2;x.beginPath();x.moveTo(105,330);x.lineTo(975,330);x.stroke();
+  const p=ccPalette();
+  x.fillStyle=p.outer;x.fillRect(0,0,1080,1350);
+  ccRR(x,54,54,972,1242,34,p.card,p.line);
+  x.fillStyle=p.accent;x.fillRect(54,54,14,1242);
+  x.fillStyle=p.accent;x.font="800 25px Inter, sans-serif";x.fillText("FPL PEEK",105,125);
+  x.fillStyle=p.dim;x.font="800 19px Inter, sans-serif";x.fillText(kicker.toUpperCase(),105,183);
+  const sz=ccFit(x,title,860,58,34,800);x.fillStyle=p.ink;x.font=`800 ${sz}px Inter, sans-serif`;x.fillText(title,105,250);
+  x.fillStyle=p.sub;x.font="500 25px Inter, sans-serif";x.fillText(subtitle,105,294);
+  x.strokeStyle=p.lineSoft;x.lineWidth=2;x.beginPath();x.moveTo(105,330);x.lineTo(975,330);x.stroke();
 }
 function ccFooter(x,text){
-  x.strokeStyle="#e5ebe8";x.lineWidth=2;x.beginPath();x.moveTo(105,1216);x.lineTo(975,1216);x.stroke();
-  x.fillStyle="#7a8790";x.font="600 20px Inter, sans-serif";x.fillText(text,105,1262);
-  x.textAlign="right";x.fillStyle="#079b62";x.font="800 20px Inter, sans-serif";x.fillText("fplpeek.com",975,1262);x.textAlign="left";
+  const p=ccPalette();
+  x.strokeStyle=p.lineSoft;x.lineWidth=2;x.beginPath();x.moveTo(105,1216);x.lineTo(975,1216);x.stroke();
+  x.fillStyle=p.dim;x.font="600 20px Inter, sans-serif";x.fillText(text,105,1262);
+  x.textAlign="right";x.fillStyle=p.accent;x.font="800 20px Inter, sans-serif";x.fillText("fplpeek.com",975,1262);x.textAlign="left";
 }
 function ccStat(x,px,py,w,h,label,value,sub="",tone="ink"){
-  ccRR(x,px,py,w,h,20,"#f7faf8","#e3e9e6");
-  x.fillStyle="#7a8790";x.font="800 16px Inter, sans-serif";x.fillText(label.toUpperCase(),px+24,py+32);
-  x.fillStyle=tone==="green"?"#079b62":"#17212b";const sz=ccFit(x,value,w-48,40,24,800);x.font=`800 ${sz}px Inter, sans-serif`;x.fillText(String(value),px+24,py+84);
-  if(sub){x.fillStyle="#63717b";x.font="500 17px Inter, sans-serif";x.fillText(String(sub),px+24,py+h-22);}
+  const p=ccPalette();
+  ccRR(x,px,py,w,h,20,p.panel,p.lineSoft);
+  x.fillStyle=p.dim;x.font="800 16px Inter, sans-serif";x.fillText(label.toUpperCase(),px+24,py+32);
+  x.fillStyle=tone==="green"?p.accent:p.ink;const sz=ccFit(x,value,w-48,40,24,800);x.font=`800 ${sz}px Inter, sans-serif`;x.fillText(String(value),px+24,py+84);
+  if(sub){x.fillStyle=p.sub;x.font="500 17px Inter, sans-serif";x.fillText(String(sub),px+24,py+h-22);}
 }
 function ccSaveBlob(){
   const c=$("ccCanvas");
@@ -192,9 +209,9 @@ async function ccGenerateCareer(id){
   const top1m=rows.filter(r=>Number(r.rank)>0&&Number(r.rank)<=1000000).length;
   const c=ccCanvas(),x=ccCtx(c);
   ccBase(x,"Career card",entry.name,`${entry.player_first_name||""} ${entry.player_last_name||""} - ${entry.player_region_name||"FPL manager"}`.trim());
-  x.fillStyle="#17212b";x.font="800 27px Inter, sans-serif";x.fillText("Career snapshot",105,390);
-  x.textAlign="right";x.fillStyle="#7a8790";x.font="800 14px Inter, sans-serif";x.fillText("FIRST FPL SEASON",975,371);
-  x.fillStyle="#17212b";x.font="800 23px Inter, sans-serif";x.fillText(firstSeason||"-",975,399);x.textAlign="left";
+  x.fillStyle=ccPalette().ink;x.font="800 27px Inter, sans-serif";x.fillText("Career snapshot",105,390);
+  x.textAlign="right";x.fillStyle=ccPalette().dim;x.font="800 14px Inter, sans-serif";x.fillText("FIRST FPL SEASON",975,371);
+  x.fillStyle=ccPalette().ink;x.font="800 23px Inter, sans-serif";x.fillText(firstSeason||"-",975,399);x.textAlign="left";
   const col=418,g=18,left=105,right=105+col+g;
   ccStat(x,left,420,col,150,"Career points",ccPoints(ccCareerPoints(entry,history)),"Completed seasons plus current points","green");
   ccStat(x,right,420,col,150,"Seasons played",rows.length,firstSeason?`Started ${firstSeason}`:"FPL history on record");
@@ -224,7 +241,7 @@ async function ccGenerateGameweek(id,gw){
   const move=prev&&prev.overall_rank&&row.overall_rank?Number(prev.overall_rank)-Number(row.overall_rank):null;
   const c=ccCanvas(),x=ccCtx(c);
   ccBase(x,`Gameweek ${gw} card`,entry.name,`${entry.player_first_name||""} ${entry.player_last_name||""} - ${entry.player_region_name||"FPL manager"}`.trim());
-  x.fillStyle="#17212b";x.font="800 27px Inter, sans-serif";x.fillText(`Gameweek ${gw} report`,105,390);
+  x.fillStyle=ccPalette().ink;x.font="800 27px Inter, sans-serif";x.fillText(`Gameweek ${gw} report`,105,390);
   const col=418,g=18,left=105,right=105+col+g;
   ccStat(x,left,420,col,150,"GW points",row.points,"Gameweek score","green");
   ccStat(x,right,420,col,150,"GW rank",ccRank(row.rank),"Gameweek rank");
@@ -261,11 +278,11 @@ async function ccGenerateRivalry(aId,bId){
   const c=ccCanvas(),x=ccCtx(c);
   ccBase(x,"Rivalry card","FPL Rivalry",liveSeason?"Current season head to head":"Career comparison before the season starts");
   const nameY=405;
-  x.fillStyle="#7a8790";x.font="800 16px Inter, sans-serif";x.fillText("MANAGER A",105,nameY);
+  x.fillStyle=ccPalette().dim;x.font="800 16px Inter, sans-serif";x.fillText("MANAGER A",105,nameY);
   x.textAlign="right";x.fillText("MANAGER B",975,nameY);x.textAlign="left";
-  let s=ccFit(x,a.entry.name,390,40,24,800);x.fillStyle="#17212b";x.font=`800 ${s}px Inter, sans-serif`;x.fillText(a.entry.name,105,460);
+  let s=ccFit(x,a.entry.name,390,40,24,800);x.fillStyle=ccPalette().ink;x.font=`800 ${s}px Inter, sans-serif`;x.fillText(a.entry.name,105,460);
   x.textAlign="right";s=ccFit(x,b.entry.name,390,40,24,800);x.font=`800 ${s}px Inter, sans-serif`;x.fillText(b.entry.name,975,460);x.textAlign="left";
-  x.fillStyle="#63717b";x.font="500 18px Inter, sans-serif";x.fillText(a.entry.player_region_name||"",105,492);x.textAlign="right";x.fillText(b.entry.player_region_name||"",975,492);x.textAlign="left";
+  x.fillStyle=ccPalette().sub;x.font="500 18px Inter, sans-serif";x.fillText(a.entry.player_region_name||"",105,492);x.textAlign="right";x.fillText(b.entry.player_region_name||"",975,492);x.textAlign="left";
   const metrics=liveSeason?[
     ["Overall points",a.entry.summary_overall_points||0,b.entry.summary_overall_points||0,false],
     ["Overall rank",ccRank(a.entry.summary_overall_rank),ccRank(b.entry.summary_overall_rank),true],
@@ -281,15 +298,15 @@ async function ccGenerateRivalry(aId,bId){
   ];
   let y=545;
   metrics.forEach(([label,av,bv])=>{
-    ccRR(x,105,y,870,92,16,"#f7faf8","#e3e9e6");
-    x.fillStyle="#17212b";x.font="800 28px Inter, sans-serif";x.fillText(String(av),135,y+57);
-    x.textAlign="center";x.fillStyle="#7a8790";x.font="800 15px Inter, sans-serif";x.fillText(String(label).toUpperCase(),540,y+53);
-    x.textAlign="right";x.fillStyle="#17212b";x.font="800 28px Inter, sans-serif";x.fillText(String(bv),945,y+57);x.textAlign="left";y+=108;
+    ccRR(x,105,y,870,92,16,ccPalette().panel,ccPalette().lineSoft);
+    x.fillStyle=ccPalette().ink;x.font="800 28px Inter, sans-serif";x.fillText(String(av),135,y+57);
+    x.textAlign="center";x.fillStyle=ccPalette().dim;x.font="800 15px Inter, sans-serif";x.fillText(String(label).toUpperCase(),540,y+53);
+    x.textAlign="right";x.fillStyle=ccPalette().ink;x.font="800 28px Inter, sans-serif";x.fillText(String(bv),945,y+57);x.textAlign="left";y+=108;
   });
   if(liveSeason){
     const diff=(Number(a.entry.summary_overall_points)||0)-(Number(b.entry.summary_overall_points)||0);
     const lead=diff===0?"Level on points":diff>0?`${a.entry.name} leads by ${diff} points`:`${b.entry.name} leads by ${Math.abs(diff)} points`;
-    x.fillStyle="#079b62";x.font="800 23px Inter, sans-serif";x.fillText(lead,105,1190);
+    x.fillStyle=ccPalette().accent;x.font="800 23px Inter, sans-serif";x.fillText(lead,105,1190);
   }
   ccFooter(x,"Rivalry comparison from public Fantasy Premier League data");
   await ccFinish();

@@ -1,7 +1,7 @@
 /* ============ TRANSFER ANALYZER ============ */
 let _taReady=false,_taFixtureMap={};
-const _taSelected={from:null,to:null};
-const _taActiveIndex={from:-1,to:-1};
+const _taSelected={from:null,to:null,third:null};
+const _taActiveIndex={from:-1,to:-1,third:-1};
 
 async function initTransferAnalyzer(){
   if(_taReady) return;
@@ -18,15 +18,17 @@ async function initTransferAnalyzer(){
       .join("");
     $("taFromTeam").insertAdjacentHTML("beforeend",teamOptions);
     $("taToTeam").insertAdjacentHTML("beforeend",teamOptions);
+    $("taThirdTeam").insertAdjacentHTML("beforeend",teamOptions);
 
     setupTransferPicker("from");
     setupTransferPicker("to");
+    setupTransferPicker("third");
 
     $("taRun").onclick=()=>drawTransferComparison();
     $("taSwap").onclick=()=>swapTransferPlayers();
     $("taReset").onclick=()=>resetTransferAnalyzer();
     document.addEventListener("pointerdown",e=>{
-      ["from","to"].forEach(side=>{
+      ["from","to","third"].forEach(side=>{
         const picker=$(taId(side,"Picker"));
         if(picker&&!picker.contains(e.target)) hideTransferResults(side);
       });
@@ -37,7 +39,7 @@ async function initTransferAnalyzer(){
   }
 }
 
-function taId(side,suffix){ return `ta${side==="from"?"From":"To"}${suffix||""}`; }
+function taId(side,suffix){ return `ta${side==="from"?"From":side==="to"?"To":"Third"}${suffix||""}`; }
 
 function setupTransferPicker(side){
   const input=$(taId(side,""));
@@ -76,10 +78,9 @@ function transferFilteredPlayers(side){
   const q=$(taId(side,"")).value.trim().toLowerCase();
   const pos=Number($(taId(side,"Pos")).value||0);
   const team=Number($(taId(side,"Team")).value||0);
-  const otherSide=side==="from"?"to":"from";
-  const otherId=_taSelected[otherSide]&&_taSelected[otherSide].id;
+  const selectedIds=Object.entries(_taSelected).filter(([k,v])=>k!==side&&v).map(([,v])=>v.id);
   let rows=(boot.elements||[]).filter(e=>{
-    if(otherId&&e.id===otherId) return false;
+    if(selectedIds.includes(e.id)) return false;
     if(pos&&e.element_type!==pos) return false;
     if(team&&e.team!==team) return false;
     if(q){
@@ -171,11 +172,9 @@ function handleTransferPickerKeys(side,e){
 function selectTransferPlayer(side,id){
   const player=(boot.elements||[]).find(e=>e.id===id)||null;
   if(!player) return;
-  const otherSide=side==="from"?"to":"from";
-  if(_taSelected[otherSide]&&_taSelected[otherSide].id===player.id){
-    _taSelected[otherSide]=null;
-    renderTransferSelection(otherSide);
-  }
+  Object.keys(_taSelected).filter(k=>k!==side).forEach(otherSide=>{
+    if(_taSelected[otherSide]&&_taSelected[otherSide].id===player.id){_taSelected[otherSide]=null;renderTransferSelection(otherSide);}
+  });
   _taSelected[side]=player;
   const input=$(taId(side,""));
   input.value="";
@@ -184,7 +183,7 @@ function selectTransferPlayer(side,id){
   hideTransferResults(side);
   renderTransferSelection(side);
   updateTransferActions();
-  if(_taSelected.from&&_taSelected.to) drawTransferComparison();
+  if(Object.values(_taSelected).filter(Boolean).length>=2) drawTransferComparison();
 }
 
 function renderTransferSelection(side){
@@ -214,7 +213,7 @@ function clearTransferSelection(side){
   renderTransferSelection(side);
   hideTransferResults(side);
   updateTransferActions();
-  $("transferBody").innerHTML=`<div class="tool-empty">Pick a player on each side. Search by name or narrow the list by position and club.</div>`;
+  $("transferBody").innerHTML=`<div class="tool-empty">Choose two or three players. Search by name or narrow the list by position and club.</div>`;
   input.focus();
 }
 
@@ -224,7 +223,7 @@ function swapTransferPlayers(){
   _taSelected.to=a;
   renderTransferSelection("from");
   renderTransferSelection("to");
-  ["from","to"].forEach(side=>{
+  ["from","to","third"].forEach(side=>{
     $(taId(side,"Pos")).value="0";
     $(taId(side,"Team")).value="0";
     $(taId(side,"")).value="";
@@ -232,11 +231,11 @@ function swapTransferPlayers(){
     hideTransferResults(side);
   });
   updateTransferActions();
-  if(_taSelected.from&&_taSelected.to) drawTransferComparison();
+  if(Object.values(_taSelected).filter(Boolean).length>=2) drawTransferComparison();
 }
 
 function resetTransferAnalyzer(){
-  ["from","to"].forEach(side=>{
+  ["from","to","third"].forEach(side=>{
     _taSelected[side]=null;
     $(taId(side,"")).value="";
     $(taId(side,"")).placeholder="Search player name";
@@ -247,52 +246,43 @@ function resetTransferAnalyzer(){
     hideTransferResults(side);
   });
   updateTransferActions();
-  $("transferBody").innerHTML=`<div class="tool-empty">Pick a player on each side. Search by name or narrow the list by position and club.</div>`;
+  $("transferBody").innerHTML=`<div class="tool-empty">Choose two or three players. Search by name or narrow the list by position and club.</div>`;
 }
 
 function updateTransferActions(){
-  const ready=!!(_taSelected.from&&_taSelected.to);
-  $("taRun").disabled=!ready;
+  const count=Object.values(_taSelected).filter(Boolean).length;
+  $("taRun").disabled=count<2;
   $("taSwap").disabled=!(_taSelected.from||_taSelected.to);
-  $("taReset").disabled=!(_taSelected.from||_taSelected.to||$("taFrom").value||$("taTo").value||$("taFromPos").value!=="0"||$("taToPos").value!=="0"||$("taFromTeam").value!=="0"||$("taToTeam").value!=="0");
+  $("taReset").disabled=count===0&&!$("taFrom").value&&!$("taTo").value&&!$("taThird").value;
 }
-
-function taMetric(label,a,b,fmt=v=>v){
-  const av=fmt(a),bv=fmt(b);
-  return `<div class="transfer-metric"><span>${esc(String(av))}</span><b>${esc(label)}</b><span>${esc(String(bv))}</span></div>`;
-}
-
 function taPlayerHead(e){
   const t=(boot.teams||[]).find(x=>x.id===e.team)||{};
   return `<div class="transfer-player-head">${teamKitImg(t,"transfer-kit")}<div><h3>${esc(e.web_name)}</h3><p>${esc(t.name||"")} · ${POS[e.element_type]}</p></div><b>${money(e.now_cost)}</b></div>`;
 }
-
+function taMetricValue(e,key){
+  const avg=fixtureAverageForTeam(e.team,_taFixtureMap,5);
+  if(key==="price") return money(e.now_cost);
+  if(key==="points") return e.total_points||0;
+  if(key==="form") return (parseFloat(e.form||0)||0).toFixed(1);
+  if(key==="own") return `${(parseFloat(e.selected_by_percent||0)||0).toFixed(1)}%`;
+  if(key==="minutes") return e.minutes||0;
+  if(key==="security") return minutesSecurity(e).label;
+  if(key==="fdr") return avg==null?"-":avg.toFixed(2);
+  if(key==="proj") return fplPeekProjectedPoints(e,_taFixtureMap,1).toFixed(1);
+  if(key==="proj5") return fplPeekProjectedPoints(e,_taFixtureMap,5).toFixed(1);
+  return "-";
+}
 function drawTransferComparison(){
-  const a=_taSelected.from,b=_taSelected.to,out=$("transferBody");
-  if(!a||!b){out.innerHTML=`<div class="tool-empty bad">Choose a player on both sides first.</div>`;return;}
-  const avgA=fixtureAverageForTeam(a.team,_taFixtureMap,5),avgB=fixtureAverageForTeam(b.team,_taFixtureMap,5);
-  const scoreA=playerWindowScore(a,_taFixtureMap,5),scoreB=playerWindowScore(b,_taFixtureMap,5);
+  const players=[_taSelected.from,_taSelected.to,_taSelected.third].filter(Boolean),out=$("transferBody");
+  if(players.length<2){out.innerHTML=`<div class="tool-empty bad">Choose at least two players first.</div>`;return;}
   const teams=boot.teams||[];
-  const formA=parseFloat(a.form||0)||0,formB=parseFloat(b.form||0)||0;
-  const ownA=parseFloat(a.selected_by_percent||0)||0,ownB=parseFloat(b.selected_by_percent||0)||0;
-  const diff=scoreB-scoreA;
-  let verdict="The short-term profiles are close.";
-  if(Math.abs(diff)>=1) verdict=diff>0?`${b.web_name} has the stronger next-five profile.`:`${a.web_name} has the stronger next-five profile.`;
-  const cheaper=b.now_cost<a.now_cost?`${b.web_name} also frees ${money(a.now_cost-b.now_cost)}.`:b.now_cost>a.now_cost?`${b.web_name} costs ${money(b.now_cost-a.now_cost)} more.`:"Both players have the same current price.";
+  const metrics=[["price","Price"],["points","Total points"],["form","Form"],["own","Ownership"],["minutes","Minutes"],["security","Minutes security"],["fdr","Next 5 avg FDR"],["proj","Projected next GW"],["proj5","Projected next 5"]];
+  const scored=players.map(e=>({e,proj:fplPeekProjectedPoints(e,_taFixtureMap,1),proj5:fplPeekProjectedPoints(e,_taFixtureMap,5),fdr:fixtureAverageForTeam(e.team,_taFixtureMap,5)}));
+  const best=[...scored].sort((a,b)=>b.proj5-a.proj5)[0];
+  const cheapest=[...players].sort((a,b)=>a.now_cost-b.now_cost)[0];
+  const easiest=[...scored].filter(x=>x.fdr!=null).sort((a,b)=>a.fdr-b.fdr)[0];
   out.innerHTML=`
-    <div class="transfer-board">
-      <div class="transfer-side">${taPlayerHead(a)}<div class="fixture-run">${fixtureRunHtml(a.team,_taFixtureMap,teams,5)}</div></div>
-      <div class="transfer-center"><span>vs</span></div>
-      <div class="transfer-side">${taPlayerHead(b)}<div class="fixture-run">${fixtureRunHtml(b.team,_taFixtureMap,teams,5)}</div></div>
-    </div>
-    <div class="transfer-metrics">
-      ${taMetric("Price",money(a.now_cost),money(b.now_cost))}
-      ${taMetric("Total points",a.total_points||0,b.total_points||0)}
-      ${taMetric("Form",formA.toFixed(1),formB.toFixed(1))}
-      ${taMetric("Ownership",`${ownA.toFixed(1)}%`,`${ownB.toFixed(1)}%`)}
-      ${taMetric("Minutes",a.minutes||0,b.minutes||0)}
-      ${taMetric("Next 5 avg FDR",avgA==null?"-":avgA.toFixed(2),avgB==null?"-":avgB.toFixed(2))}
-      ${taMetric("5-GW profile",scoreA.toFixed(1),scoreB.toFixed(1))}
-    </div>
-    <div class="transfer-verdict"><span>FPL Peek view</span><h4>${esc(verdict)}</h4><p>${esc(cheaper)} The profile is a transparent comparison of recent scoring, availability and fixture difficulty - not a predicted points guarantee.</p></div>`;
+    <div class="transfer-compare-grid cols-${players.length}">${players.map(e=>`<div class="transfer-side">${taPlayerHead(e)}<div class="fixture-run">${fixtureRunHtml(e.team,_taFixtureMap,teams,5)}</div></div>`).join("")}</div>
+    <div class="transfer-table-scroll"><table class="transfer-compare-table"><thead><tr><th>Metric</th>${players.map(e=>`<th>${esc(e.web_name)}</th>`).join("")}</tr></thead><tbody>${metrics.map(([k,label])=>`<tr><th>${esc(label)}</th>${players.map(e=>`<td>${esc(String(taMetricValue(e,k)))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="transfer-verdict"><span>FPL Peek view</span><h4>${esc(best.e.web_name)} has the strongest next-five projected profile.</h4><p>${easiest?`${esc(easiest.e.web_name)} has the easiest fixture run of this group. `:""}${esc(cheapest.web_name)} is the cheapest option at ${money(cheapest.now_cost)}. Projected points are a transparent FPL Peek estimate using public FPL form, output, minutes, availability and fixture difficulty - not a guarantee.</p></div>`;
 }

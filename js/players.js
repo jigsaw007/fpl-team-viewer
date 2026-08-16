@@ -1,7 +1,9 @@
 /* ============ PLAYERS tab ============ */
-let _pxSort="total_points", _pxDir=-1, _pxPos=0, _pxQuery="", _pxLimit=40, _pxWatchOnly=false;
+let _pxSort="total_points", _pxDir=-1, _pxPos=0, _pxQuery="", _pxLimit=40, _pxWatchOnly=false, _pxFixtureMap={};
 async function initPlayers(){
-  await loadBoot();
+  const [b,fixtures]=await Promise.all([loadBoot(),get("/fixtures/").catch(()=>[])]);
+  const start=(b.events.find(e=>e.is_current)||b.events.find(e=>e.is_next)||b.events.find(e=>!e.finished)||b.events[0]||{}).id||1;
+  _pxFixtureMap=buildFixtureMap(fixtures,start);
   $("plSearch").addEventListener("input",e=>{_pxQuery=e.target.value.toLowerCase();_pxLimit=40;drawPlayers();});
   $("plPos").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;
     $("plPos").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");
@@ -50,7 +52,9 @@ const PL_COLS=[
   {k:"form",label:"Form",def:true,fmt:v=>(+v).toFixed(1)},
   {k:"points_per_game",label:"PPG",def:true,fmt:v=>(+v).toFixed(1)},
   {k:"selected_by_percent",label:"Own%",def:true,fmt:v=>(+v).toFixed(1)+"%"},
+  {k:"proj",label:"Proj",def:true,get:e=>fplPeekProjectedPoints(e,_pxFixtureMap,1),fmt:(v,e)=>fplPeekProjectedPoints(e,_pxFixtureMap,1).toFixed(1)},
   {k:"minutes",label:"Min",def:false},
+  {k:"mins_per_start",label:"Min/start",def:false,get:e=>minutesSecurity(e).minsPerStart||0,fmt:(v,e)=>minutesSecurity(e).minsPerStart?minutesSecurity(e).minsPerStart.toFixed(0):"-"},
   {k:"starts",label:"Starts",def:false},
   {k:"goals_scored",label:"G",def:true},
   {k:"assists",label:"A",def:true},
@@ -98,7 +102,9 @@ function drawPlayers(){
   list.sort((a,c)=>{
     if(_pxSort==="web_name") return _pxDir*String(a.web_name).localeCompare(String(c.web_name));
     if(_pxSort==="team"){const tx=b.teams.find(t=>t.id===a.team)?.short_name||"";const ty=b.teams.find(t=>t.id===c.team)?.short_name||"";return _pxDir*tx.localeCompare(ty);}
-    return _pxDir*(num(a[_pxSort])-num(c[_pxSort]));
+    const col=PL_COLS.find(x=>x.k===_pxSort);
+    const av=col&&col.get?col.get(a):a[_pxSort],cv=col&&col.get?col.get(c):c[_pxSort];
+    return _pxDir*(num(av)-num(cv));
   });
   const total=list.length;
   list=list.slice(0,_pxLimit);
@@ -120,7 +126,7 @@ function drawPlayers(){
       <td class="star-col"><button class="star ${w?'on':''}" data-star="${e.id}" aria-label="Watchlist" title="${w?'Remove from watchlist':'Add to watchlist'}">${w?'★':'☆'}</button></td>
       <td class="left"><span class="pl-name">${esc(e.web_name)}</span> <span class="pl-meta">${POS[e.element_type]}</span></td>
       <td class="left pl-team">${kitCell}<span>${esc(t.short_name||"")}</span></td>
-      ${cols.map(c=>`<td class="${c.left?'left':''}">${c.fmt?c.fmt(e[c.k],e):(e[c.k]??0)}</td>`).join("")}
+      ${cols.map(c=>{const v=c.get?c.get(e):e[c.k];return `<td class="${c.left?'left':''}">${c.fmt?c.fmt(v,e):(v??0)}</td>`;}).join("")}
     </tr>`;
   }).join("")}</tbody>`;
   $("plTable").innerHTML=head+body;

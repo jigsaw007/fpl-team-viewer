@@ -328,11 +328,17 @@ function plSubstitute(id){
   w.starters=next;if(w.captain&&!next.includes(+w.captain))w.captain=null;if(w.vice&&!next.includes(+w.vice))w.vice=null;_plSwapId=null;plTouch(plan);plRenderAll();
 }
 function plClearSquad(){
-  const plan=plActive();if(!plan||!plan.baseSquad.length)return;if(!confirm("Clear the entire base squad and all planned gameweek changes for this plan?"))return;
+  const plan=plActive();if(!plan||!plan.baseSquad.length)return;if(!confirm("Clear the base squad and every planned Gameweek in this plan? This cannot be undone."))return;
   plan.baseSquad=[];plan.baseBank=PL_BUDGET;plan.baseSellPrices={};plan.weeks=plMakeWeeks(plan.baseGw);_plOutId=null;_plSwapId=null;_plActionId=null;_plActiveGw=plan.baseGw;plTouch(plan);plRenderAll();
 }
 function plRemoveTransfer(id){const plan=plActive(),w=plWeek(plan,_plActiveGw);w.transfers=(w.transfers||[]).filter(t=>t.id!==id);_plOutId=null;plTouch(plan);plRenderAll()}
-function plResetGw(){const plan=plActive(),w=plWeek(plan,_plActiveGw);if(!w)return;w.transfers=[];w.captain=null;w.vice=null;w.chip="";w.starters=null;_plOutId=null;_plSwapId=null;plTouch(plan);plRenderAll()}
+function plResetGw(){
+  const plan=plActive(),w=plWeek(plan,_plActiveGw);if(!w)return;
+  const hasChanges=!!(w.transfers?.length||w.captain||w.vice||w.chip||w.starters);
+  if(!hasChanges)return;
+  if(!confirm(`Clear only the planned changes for GW${_plActiveGw}? Your base squad and other Gameweeks will stay in the plan.`))return;
+  w.transfers=[];w.captain=null;w.vice=null;w.chip="";w.starters=null;_plOutId=null;_plSwapId=null;_plActionId=null;plTouch(plan);plRenderAll();
+}
 async function plImportFpl(){
   const tid=String($("plTeamId").value||"").trim();if(!tid)return toast("Enter your FPL Team ID");$("plImportTeam").disabled=true;$("plImportTeam").textContent="Importing…";$("plImportHint").textContent="";
   try{

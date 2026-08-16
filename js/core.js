@@ -98,6 +98,60 @@ function fixtureAverageForTeam(teamId,map,n=5){
   return rows.reduce((a,f)=>a+(Number(f.fdr)||3),0)/rows.length;
 }
 
+function fplPeekProjectedPoints(e,map,n=1){
+  if(!e) return 0;
+  const fixtures=(map&&map[e.team]||[]).slice(0,Math.max(1,n));
+  const form=parseFloat(e.form||0)||0;
+  const ppg=parseFloat(e.points_per_game||0)||0;
+  const starts=Number(e.starts)||0;
+  const mins=Number(e.minutes)||0;
+  const liveSeason=typeof seasonStarted==="function" ? seasonStarted() : (form>0||mins>0);
+  let base;
+  if(!liveSeason){
+    const price=(Number(e.now_cost)||50)/10;
+    const own=Math.min(60,parseFloat(e.selected_by_percent||0)||0);
+    base=1.65 + Math.max(0,price-4.0)*0.34 + own*0.018;
+    base=Math.max(1.8,Math.min(6.4,base));
+  }else{
+    base=form>0 ? form*0.58 + Math.max(ppg,1.5)*0.42 : Math.max(ppg,1.8);
+    base=Math.max(1.2,Math.min(8.6,base||1.8));
+  }
+  let minuteFactor=1;
+  if(liveSeason && starts>0){
+    const minsPerStart=mins/starts;
+    minuteFactor=Math.max(.58,Math.min(1,minsPerStart/88));
+  }
+  let availability=1;
+  if(e.status&&e.status!=="a"){
+    const chance=e.chance_of_playing_next_round;
+    availability=chance==null?.35:Math.max(0,Math.min(1,Number(chance)/100));
+  }else if(e.chance_of_playing_next_round!=null){
+    availability=Math.max(0,Math.min(1,Number(e.chance_of_playing_next_round)/100));
+  }
+  const setPieceBoost=(Number(e.penalties_order)>0&&Number(e.penalties_order)<=2)?.22:(Number(e.direct_freekicks_order)>0&&Number(e.direct_freekicks_order)<=2)?.08:0;
+  const rows=fixtures.length?fixtures:[{fdr:3}];
+  const total=rows.reduce((sum,f)=>{
+    const fdr=Number(f.fdr)||3;
+    const fixtureFactor=Math.max(.76,Math.min(1.24,1+(3-fdr)*.12));
+    return sum+Math.min(9.8,(base+setPieceBoost)*fixtureFactor*minuteFactor*availability);
+  },0);
+  return Math.max(0,total);
+}
+function fplPeekProjectionLabel(v){
+  if(v>=7.5) return "Elite";
+  if(v>=6) return "Strong";
+  if(v>=4.5) return "Solid";
+  if(v>=3.2) return "Playable";
+  return "Low";
+}
+function minutesSecurity(e){
+  const starts=Number(e&&e.starts)||0, mins=Number(e&&e.minutes)||0;
+  if(!starts) return {score:70,label:"Unproven",minsPerStart:null};
+  const mps=mins/starts;
+  const score=Math.max(35,Math.min(100,Math.round((mps/90)*100)));
+  return {score,label:score>=92?"Very secure":score>=82?"Secure":score>=68?"Some risk":"Rotation risk",minsPerStart:mps};
+}
+
 function playerWindowScore(e,map,n=5){
   if(!e) return 0;
   const form=parseFloat(e.form||0)||0;

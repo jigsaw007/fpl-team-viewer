@@ -10,10 +10,15 @@ async function openPlayer(pid){
   try{
     const sum=await get(`/element-summary/${pid}/`);
     const stat=(k,v,s)=>`<div class="cap-item"><div class="v">${v}</div><div class="k">${k}</div>${s?`<div class="sub">${s}</div>`:""}</div>`;
+    const localMap={[e.team]:(sum.fixtures||[]).slice(0,5).map(f=>({fdr:f.difficulty,gw:f.event}))};
+    const proj=fplPeekProjectedPoints(e,localMap,1),proj5=fplPeekProjectedPoints(e,localMap,5);
+    const security=minutesSecurity(e);
     const num=v=>(v==null||v==="")?"—":v;
     // season underlying stats live on the element (bootstrap)
     const faceHead=`<div class="pdd-face-row">${faceImg(e,"pdd-face")}<div class="pdd-face-info"><div class="pdd-face-nm">${esc(e.web_name)}</div><div class="pdd-face-mt">${esc(t.name||"")} · ${POS[e.element_type]} · ${money(e.now_cost)} · ${(+e.selected_by_percent).toFixed(1)}% owned</div></div></div>`;
     const head=faceHead+`<div class="cap-grid">
+      ${stat("Projected GW", proj.toFixed(1), fplPeekProjectionLabel(proj))}
+      ${stat("Projected next 5", proj5.toFixed(1), "FPL Peek estimate")}
       ${stat("Total points", e.total_points)}
       ${stat("Form", (+e.form).toFixed(1))}
       ${stat("PPG", num(e.points_per_game))}
@@ -27,8 +32,12 @@ async function openPlayer(pid){
       ${stat("Minutes", num(e.minutes))}
       ${stat("Bonus", num(e.bonus))}
     </div>`;
-    // recent gameweek history
+    // recent gameweek history + minutes tracker
     const hist=(sum.history||[]).slice(-8).reverse();
+    const recentChron=[...hist].reverse();
+    const startsRecent=recentChron.filter(h=>Number(h.minutes)>=60).length;
+    const avgRecent=recentChron.length?recentChron.reduce((a,h)=>a+Number(h.minutes||0),0)/recentChron.length:0;
+    const minutesTracker=recentChron.length?`<div class="minutes-tracker"><div class="minutes-tracker-head"><div><span class="lg-cat">Minutes tracker</span><h4>${esc(security.label)}</h4></div><div><b>${avgRecent.toFixed(0)}</b><small>avg min · ${startsRecent}/${recentChron.length} 60+ min</small></div></div><div class="minutes-bars">${recentChron.map(h=>`<div class="minutes-bar-col" title="GW${h.round}: ${h.minutes} minutes"><div class="minutes-bar"><i style="height:${Math.max(3,Math.min(100,(Number(h.minutes||0)/90)*100))}%"></i></div><span>GW${h.round}</span><b>${h.minutes}</b></div>`).join("")}</div></div>`:"";
     const histTbl=hist.length?`<div class="lg-cat" style="margin-top:18px">Recent gameweeks</div>
       <div class="compact-table-scroll"><table class="dt compact-dt"><thead><tr><th class="left">GW</th><th>Pts</th><th>Min</th><th>xGI</th><th>ICT</th><th class="left">Opp</th></tr></thead>
       <tbody>${hist.map(h=>{
@@ -46,7 +55,7 @@ async function openPlayer(pid){
         const fdr=f.difficulty;
         return `<span class="fdr${fdr}" title="GW${f.event}">${esc((opp.short_name||"").toUpperCase())}${f.is_home?"":" (a)"}</span>`;
       }).join("")}</div>`:"";
-    $("lmBody").innerHTML=head+histTbl+fixTbl;
+    $("lmBody").innerHTML=head+minutesTracker+histTbl+fixTbl;
   }catch(err){
     $("lmBody").innerHTML=`<div class="banner err" style="margin:0"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div><b>Couldn't load player data.</b><small>${esc(err.message)}</small></div></div>`;
   }

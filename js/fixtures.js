@@ -1,5 +1,5 @@
 /* ============ FIXTURES / RESULTS / TABLE tab ============ */
-let _fxN=5, _fxSort="team", _allFixtures=null, _fxGw=1, _fxView="matches", _fxMatchFilter="all";
+let _fxN=5, _fxSort="team", _allFixtures=null, _fxGw=1, _fxView="matches", _fxMatchFilter="all", _rotN=5;
 
 async function initFixtures(){
   $("fxMatches").innerHTML=`<div class="tab-status"><div class="spinner"></div>Loading fixtures…</div>`;
@@ -27,6 +27,12 @@ async function initFixtures(){
   $("fxRange").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;
     $("fxRange").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");
     _fxN=+x.dataset.n; drawFixtures();});
+  $("rotRange").addEventListener("click",e=>{const x=e.target.closest("button[data-n]");if(!x)return;$("rotRange").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");_rotN=+x.dataset.n;drawRotationPlanner();});
+  $("rotTeamA").addEventListener("change",drawRotationPlanner);
+  $("rotTeamB").addEventListener("change",drawRotationPlanner);
+  const rotOpts=b.teams.slice().sort((a,c)=>a.name.localeCompare(c.name)).map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");
+  $("rotTeamA").innerHTML=rotOpts;$("rotTeamB").innerHTML=rotOpts;
+  if(b.teams[0]) $("rotTeamA").value=String(b.teams[0].id);if(b.teams[1]) $("rotTeamB").value=String(b.teams[1].id);
   $("fxSort").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;
     $("fxSort").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");
     _fxSort=x.dataset.s; drawFixtures();});
@@ -42,9 +48,11 @@ function setFixturesView(view){
   $("fxMatchesPanel").hidden=view!=="matches";
   $("fxFdrPanel").hidden=view!=="fdr";
   $("fxTablePanel").hidden=view!=="table";
+  $("fxRotationPanel").hidden=view!=="rotation";
   if(view==="matches") drawMatchCentre();
   if(view==="fdr") drawFixtures();
   if(view==="table") drawLeagueTable();
+  if(view==="rotation") drawRotationPlanner();
 }
 
 function setFixtureGw(gw){
@@ -154,6 +162,34 @@ function drawFixtures(){
     return `<tr><td class="club"><span class="fx-club-cell">${teamKitImg(t,"fx-grid-kit",`${t.name} kit`)}<b>${esc(t.name)}</b></span></td>${cells}<td><span class="agg">${a}</span></td></tr>`;
   }).join("");
   $("fxGrid").innerHTML=`<table class="fxg"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+}
+
+function rotationFixturesFor(teamId,gws){
+  const rows={};gws.forEach(g=>rows[g]=[]);
+  (_allFixtures||[]).filter(f=>f.event&&gws.includes(f.event)&&(f.team_h===teamId||f.team_a===teamId)).forEach(f=>{
+    const home=f.team_h===teamId;
+    rows[f.event].push({opp:home?f.team_a:f.team_h,home,fdr:home?f.team_h_difficulty:f.team_a_difficulty});
+  });
+  return rows;
+}
+function drawRotationPlanner(){
+  if(!_allFixtures||!boot||!$("rotTeamA")||!$("rotTeamB")) return;
+  const a=Number($("rotTeamA").value),b=Number($("rotTeamB").value);
+  const start=((boot.events||[]).find(e=>e.is_current)||(boot.events||[]).find(e=>e.is_next)||(boot.events||[]).find(e=>!e.finished)||boot.events[0]||{id:1}).id;
+  const gws=[];for(let g=start;g<start+_rotN&&g<=38;g++)gws.push(g);
+  const ra=rotationFixturesFor(a,gws),rb=rotationFixturesFor(b,gws),ta=boot.teams.find(t=>t.id===a)||{},tb=boot.teams.find(t=>t.id===b)||{};
+  let quality=0,count=0;
+  const cells=gws.map(g=>{
+    const aa=ra[g][0],bb=rb[g][0];
+    const av=aa?Number(aa.fdr)||3:5,bv=bb?Number(bb.fdr)||3:5;
+    const best=av<=bv?{x:aa,t:ta}:{x:bb,t:tb};
+    if(best.x){quality+=Math.max(0,6-best.x.fdr);count++;}
+    const one=(x,t)=>x?`<div class="rotation-fixture fdr${x.fdr}">${teamKitImg(t,"rotation-kit")}<span><b>${esc(t.short_name||"")}</b><small>${esc((boot.teams.find(z=>z.id===x.opp)||{}).short_name||"")} ${x.home?"H":"A"}</small></span><em>${x.fdr}</em></div>`:`<div class="rotation-fixture blank">No fixture</div>`;
+    return `<div class="rotation-gw"><div class="rotation-gw-label">GW${g}</div>${one(aa,ta)}${one(bb,tb)}<div class="rotation-best">Start: <b>${esc(best.t.short_name||"-")}</b></div></div>`;
+  }).join("");
+  const score=count?Math.max(0,Math.min(10,quality/count*2)).toFixed(1):"-";
+  const verdict=score==="-"?"Waiting for fixtures":Number(score)>=8?"Excellent pairing":Number(score)>=6.5?"Useful pairing":Number(score)>=5?"Mixed pairing":"Weak rotation";
+  $("rotationBody").innerHTML=`<div class="rotation-explainer"><div class="rotation-explainer-icon">A/B</div><div><b>How to use this</b><p>Choose two clubs if you plan to own a goalkeeper or defender from each. For every Gameweek, FPL Peek compares their official fixture difficulty and tells you which one has the easier fixture to start. It does not mean you should transfer between the clubs each week.</p></div></div><div class="rotation-summary"><div><span>Rotation score</span><strong>${score}<small>/10</small></strong><em>${verdict}</em></div><p><b>8-10:</b> excellent rotation - <b>6.5-7.9:</b> useful - <b>5-6.4:</b> mixed. The score uses official FDR only; player quality still matters.</p></div><div class="rotation-legend"><span>Each GW shows Club A</span><span>Club B</span><span><b>Start</b> = easier fixture</span></div><div class="rotation-grid">${cells}</div>`;
 }
 
 function buildLeagueRows(){

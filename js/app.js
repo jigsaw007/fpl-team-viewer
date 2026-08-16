@@ -1,3 +1,25 @@
+/* ============ appearance ============ */
+(function initAppearance(){
+  const root=document.documentElement,btn=$("themeToggle");
+  function current(){return root.dataset.theme==="dark"?"dark":"light"}
+  function paint(){
+    if(!btn)return;
+    const dark=current()==="dark";
+    const icon=btn.querySelector(".theme-toggle-icon"),text=btn.querySelector(".theme-toggle-text");
+    if(icon)icon.textContent=dark?"☀":"☾";
+    if(text)text.textContent=dark?"Light":"Dark";
+    btn.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");
+    btn.title=dark?"Switch to light mode":"Switch to dark mode";
+  }
+  paint();
+  btn?.addEventListener("click",()=>{
+    const next=current()==="dark"?"light":"dark";
+    root.dataset.theme=next;
+    try{localStorage.setItem("fplpeek_theme",next)}catch(e){}
+    paint();
+  });
+})();
+
 /* ============ events ============ */
 $("go").addEventListener("click",()=>view($("tid").value));
 $("tid").addEventListener("keydown",e=>{if(e.key==="Enter")view($("tid").value)});

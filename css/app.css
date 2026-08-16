@@ -1337,3 +1337,662 @@ table.dt.compact-dt{min-width:520px}
 
 /* V18.3 — clearer editorial visual rules */
 .insights-takeaway{margin:20px 0 14px;padding:15px 17px;border-left:3px solid #079b62;background:#f6faf8;border-radius:0 12px 12px 0}.insights-takeaway b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:#078755;margin-bottom:6px}.insights-takeaway p{margin:0!important;font-size:12px!important;line-height:1.65!important;color:#405149!important}.insights-neutral-visual{justify-content:center;background:linear-gradient(180deg,#f2f9f5,#eaf5ef)}.insights-gw-mark,.home-gw-mark{display:flex;flex-direction:column;align-items:center;justify-content:center}.insights-gw-mark span,.home-gw-mark span{font-size:9px;letter-spacing:.12em;font-weight:800;color:#6d7d75}.insights-gw-mark b{font-size:58px;line-height:1;color:#079b62;letter-spacing:-.06em;margin:8px 0}.insights-gw-mark small{font-size:10px;color:#607168}.home-gw-mark{width:96px;height:96px;border:1px solid #d8e8e0;border-radius:18px;background:#fff}.home-gw-mark b{font-size:34px;color:#079b62;letter-spacing:-.05em;margin-top:5px}.home-insight-mini-kit,.insights-lead-kit{display:none!important}
+
+
+/* ===== V20 decision tools ===== */
+.rating-hero{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;padding:22px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:18px;background:#f6fbf8;margin:18px 0}
+.rating-score{display:flex;align-items:baseline;gap:3px;min-width:130px}.rating-score span{display:block;position:absolute;transform:translateY(-28px);font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:var(--dim)}.rating-score strong{font-size:54px;line-height:1;color:var(--ink)}.rating-score em{font-style:normal;color:var(--dim);font-weight:700}.rating-hero-copy h3{margin:4px 0 2px;font-size:25px}.rating-hero-copy p,.rating-verdict small{color:var(--dim)}.rating-verdict{text-align:right;max-width:180px}.rating-verdict b,.rating-verdict small{display:block}.rating-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}.rating-row{display:grid;grid-template-columns:minmax(140px,1fr) minmax(100px,1.2fr) 38px;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:#fff}.rating-row-copy b,.rating-row-copy small{display:block}.rating-row-copy small{color:var(--dim);margin-top:2px}.rating-track{height:7px;background:#edf2ef;border-radius:99px;overflow:hidden}.rating-track i{display:block;height:100%;background:var(--accent);border-radius:inherit}.rating-row strong{text-align:right}
+.muted-label{color:var(--dim);font-weight:500}.transfer-form{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) minmax(0,1fr)!important;align-items:start}.ta-form-actions{grid-column:1/-1}.transfer-compare-grid{display:grid;gap:14px;margin:18px 0}.transfer-compare-grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.transfer-compare-grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.transfer-table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#fff}.transfer-compare-table{border-collapse:collapse;width:100%;min-width:620px}.transfer-compare-table th,.transfer-compare-table td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:center}.transfer-compare-table th:first-child{text-align:left;color:var(--dim)}.transfer-compare-table thead th{font-size:12px;background:#f7f9f8}.transfer-compare-table tbody tr:last-child th,.transfer-compare-table tbody tr:last-child td{border-bottom:0}
+.minutes-tracker{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:16px;background:#fbfcfb}.minutes-tracker-head{display:flex;justify-content:space-between;align-items:end;gap:16px}.minutes-tracker-head h4{margin:4px 0 0}.minutes-tracker-head>div:last-child{text-align:right}.minutes-tracker-head b,.minutes-tracker-head small{display:block}.minutes-tracker-head small{color:var(--dim)}.minutes-bars{display:flex;gap:8px;align-items:end;height:125px;margin-top:16px}.minutes-bar-col{flex:1;min-width:34px;text-align:center;font-size:9px;color:var(--dim)}.minutes-bar{height:82px;background:#edf2ef;border-radius:6px;display:flex;align-items:end;overflow:hidden;margin-bottom:5px}.minutes-bar i{width:100%;background:var(--accent);border-radius:4px 4px 0 0}.minutes-bar-col b{display:block;color:var(--ink);font-size:10px;margin-top:2px}
+.rotation-controls{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:end;margin:18px 0}.rotation-controls h3{margin:3px 0}.rotation-controls p{margin:0;color:var(--dim)}.rotation-selects{display:flex;align-items:center;gap:8px}.rotation-selects select{min-width:150px}.rotation-summary{display:flex;align-items:center;gap:18px;padding:18px;border:1px solid var(--line);border-radius:14px;background:#f6fbf8;margin-bottom:14px}.rotation-summary span,.rotation-summary strong{display:block}.rotation-summary strong{font-size:34px}.rotation-summary strong small{font-size:14px;color:var(--dim)}.rotation-summary p{margin:0;color:var(--dim)}.rotation-grid{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));gap:10px;overflow-x:auto;padding-bottom:5px}.rotation-gw{border:1px solid var(--line);border-radius:13px;padding:10px;background:#fff}.rotation-gw-label{font-weight:800;font-size:11px;margin-bottom:8px}.rotation-fixture{display:flex;align-items:center;gap:7px;padding:8px;border-radius:9px;margin:5px 0}.rotation-kit{width:24px;height:30px;object-fit:contain}.rotation-fixture span{flex:1}.rotation-fixture b,.rotation-fixture small{display:block}.rotation-fixture small{font-size:9px}.rotation-fixture em{font-style:normal;font-weight:800}.rotation-best{font-size:10px;color:var(--dim);border-top:1px solid var(--line);padding-top:7px;margin-top:7px}
+.captain-matrix{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;margin:18px 0}.captain-matrix-head{display:flex;justify-content:space-between;gap:18px;padding:18px 20px;border-bottom:1px solid var(--line)}.captain-matrix-head h3{margin:4px 0}.captain-matrix-head p{margin:0;color:var(--dim)}.captain-matrix-picks{display:flex;gap:8px;align-items:center}.captain-matrix-picks span{padding:8px 10px;background:#f3f8f5;border-radius:9px;font-size:11px}.captain-matrix-picks b{display:block}.matrix-scroll{overflow-x:auto}.matrix-table{border-collapse:collapse;width:100%;min-width:760px}.matrix-table th,.matrix-table td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left}.matrix-table thead th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);background:#fafbfa}.matrix-player{display:flex;align-items:center;gap:8px}.matrix-kit{width:29px;height:36px;object-fit:contain}.matrix-player b,.matrix-player small{display:block}.matrix-player small{color:var(--dim)}.matrix-stars{color:var(--accent);letter-spacing:1px;white-space:nowrap}.captain-sample-head{margin-top:24px}
+@media(max-width:900px){.rating-hero{grid-template-columns:1fr}.rating-score span{position:static;transform:none}.rating-verdict{text-align:left;max-width:none}.rating-breakdown{grid-template-columns:1fr}.transfer-form{grid-template-columns:1fr!important}.swap-action{display:none}.transfer-compare-grid.cols-2,.transfer-compare-grid.cols-3{grid-template-columns:1fr}.rotation-controls{grid-template-columns:1fr}.rotation-selects{flex-wrap:wrap}.rotation-grid{grid-template-columns:repeat(5,150px)}.captain-matrix-head{display:block}.captain-matrix-picks{margin-top:12px}.minutes-bars{overflow-x:auto}.minutes-bar-col{min-width:42px}}
+
+/* V21 - clearer decision tools and calmer Insights styling */
+.home-editorial-card,.home-editorial-card:visited{color:var(--text);text-decoration:none}
+.home-editorial-feature{background:#f7fbf9;box-shadow:inset 3px 0 0 #079b62}
+.home-editorial-feature .home-insight-copy>b,.home-editorial-secondary>b{color:#142019!important}
+.home-editorial-feature .home-insight-copy>small,.home-editorial-secondary>small{color:#596861!important}
+.home-editorial-card:hover .home-insight-copy>b,.home-editorial-card:hover>b{color:#087d53!important}
+.home-gw-mark{background:#fff;border-color:#dce9e2}.home-gw-mark b{color:#087d53}
+
+.tool-guide{margin:18px 0 20px;padding:20px;border:1px solid #dfe8e3;border-radius:16px;background:#f8fbf9}
+.tool-guide.compact{margin:16px 0 20px;padding:18px}
+.tool-guide-title>span{font-size:9px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:#078755}
+.tool-guide-title h3{font-size:18px;margin:5px 0;color:var(--text)}
+.tool-guide-title p{margin:0;max-width:850px;color:var(--dim);font-size:12px;line-height:1.6}
+.tool-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.tool-guide-grid article{padding:13px 14px;border:1px solid #e3ebe7;border-radius:11px;background:#fff}
+.tool-guide-grid article b{display:block;font-size:12px;color:var(--text);margin-bottom:4px}
+.tool-guide-grid article p{margin:0;color:var(--dim);font-size:10.5px;line-height:1.55}
+
+.rotation-explainer{display:flex;gap:13px;align-items:flex-start;padding:15px 17px;border:1px solid #dce9e2;border-radius:13px;background:#f8fbf9;margin-bottom:12px}
+.rotation-explainer-icon{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:10px;background:#eaf6f0;color:#078755;font-size:11px;font-weight:900;letter-spacing:.04em}
+.rotation-explainer b{font-size:12px}.rotation-explainer p{margin:3px 0 0;color:var(--dim);font-size:11px;line-height:1.55}
+.rotation-summary>div em{display:block;margin-top:2px;font-size:10px;font-style:normal;color:#078755;font-weight:800}
+.rotation-summary p{font-size:11px;line-height:1.55}.rotation-legend{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.rotation-legend span{font-size:10px;color:#5d6c64;padding:5px 8px;border:1px solid #e1e9e5;border-radius:8px;background:#fff}
+
+.captain-matrix-head p{max-width:760px;line-height:1.55}.captain-matrix-picks span{border:1px solid #e0ebe5;background:#f7faf8}
+
+@media(max-width:760px){.tool-guide-grid{grid-template-columns:1fr}.tool-guide{padding:16px}.rotation-explainer{padding:13px}.rotation-summary{align-items:flex-start;flex-direction:column}}
+
+/* V22 - planner clarity, clickable player rows and appearance toggle */
+.theme-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:var(--panel);color:var(--sub);border-radius:8px;padding:7px 9px;font:700 11px/1 'Inter',sans-serif;cursor:pointer;transition:.15s;white-space:nowrap}
+.theme-toggle:hover{color:var(--ink);border-color:#aeb8c2;background:var(--panel2)}
+.theme-toggle-icon{font-size:13px;line-height:1}
+.pl-clickable{cursor:pointer}
+.pl-clickable:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.planner-title-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media(min-width:901px){
+  .nav{justify-content:space-between;gap:8px}
+  .brand{min-width:0}.brand>div:last-child{min-width:0}.brand-sub{display:block;white-space:nowrap}
+  .theme-toggle{padding:7px;width:34px;height:34px;justify-content:center}
+  .theme-toggle-text{display:none}
+}
+@media(max-width:900px){.theme-toggle{margin-left:auto}}
+
+/* Dark mode. Uses the same restrained green accent while keeping the pitch/kit artwork untouched. */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11161b;
+  --bg2:#151b21;
+  --panel:#171e24;
+  --panel2:#202830;
+  --line:#2b343d;
+  --line2:#37424c;
+  --ink:#edf2f5;
+  --sub:#b4bec7;
+  --dim:#818d98;
+  --accent:#29b77b;
+  --mint:#29b77b;
+  --good:#45c993;
+  --bad:#ef7181;
+  --warn:#d6a653;
+  --fdr3:#3a434b;
+}
+html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+html[data-theme="dark"] .nav,
+html[data-theme="dark"] .tabs{background:var(--panel)!important;border-color:var(--line)!important}
+html[data-theme="dark"] .tab{color:var(--sub)}
+html[data-theme="dark"] .tab:hover{background:var(--panel2)!important;color:var(--ink)!important}
+html[data-theme="dark"] .tab.active{background:#17382d!important;color:#7ad7ad!important;box-shadow:inset 3px 0 0 var(--accent)}
+html[data-theme="dark"] .tab-label.active-group{background:#172922;color:#74c9a5}
+html[data-theme="dark"] .sidebar-account{background:#141b20!important;border-color:var(--line)!important}
+html[data-theme="dark"] .sidebar-account-btn,
+html[data-theme="dark"] .theme-toggle{background:var(--panel)!important;color:var(--sub);border-color:var(--line2)!important}
+html[data-theme="dark"] .sidebar-account-btn:hover,
+html[data-theme="dark"] .theme-toggle:hover{background:var(--panel2)!important;color:var(--ink)}
+html[data-theme="dark"] .home-status-card,
+html[data-theme="dark"] .home-insight,
+html[data-theme="dark"] .home-tool,
+html[data-theme="dark"] .home-fixtures,
+html[data-theme="dark"] .analysis-panel,
+html[data-theme="dark"] .analysis-stat,
+html[data-theme="dark"] .analysis-manager-head,
+html[data-theme="dark"] .tool-form,
+html[data-theme="dark"] .compare-form,
+html[data-theme="dark"] .transfer-form,
+html[data-theme="dark"] .tool-field,
+html[data-theme="dark"] .tool-empty,
+html[data-theme="dark"] .tool-loading,
+html[data-theme="dark"] .fx-scroll,
+html[data-theme="dark"] .tbl-scroll,
+html[data-theme="dark"] .tbl-scroll-top,
+html[data-theme="dark"] .plcols-panel,
+html[data-theme="dark"] .live-row,
+html[data-theme="dark"] .inj-row,
+html[data-theme="dark"] .sp-card,
+html[data-theme="dark"] .scout-row,
+html[data-theme="dark"] .ps-row,
+html[data-theme="dark"] .pr-row,
+html[data-theme="dark"] .pdd-card,
+html[data-theme="dark"] .modal-card,
+html[data-theme="dark"] .captain-head,
+html[data-theme="dark"] .captain-card,
+html[data-theme="dark"] .captain-loading,
+html[data-theme="dark"] .captain-empty,
+html[data-theme="dark"] .bld-top,
+html[data-theme="dark"] .bld-note,
+html[data-theme="dark"] .bld-info-card,
+html[data-theme="dark"] .bld-playerbox,
+html[data-theme="dark"] .planner-start-card,
+html[data-theme="dark"] .planner-summary>div,
+html[data-theme="dark"] .planner-main,
+html[data-theme="dark"] .planner-side,
+html[data-theme="dark"] .planner-transfer,
+html[data-theme="dark"] .planner-player-list,
+html[data-theme="dark"] .planner-action-sheet,
+html[data-theme="dark"] .tool-guide,
+html[data-theme="dark"] .tool-guide article,
+html[data-theme="dark"] .rotation-panel,
+html[data-theme="dark"] .rotation-summary,
+html[data-theme="dark"] .rotation-table-wrap,
+html[data-theme="dark"] .captain-matrix-card,
+html[data-theme="dark"] .compare-player-card,
+html[data-theme="dark"] .player-detail-card,
+html[data-theme="dark"] .minutes-track-card,
+html[data-theme="dark"] .home-editorial-card,
+html[data-theme="dark"] .insight-card,
+html[data-theme="dark"] .insight-feature,
+html[data-theme="dark"] .insight-archive-card{background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)}
+html[data-theme="dark"] .fxg th,
+html[data-theme="dark"] table.dt th{background:#151c22!important;color:#9ba7b2;border-color:var(--line)!important}
+html[data-theme="dark"] .fxg td,
+html[data-theme="dark"] table.dt td{border-color:var(--line)!important}
+html[data-theme="dark"] table.dt tr:hover td{background:var(--panel2)!important}
+html[data-theme="dark"] .seg{background:var(--panel)!important;border-color:var(--line)!important}
+html[data-theme="dark"] .seg button.active{background:var(--panel2)!important;color:var(--ink)!important;box-shadow:none}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea{background:#12191f!important;color:var(--ink)!important;border-color:var(--line2)!important}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder{color:#6f7c87}
+html[data-theme="dark"] .secondary-action,
+html[data-theme="dark"] .bld-btn.ghost,
+html[data-theme="dark"] .share-btn,
+html[data-theme="dark"] .captain-refresh,
+html[data-theme="dark"] .lm-more{background:var(--panel2)!important;color:var(--ink)!important;border-color:var(--line2)!important}
+html[data-theme="dark"] .secondary-action:hover,
+html[data-theme="dark"] .share-btn:hover,
+html[data-theme="dark"] .captain-refresh:hover{background:#28333c!important}
+html[data-theme="dark"] .danger-soft{color:#ff8c99!important;border-color:#63343c!important;background:#2a1b20!important}
+html[data-theme="dark"] .home-recent-chip,
+html[data-theme="dark"] .recent .chip{background:var(--panel)!important;border-color:var(--line)!important;color:var(--sub)!important}
+html[data-theme="dark"] .mhead,
+html[data-theme="dark"] .countdown,
+html[data-theme="dark"] .cd-box{background:var(--panel)!important;border-color:var(--line)!important}
+html[data-theme="dark"] .mhead .name,
+html[data-theme="dark"] .cd-num{color:var(--ink)!important}
+html[data-theme="dark"] .banner{background:#2a2418!important;border-color:#51432a!important}
+html[data-theme="dark"] .banner.err{background:#2b1c21!important;border-color:#61313b!important}
+html[data-theme="dark"] .bench{background:#172026!important;border-color:#34404a!important}
+html[data-theme="dark"] .planner-gw{background:var(--panel)!important;border-color:var(--line)!important;color:var(--sub)!important}
+html[data-theme="dark"] .planner-gw.active{background:#17382d!important;border-color:#2d7f61!important;color:#8cddb9!important}
+html[data-theme="dark"] .mobile-nav,
+html[data-theme="dark"] .mobile-more-sheet{background:var(--panel)!important;border-color:var(--line)!important}
+html[data-theme="dark"] .mobile-nav-item,
+html[data-theme="dark"] .mobile-more-grid button,
+html[data-theme="dark"] #mobileMoreClose{color:var(--sub)!important;background:transparent!important;border-color:var(--line)!important}
+html[data-theme="dark"] .mobile-nav-item.active{color:#7ad7ad!important}
+html[data-theme="dark"] footer{border-color:var(--line);color:var(--dim)}
+html[data-theme="dark"] a{color:#8bdab8}
+
+/* V23 - complete dark-mode surface + contrast pass */
+html[data-theme="dark"]{
+  --bg:#0f1419;
+  --bg2:#12181e;
+  --panel:#171e24;
+  --panel2:#202830;
+  --line:#2d3740;
+  --line2:#3a4651;
+  --ink:#f2f6f8;
+  --sub:#c2cbd2;
+  --dim:#8f9ba6;
+}
+html[data-theme="dark"] body,
+html[data-theme="dark"] .app,
+html[data-theme="dark"] .main,
+html[data-theme="dark"] .page,
+html[data-theme="dark"] .tabpanel{background:var(--bg)!important;color:var(--ink)!important}
+
+/* Shared surfaces */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .scout-note,
+html[data-theme="dark"] .analysis-manager-head,
+html[data-theme="dark"] .analysis-stat,
+html[data-theme="dark"] .analysis-panel,
+html[data-theme="dark"] .tool-form,
+html[data-theme="dark"] .compare-form,
+html[data-theme="dark"] .transfer-form,
+html[data-theme="dark"] .transfer-side,
+html[data-theme="dark"] .transfer-table-scroll,
+html[data-theme="dark"] .tool-guide,
+html[data-theme="dark"] .tool-guide-grid article,
+html[data-theme="dark"] .rating-hero,
+html[data-theme="dark"] .rating-row,
+html[data-theme="dark"] .minutes-tracker,
+html[data-theme="dark"] .rotation-explainer,
+html[data-theme="dark"] .rotation-summary,
+html[data-theme="dark"] .rotation-gw,
+html[data-theme="dark"] .captain-matrix,
+html[data-theme="dark"] .captain-head,
+html[data-theme="dark"] .captain-card,
+html[data-theme="dark"] .planner-start-card,
+html[data-theme="dark"] .planner-summary>div,
+html[data-theme="dark"] .planner-main,
+html[data-theme="dark"] .planner-picker,
+html[data-theme="dark"] .planner-transfer,
+html[data-theme="dark"] .planner-player-list,
+html[data-theme="dark"] .planner-action-sheet,
+html[data-theme="dark"] .fx-match-toolbar,
+html[data-theme="dark"] .fx-match-list,
+html[data-theme="dark"] .sp-card,
+html[data-theme="dark"] .scout-row,
+html[data-theme="dark"] .ps-row,
+html[data-theme="dark"] .pr-row,
+html[data-theme="dark"] .inj-row,
+html[data-theme="dark"] .live-row,
+html[data-theme="dark"] .insight-card,
+html[data-theme="dark"] .insights-loading,
+html[data-theme="dark"] .insights-empty,
+html[data-theme="dark"] .home-editorial-card,
+html[data-theme="dark"] .home-editorial-feature,
+html[data-theme="dark"] .home-gw-mark{
+  background:var(--panel)!important;
+  border-color:var(--line)!important;
+  color:var(--ink)!important;
+  box-shadow:none!important;
+}
+
+/* Nested light-only surfaces */
+html[data-theme="dark"] .analysis-id,
+html[data-theme="dark"] .sp-taker,
+html[data-theme="dark"] .rotation-legend span,
+html[data-theme="dark"] .captain-matrix-picks span,
+html[data-theme="dark"] .mini-lbl,
+html[data-theme="dark"] .planner-role-badge,
+html[data-theme="dark"] .planner-picker-idle,
+html[data-theme="dark"] .planner-no-results{
+  background:var(--panel2)!important;
+  border-color:var(--line2)!important;
+  color:var(--sub)!important;
+}
+html[data-theme="dark"] .sp-taker.first{color:var(--ink)!important}
+
+/* Tables and list rows */
+html[data-theme="dark"] .transfer-compare-table,
+html[data-theme="dark"] .matrix-table,
+html[data-theme="dark"] .fxg,
+html[data-theme="dark"] table.dt{color:var(--ink)!important}
+html[data-theme="dark"] .transfer-compare-table thead th,
+html[data-theme="dark"] .matrix-table thead th,
+html[data-theme="dark"] .fxg th,
+html[data-theme="dark"] table.dt th,
+html[data-theme="dark"] .fx-day-label{
+  background:#141b21!important;
+  color:#aeb9c2!important;
+  border-color:var(--line)!important;
+}
+html[data-theme="dark"] .transfer-compare-table th,
+html[data-theme="dark"] .transfer-compare-table td,
+html[data-theme="dark"] .matrix-table th,
+html[data-theme="dark"] .matrix-table td,
+html[data-theme="dark"] .fx-match-row,
+html[data-theme="dark"] .fx-day-group,
+html[data-theme="dark"] .fxg td,
+html[data-theme="dark"] table.dt td{
+  border-color:var(--line)!important;
+  color:var(--ink)!important;
+}
+html[data-theme="dark"] .fx-match-row{background:var(--panel)!important}
+html[data-theme="dark"] .fx-match-row.live{background:#13231d!important}
+html[data-theme="dark"] table.dt tr:hover td,
+html[data-theme="dark"] .transfer-compare-table tbody tr:hover td,
+html[data-theme="dark"] .matrix-table tbody tr:hover td{background:var(--panel2)!important}
+
+/* Text contrast */
+html[data-theme="dark"] .thead p,
+html[data-theme="dark"] .analysis-manager-head p,
+html[data-theme="dark"] .analysis-stat small,
+html[data-theme="dark"] .tool-guide p,
+html[data-theme="dark"] .tool-guide small,
+html[data-theme="dark"] .rotation-controls p,
+html[data-theme="dark"] .rotation-summary p,
+html[data-theme="dark"] .captain-matrix-head p,
+html[data-theme="dark"] .matrix-player small,
+html[data-theme="dark"] .minutes-tracker-head small,
+html[data-theme="dark"] .planner-start-card p,
+html[data-theme="dark"] .planner-summary small,
+html[data-theme="dark"] .fx-match-team small,
+html[data-theme="dark"] .fx-status,
+html[data-theme="dark"] .insight-card p,
+html[data-theme="dark"] .insights-empty p,
+html[data-theme="dark"] .home-editorial-card p,
+html[data-theme="dark"] .home-editorial-feature p{color:var(--sub)!important}
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] strong,
+html[data-theme="dark"] b,
+html[data-theme="dark"] .pl-name,
+html[data-theme="dark"] .scout-nm,
+html[data-theme="dark"] .ps-team,
+html[data-theme="dark"] .sp-team,
+html[data-theme="dark"] .fx-match-team b,
+html[data-theme="dark"] .analysis-manager-head h3,
+html[data-theme="dark"] .analysis-stat>b,
+html[data-theme="dark"] .matrix-player b{color:var(--ink)}
+
+/* Inputs, search controls and selects */
+html[data-theme="dark"] .search .field,
+html[data-theme="dark"] .ta-search-wrap,
+html[data-theme="dark"] .tool-field,
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea{
+  background:#11181e!important;
+  color:var(--ink)!important;
+  border-color:var(--line2)!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] option{background:#11181e;color:var(--ink)}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder{color:#74818c!important;opacity:1}
+
+/* Secondary buttons */
+html[data-theme="dark"] .bld-btn.ghost,
+html[data-theme="dark"] .secondary-action,
+html[data-theme="dark"] .share-btn,
+html[data-theme="dark"] .captain-refresh,
+html[data-theme="dark"] .planner-toolbar button:not(.primary-action),
+html[data-theme="dark"] .ta-clear,
+html[data-theme="dark"] .swap-action{
+  background:var(--panel2)!important;
+  color:var(--ink)!important;
+  border-color:var(--line2)!important;
+}
+html[data-theme="dark"] .bld-btn.ghost:hover,
+html[data-theme="dark"] .secondary-action:hover,
+html[data-theme="dark"] .share-btn:hover,
+html[data-theme="dark"] .captain-refresh:hover{background:#2a343d!important}
+
+/* Builder / planner chrome: keep the actual football pitch green */
+html[data-theme="dark"] .bld-top,
+html[data-theme="dark"] .bld-note,
+html[data-theme="dark"] .bld-info-card,
+html[data-theme="dark"] .bld-playerbox{background:var(--panel)!important;border-color:var(--line)!important}
+html[data-theme="dark"] .bld-gauge{background:var(--panel)!important;border-color:var(--line2)!important}
+html[data-theme="dark"] .bld-info-card.bld-info-caveat{background:#261f14!important;border-color:#5a4727!important}
+html[data-theme="dark"] .bld-item.picked{background:#173128!important}
+html[data-theme="dark"] .bld-warn-in{background:#2a1b20!important;color:#ff9aa6!important;border-color:#63343c!important}
+
+/* FDR chips need dark text on pale difficulty colours */
+html[data-theme="dark"] .fdr-chip.fdr1,
+html[data-theme="dark"] .fdr-chip.fdr2,
+html[data-theme="dark"] .fdr-chip.fdr3,
+html[data-theme="dark"] .ps-fx span{color:#101820!important}
+html[data-theme="dark"] .fdr-chip.fdr4,
+html[data-theme="dark"] .fdr-chip.fdr5{color:#fff!important}
+
+/* Insight area */
+html[data-theme="dark"] .home-editorial-feature{background:#15231d!important;border-color:#28513f!important}
+html[data-theme="dark"] .home-editorial-card a,
+html[data-theme="dark"] .home-editorial-feature a,
+html[data-theme="dark"] .insight-card h3 a{color:var(--ink)!important}
+html[data-theme="dark"] .home-editorial-card a:hover,
+html[data-theme="dark"] .home-editorial-feature a:hover,
+html[data-theme="dark"] .insight-card h3 a:hover{color:#79d7ad!important}
+html[data-theme="dark"] .home-gw-mark{background:#101a16!important;border-color:#335746!important}
+html[data-theme="dark"] .home-gw-mark span{color:#91a79d!important}
+html[data-theme="dark"] .insights-takeaway{background:#15231d!important;border-color:#2f8f68!important}
+html[data-theme="dark"] .insights-takeaway p{color:#c5d2cb!important}
+
+/* Captain matrix */
+html[data-theme="dark"] .captain-matrix-picks span{background:#16251f!important;border-color:#305745!important}
+html[data-theme="dark"] .matrix-stars{color:#62d5a3!important}
+
+/* Fixture match centre */
+html[data-theme="dark"] .fx-match-toolbar,
+html[data-theme="dark"] .fx-match-list{background:var(--panel)!important}
+html[data-theme="dark"] .fx-gw-heading select{background:transparent!important;color:var(--ink)!important}
+html[data-theme="dark"] .fx-score span{color:#8f9ba6!important}
+
+/* Rating / projection blocks */
+html[data-theme="dark"] .rating-hero,
+html[data-theme="dark"] .rotation-summary{background:#15231d!important;border-color:#2d5945!important}
+html[data-theme="dark"] .rating-track,
+html[data-theme="dark"] .minutes-bar{background:#29333b!important}
+
+/* Keep generated share-card canvas/preview faithful to its export design. */
+html[data-theme="dark"] .card-preview,
+html[data-theme="dark"] .card-canvas-wrap{background:#182027!important;border-color:var(--line)!important}
+
+/* V24 - final dark-mode completeness pass */
+html[data-theme="dark"] .home-career-grid>div,
+html[data-theme="dark"] .planner-toolbar,
+html[data-theme="dark"] .planner-notice,
+html[data-theme="dark"] .planner-plan-select select,
+html[data-theme="dark"] .planner-chip-wrap select,
+html[data-theme="dark"] .planner-filters select,
+html[data-theme="dark"] .ta-picker,
+html[data-theme="dark"] .ta-searchbox,
+html[data-theme="dark"] .ta-selected,
+html[data-theme="dark"] .ta-results,
+html[data-theme="dark"] .ta-result,
+html[data-theme="dark"] .compare-heads>div:first-child,
+html[data-theme="dark"] .compare-heads>div:last-child,
+html[data-theme="dark"] .compare-metrics,
+html[data-theme="dark"] .compare-squad-summary>div,
+html[data-theme="dark"] .compare-player-chip,
+html[data-theme="dark"] .insights-live-lead,
+html[data-theme="dark"] .insights-lead-copy,
+html[data-theme="dark"] .insights-lead-visual,
+html[data-theme="dark"] .insights-lead-mark,
+html[data-theme="dark"] .insights-neutral-visual,
+html[data-theme="dark"] .insights-archive-link,
+html[data-theme="dark"] .home-gw-mark,
+html[data-theme="dark"] .tool-empty,
+html[data-theme="dark"] .tool-loading,
+html[data-theme="dark"] .modal-card{
+  background:var(--panel)!important;
+  border-color:var(--line)!important;
+  color:var(--ink)!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] .planner-notice{background:#13231d!important;color:#c3d4cc!important;border-color:#28513f!important}
+html[data-theme="dark"] .planner-notice b{color:#73d4aa!important}
+html[data-theme="dark"] .planner-sync,
+html[data-theme="dark"] .planner-start-card small,
+html[data-theme="dark"] .home-career-grid span,
+html[data-theme="dark"] .home-career-grid small{color:var(--dim)!important}
+html[data-theme="dark"] .home-career-grid b{color:var(--ink)!important}
+
+/* Player comparison pickers / dropdowns */
+html[data-theme="dark"] .ta-picker-head label,
+html[data-theme="dark"] .ta-selected small,
+html[data-theme="dark"] .ta-result small{color:var(--dim)!important}
+html[data-theme="dark"] .ta-selected b,
+html[data-theme="dark"] .ta-selected-own,
+html[data-theme="dark"] .ta-result b{color:var(--ink)!important}
+html[data-theme="dark"] .ta-results{box-shadow:0 18px 38px rgba(0,0,0,.42)!important}
+html[data-theme="dark"] .ta-result:hover,
+html[data-theme="dark"] .ta-result.active{background:var(--panel2)!important}
+
+/* Manager compare must never fall back to light cards/tables */
+html[data-theme="dark"] .compare-manager h3,
+html[data-theme="dark"] .compare-metric span{color:var(--ink)!important}
+html[data-theme="dark"] .compare-manager p,
+html[data-theme="dark"] .compare-manager span,
+html[data-theme="dark"] .compare-metric b,
+html[data-theme="dark"] .compare-none{color:var(--dim)!important}
+html[data-theme="dark"] .compare-metric{border-color:var(--line)!important;background:var(--panel)!important}
+html[data-theme="dark"] .compare-metric:nth-child(even){background:#151c22!important}
+html[data-theme="dark"] .compare-player-chip{color:var(--sub)!important}
+
+/* Insights lead story */
+html[data-theme="dark"] .insights-live-lead{box-shadow:inset 4px 0 0 var(--accent)!important}
+html[data-theme="dark"] .insights-lead-copy{background:var(--panel)!important}
+html[data-theme="dark"] .insights-lead-intro,
+html[data-theme="dark"] .insights-story-copy p{color:var(--sub)!important}
+html[data-theme="dark"] .insights-story-copy{border-color:var(--line)!important}
+html[data-theme="dark"] .insights-lead-visual,
+html[data-theme="dark"] .insights-lead-mark,
+html[data-theme="dark"] .insights-neutral-visual{background:#13231d!important;border-color:#28513f!important}
+html[data-theme="dark"] .insights-gw-mark span,
+html[data-theme="dark"] .insights-gw-mark small{color:#9eb5aa!important}
+html[data-theme="dark"] .insights-gw-mark b{color:#67d4a5!important}
+html[data-theme="dark"] .insights-archive-link:hover{background:var(--panel2)!important;border-color:#4b675a!important}
+
+/* Keep football pitches green, but make player labels themselves dark */
+html[data-theme="dark"] .pl .nm,
+html[data-theme="dark"] .tmpl-nm,
+html[data-theme="dark"] .bld-pl-nm{
+  background:#172027!important;
+  color:#f4f7f8!important;
+  border-color:#34414b!important;
+}
+html[data-theme="dark"] .pl .meta,
+html[data-theme="dark"] .tmpl-mt,
+html[data-theme="dark"] .bld-pl-mt{
+  background:#20372e!important;
+  color:#9ce0bf!important;
+  border-color:#34414b!important;
+}
+html[data-theme="dark"] .bld-slot.empty{background:rgba(15,20,25,.32)!important;border-color:rgba(240,246,248,.45)!important;color:rgba(240,246,248,.76)!important}
+html[data-theme="dark"] .bld-slot.empty:hover{background:rgba(7,155,98,.18)!important;border-color:#67d4a5!important;color:#9ce0bf!important}
+
+/* Buttons/status chips that were still light */
+html[data-theme="dark"] .mhead .gwtag,
+html[data-theme="dark"] .cd-box,
+html[data-theme="dark"] .planner-picker-idle>span{
+  background:var(--panel2)!important;
+  color:var(--sub)!important;
+  border-color:var(--line2)!important;
+}
+html[data-theme="dark"] .planner-picker-idle>span{color:#76d7ad!important}
+
+/* Light informational boxes should become intentionally tinted dark boxes */
+html[data-theme="dark"] .tool-empty.bad{background:#2a1b20!important;border-color:#63343c!important;color:#ff9aa6!important}
+html[data-theme="dark"] .col-h.up,
+html[data-theme="dark"] .live-b.b3,
+html[data-theme="dark"] .live-b.b2{background:#173128!important;color:#8cddb9!important}
+html[data-theme="dark"] .col-h.down,
+html[data-theme="dark"] .inj-pill.inj-out{background:#2a1b20!important;color:#ff9aa6!important}
+html[data-theme="dark"] .inj-pill.inj-doubt{background:#2a2418!important;color:#e8bf79!important}
+
+/* Some components use generic white backgrounds inside dark cards */
+html[data-theme="dark"] .home-insight,
+html[data-theme="dark"] .home-tool,
+html[data-theme="dark"] .home-status-card,
+html[data-theme="dark"] .home-fixtures,
+html[data-theme="dark"] .captain-loading,
+html[data-theme="dark"] .captain-empty,
+html[data-theme="dark"] .transfer-side,
+html[data-theme="dark"] .transfer-table-scroll,
+html[data-theme="dark"] .rating-row,
+html[data-theme="dark"] .rotation-gw,
+html[data-theme="dark"] .minutes-tracker{
+  background:var(--panel)!important;
+  border-color:var(--line)!important;
+  color:var(--ink)!important;
+}
+
+/* Deliberately preserve only artwork/canvas exports and the green pitch itself. */
+
+/* V24 - planner/player-list detail surfaces */
+html[data-theme="dark"] .planner-player,
+html[data-theme="dark"] .planner-player.starter,
+html[data-theme="dark"] .planner-pick-row,
+html[data-theme="dark"] .planner-arm,
+html[data-theme="dark"] .planner-transfer button,
+html[data-theme="dark"] .planner-squad-label span{
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+html[data-theme="dark"] .planner-pick-row:hover:not(:disabled),
+html[data-theme="dark"] .planner-player:hover{background:var(--panel2)!important}
+html[data-theme="dark"] .planner-player.selected-out,
+html[data-theme="dark"] .planner-out-card,
+html[data-theme="dark"] .planner-transfer.invalid{background:#2a1b20!important;border-color:#63343c!important}
+html[data-theme="dark"] .planner-transfer{background:#15231d!important;border-color:#2f5846!important}
+html[data-theme="dark"] .planner-squad-label,
+html[data-theme="dark"] .planner-player-list,
+html[data-theme="dark"] .planner-pick-row{border-color:var(--line)!important}
+html[data-theme="dark"] .planner-arm.active{background:#365247!important;border-color:#4a7663!important;color:#fff!important}
+html[data-theme="dark"] .planner-arm.vice.active{background:#48535d!important;border-color:#65717c!important;color:#fff!important}
+html[data-theme="dark"] .pl-fixture.blank{background:#2a333b!important;color:#9da8b1!important}
+
+/* Builder list and selection detail */
+html[data-theme="dark"] .bld-item{border-color:var(--line)!important;color:var(--ink)!important}
+html[data-theme="dark"] .bld-item:hover{background:var(--panel2)!important}
+html[data-theme="dark"] .bld-item.picked{background:#173128!important}
+
+/* Generic light separators/backgrounds inside comparison tools */
+html[data-theme="dark"] .analysis-player-row{border-color:var(--line)!important}
+html[data-theme="dark"] .analysis-summary-grid>div{background:var(--panel)!important;border-color:var(--line)!important}
+
+/* Ensure light text never inherits into dark panels */
+html[data-theme="dark"] .compare-heads,
+html[data-theme="dark"] .compare-metrics,
+html[data-theme="dark"] .ta-picker,
+html[data-theme="dark"] .planner-toolbar,
+html[data-theme="dark"] .planner-main,
+html[data-theme="dark"] .planner-picker,
+html[data-theme="dark"] .home-career-grid>div,
+html[data-theme="dark"] .insights-live-lead{color:var(--ink)!important}
+
+/* V25 - final dark-mode cleanup for Insights actions and Card Creator */
+.insights-icon-btn{
+  width:38px;height:38px;display:inline-grid;place-items:center;flex:0 0 38px;
+  border:1px solid var(--line2);border-radius:10px;background:var(--panel);color:var(--mint);
+  text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s,color .15s,transform .15s;
+}
+.insights-icon-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.insights-icon-btn:hover{background:var(--panel2);border-color:#78bca2;color:var(--ink);transform:translateY(-1px)}
+.insights-icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+html[data-theme="dark"] .card-type-switch button,
+html[data-theme="dark"] .card-control-panel,
+html[data-theme="dark"] .card-preview-panel{
+  background:var(--panel)!important;border-color:var(--line)!important;color:var(--sub)!important;
+}
+html[data-theme="dark"] .card-type-switch button b,
+html[data-theme="dark"] .card-mode-head h3,
+html[data-theme="dark"] .card-preview-empty b{color:var(--ink)!important}
+html[data-theme="dark"] .card-type-switch button span,
+html[data-theme="dark"] .card-mode-head p,
+html[data-theme="dark"] .card-preview-empty,
+html[data-theme="dark"] .card-preview-empty span,
+html[data-theme="dark"] .card-privacy-note{color:var(--sub)!important}
+html[data-theme="dark"] .card-type-switch button:hover{background:var(--panel2)!important;border-color:#46535e!important}
+html[data-theme="dark"] .card-type-switch button.active{
+  background:#15271f!important;border-color:#356c55!important;box-shadow:inset 3px 0 0 var(--accent)!important;
+}
+html[data-theme="dark"] .card-type-switch button.active b{color:#7bdeb4!important}
+html[data-theme="dark"] .card-field input,
+html[data-theme="dark"] .card-field select{
+  background:#11181e!important;border-color:var(--line2)!important;color:var(--ink)!important;
+}
+html[data-theme="dark"] .card-field input::placeholder{color:#687581!important}
+html[data-theme="dark"] .card-field input:focus,
+html[data-theme="dark"] .card-field select:focus{border-color:#4ea980!important;box-shadow:0 0 0 3px rgba(41,183,123,.12)!important}
+html[data-theme="dark"] .card-privacy-note{border-color:var(--line)!important}
+html[data-theme="dark"] .card-preview-stage{
+  background:#11181e!important;border:1px solid var(--line)!important;
+}
+html[data-theme="dark"] .card-preview-stage:has(canvas:not([hidden])){background:#0e1419!important}
+html[data-theme="dark"] .card-export-actions .secondary-action{background:var(--panel2)!important;color:var(--ink)!important;border-color:var(--line2)!important}
+html[data-theme="dark"] .card-export-actions button:disabled{background:#202830!important;color:#6f7b85!important;border-color:#303b45!important;opacity:1!important}
+html[data-theme="dark"] .insights-icon-btn{background:var(--panel)!important;border-color:var(--line2)!important;color:#69d6a7!important}
+html[data-theme="dark"] .insights-icon-btn:hover{background:var(--panel2)!important;color:#f4f8f6!important;border-color:#4e695c!important}
+
+/* V26 - targeted dark-mode fixes after visual QA */
+html[data-theme="dark"] .planner-title-row{
+  background:var(--panel)!important;
+  border-color:var(--line)!important;
+  color:var(--ink)!important;
+}
+html[data-theme="dark"] .planner-title-row h3{color:var(--ink)!important}
+html[data-theme="dark"] .planner-title-row p{color:var(--sub)!important}
+html[data-theme="dark"] .planner-title-row .analysis-eyebrow{color:#64d3a3!important}
+
+/* V21 used light-theme !important headline colors; override them in dark mode. */
+html[data-theme="dark"] .home-editorial-feature .home-insight-copy>b,
+html[data-theme="dark"] .home-editorial-secondary>b,
+html[data-theme="dark"] .home-editorial-feature .home-insight-copy>small,
+html[data-theme="dark"] .home-editorial-secondary>small{
+  color:var(--ink)!important;
+}
+html[data-theme="dark"] .home-editorial-feature .home-insight-copy>small,
+html[data-theme="dark"] .home-editorial-secondary>small{color:var(--sub)!important}
+html[data-theme="dark"] .home-editorial-card:hover .home-insight-copy>b,
+html[data-theme="dark"] .home-editorial-card:hover>b{color:#7bdeb4!important}
+html[data-theme="dark"] .home-editorial-feature{background:#13231d!important}
+html[data-theme="dark"] .home-editorial-secondary{background:var(--panel)!important}
+html[data-theme="dark"] .home-insight-club{border-color:var(--line)!important}
+
+/* The generated canvas follows theme too; preview chrome remains dark. */
+html[data-theme="dark"] .card-preview-stage{background:#0d1318!important}

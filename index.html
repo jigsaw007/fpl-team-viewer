@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FPL Peek | FPL Team Analyzer, Transfers & Fixtures</title>
-<meta name="description" content="FPL Peek is a free Fantasy Premier League workspace for multi-gameweek planning, team analysis, transfer comparisons, fixtures, player scouting, captain picks, price watch and live gameweek tools.">
+<meta name="description" content="FPL Peek is a free Fantasy Premier League workspace for team ratings, multi-gameweek planning, player comparisons, rotation planning, captaincy analysis, projected points, minutes tracking, fixtures and live gameweek tools.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="author" content="FPL Peek">
 <meta name="application-name" content="FPL Peek">
@@ -44,7 +44,7 @@
   "@type": "WebApplication",
   "name": "FPL Peek",
   "url": "https://fplpeek.com/",
-  "description": "A free Fantasy Premier League workspace for multi-gameweek planning, team analysis, transfer comparisons, fixture planning, player scouting, captain picks, price watch and live gameweek tools.",
+  "description": "A free Fantasy Premier League workspace for team ratings, multi-gameweek planning, player comparisons, rotation planning, captaincy analysis, projected points, minutes tracking, fixtures and live gameweek tools.",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Web",
   "isAccessibleForFree": true,
@@ -55,11 +55,12 @@
   },
   "featureList": [
     "Multi-gameweek FPL planner",
-    "FPL team analyzer",
-    "Transfer analyzer",
-    "Fixture planner",
-    "Player scouting",
-    "Captain picks",
+    "FPL Team Rating",
+    "Two and three player comparison",
+    "Fixture and rotation planner",
+    "Player scouting and minutes tracker",
+    "Captaincy matrix",
+    "FPL Peek projected points",
     "Price watch",
     "Live gameweek tools",
     "Manager comparison"
@@ -80,6 +81,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+(function(){
+  try{
+    var saved=localStorage.getItem("fplpeek_theme");
+    var dark=saved? saved==="dark" : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme=dark?"dark":"light";
+  }catch(e){}
+})();
+</script>
 <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
@@ -92,6 +102,7 @@
         <span class="brand-sub">Fantasy workspace</span>
       </div>
     </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch appearance" title="Switch appearance"><span class="theme-toggle-icon" aria-hidden="true">☾</span><span class="theme-toggle-text">Dark</span></button>
   </div>
 
   <div class="tabs" id="tabbar" aria-label="FPL Peek tools">
@@ -99,13 +110,13 @@
     <div class="tab-label">Overview</div>
     <button class="tab active" data-tab="home">Home</button>
     <button class="tab" data-tab="team">My Team</button>
-    <button class="tab" data-tab="insights">Insights</button>
 
     <div class="tab-label">Planning</div>
+    <button class="tab" data-tab="insights">Insights</button>
     <button class="tab" data-tab="builder">Team Builder</button>
     <button class="tab" data-tab="planner">Planner</button>
     <button class="tab" data-tab="scout">Scout</button>
-    <button class="tab" data-tab="transfer">Transfer Analyzer</button>
+    <button class="tab" data-tab="transfer">Player Compare</button>
     <button class="tab" data-tab="fixtures">Fixtures &amp; Results</button>
     <button class="tab" data-tab="players">Players</button>
     <button class="tab" data-tab="preseason">Pre-season</button>
@@ -117,7 +128,7 @@
     <button class="tab" data-tab="prices">Price Watch</button>
 
     <div class="tab-label">Analysis</div>
-    <button class="tab" data-tab="analyzer">Team Analyzer</button>
+    <button class="tab" data-tab="analyzer">Team Rating</button>
     <button class="tab" data-tab="compare">Manager Compare</button>
     <button class="tab" data-tab="cards">Card Creator</button>
 
@@ -201,8 +212,8 @@
       </div>
       <div class="home-tools">
         <button class="home-tool" data-home-tab="planner"><span class="home-tool-icon">01</span><span><b>Gameweek Planner</b><small>Plan future transfers, captains and chips without touching your FPL account</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="analyzer"><span class="home-tool-icon">02</span><span><b>Team Analyzer</b><small>Find weak spots, captain options and upgrade ideas</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
-        <button class="home-tool" data-home-tab="transfer"><span class="home-tool-icon">03</span><span><b>Transfer Analyzer</b><small>Compare two players, fixtures and short-term profile</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="analyzer"><span class="home-tool-icon">02</span><span><b>Team Rating</b><small>Rate your squad, projected XI, fixtures and captaincy</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="transfer"><span class="home-tool-icon">03</span><span><b>Player Comparison</b><small>Compare two or three players, projections and fixtures</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="compare"><span class="home-tool-icon">04</span><span><b>Manager Compare</b><small>Compare two FPL managers and their squads</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="builder"><span class="home-tool-icon">05</span><span><b>Team Builder</b><small>Build and rate a &pound;100m squad</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="scout"><span class="home-tool-icon">06</span><span><b>Scout</b><small>Find players worth targeting</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
@@ -220,9 +231,13 @@
         <h2>What the Gameweek data is saying right now.</h2>
         <p>A live briefing built from public FPL data, focused on the stories and signals that matter around each Gameweek.</p>
       </div>
-      <div class="insights-hero-actions">
-        <button class="insights-public-link" id="insightsRefresh" type="button">Refresh data</button>
-        <a class="insights-public-link" href="/insights/">Open public page ↗</a>
+      <div class="insights-hero-actions" aria-label="Insights actions">
+        <button class="insights-icon-btn" id="insightsRefresh" type="button" aria-label="Refresh Insights data" title="Refresh Insights data">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-4M4 4v5h5M4 13a8 8 0 0 0 14.9 4M20 20v-5h-5"/></svg>
+        </button>
+        <a class="insights-icon-btn" href="/insights/" aria-label="Open public Insights page" title="Open public Insights page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M10 14 19 5M19 13v6H5V5h6"/></svg>
+        </a>
       </div>
     </div>
     <div class="insights-live-lead" id="insightsLead"><span>Live insights</span><h3>Reading the latest FPL data…</h3></div>
@@ -336,8 +351,8 @@
   <!-- ============ TEAM ANALYZER TAB ============ -->
   <section class="tabpanel" id="tab-analyzer">
     <div class="thead">
-      <h2>Team Analyzer</h2>
-      <p>Run a focused squad check: availability, fixture quality, captain options and possible areas to improve.</p>
+      <h2>Team Rating</h2>
+      <p>Get a 0–100 squad rating with projected points, captaincy, fixtures, availability, bench depth and upgrade ideas.</p>
     </div>
     <div class="tool-form">
       <div class="field tool-field">
@@ -345,14 +360,15 @@
       </div>
       <button class="primary-action" id="anRun">Analyze team</button>
     </div>
+    <div class="tool-guide" aria-label="How Team Rating works"><div class="tool-guide-title"><span>How it works</span><h3>Understand your squad score</h3><p>Team Rating turns your latest public FPL squad into a 0-100 check. It shows where the squad looks strong and where your next decision may deserve attention.</p></div><div class="tool-guide-grid"><article><b>Overall rating</b><p>Combines the starting XI, bench depth, upcoming fixtures, captaincy, availability and squad balance.</p></article><article><b>Projected XI</b><p>An FPL Peek estimate from current public FPL data. It is a comparison aid, not a guaranteed score.</p></article><article><b>Upgrade radar</b><p>Highlights positions or players where the squad may have a weaker profile relative to available alternatives.</p></article></div></div>
     <div id="analyzerBody" class="tool-output"><div class="tool-empty">Enter a Team ID to run a squad check.</div></div>
   </section>
 
   <!-- ============ TRANSFER ANALYZER TAB ============ -->
   <section class="tabpanel" id="tab-transfer">
     <div class="thead">
-      <h2>Transfer Analyzer</h2>
-      <p>Compare two players side by side using price, form, availability and the next five fixtures.</p>
+      <h2>Player Comparison</h2>
+      <p>Compare two or three players using price, form, minutes security, fixtures and FPL Peek projected points.</p>
     </div>
     <div class="transfer-form">
       <div class="ta-picker" id="taFromPicker">
@@ -397,11 +413,20 @@
         <div class="ta-results" id="taToResults" role="listbox" hidden></div>
       </div>
 
+      <div class="ta-picker" id="taThirdPicker">
+        <div class="ta-picker-head"><label for="taThird">Third player <span class="muted-label">optional</span></label><button type="button" class="ta-clear-selected" id="taThirdClear" hidden>Clear</button></div>
+        <div class="ta-selected" id="taThirdSelected" hidden></div>
+        <div class="ta-searchbox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input id="taThird" placeholder="Search third player" autocomplete="off" aria-autocomplete="list" aria-controls="taThirdResults" /><button type="button" class="ta-clear-search" id="taThirdSearchClear" aria-label="Clear third player search" hidden>&times;</button></div>
+        <div class="ta-filter-row"><select id="taThirdPos" aria-label="Filter third player by position"><option value="0">All positions</option><option value="1">Goalkeepers</option><option value="2">Defenders</option><option value="3">Midfielders</option><option value="4">Forwards</option></select><select id="taThirdTeam" aria-label="Filter third player by team"><option value="0">All teams</option></select></div>
+        <div class="ta-results" id="taThirdResults" role="listbox" hidden></div>
+      </div>
+
       <div class="ta-form-actions">
         <button type="button" class="secondary-action" id="taReset">Reset</button>
         <button class="primary-action" id="taRun" disabled>Compare players</button>
       </div>
     </div>
+    <div class="tool-guide compact" aria-label="How Player Comparison works"><div class="tool-guide-title"><span>What to compare</span><h3>Use the numbers to answer a transfer question</h3><p>Compare price, ownership, recent form, minutes security, upcoming fixtures and projected points. The best choice depends on your squad and time horizon, so no single column should be treated as the answer.</p></div><div class="tool-guide-grid"><article><b>Projected points</b><p>Our estimate for the selected fixture window.</p></article><article><b>Minutes security</b><p>Shows whether recent playing time looks dependable or carries rotation risk.</p></article><article><b>Fixture run</b><p>Use the next fixtures to separate a one-week move from a longer-term transfer.</p></article></div></div>
     <div id="transferBody" class="tool-output"><div class="tool-empty">Pick a player on each side. Search by name or narrow the list by position and club.</div></div>
   </section>
 
@@ -454,9 +479,10 @@
   <!-- ============ CAPTAIN PICKS TAB ============ -->
   <section class="tabpanel" id="tab-captains">
     <div class="thead">
-      <h2>Top Captain Picks</h2>
-      <p>See which players the leading overall FPL managers are trusting with the armband.</p>
+      <h2>Captaincy Matrix</h2>
+      <p>Balance projection, fixture, minutes security and ownership, then compare with top-manager captain choices after the deadline.</p>
     </div>
+    <div class="tool-guide compact" aria-label="How Captaincy Matrix works"><div class="tool-guide-title"><span>How to read it</span><h3>Safer profile vs upside profile</h3><p>The safer side favours dependable captain profiles, while upside gives more weight to ceiling and fixture opportunity. Before GW1, current-season form and minutes do not exist, so the matrix intentionally uses a more cautious pre-season shortlist.</p></div><div class="tool-guide-grid"><article><b>Safer</b><p>Balances ownership, fixture, projected return and playing-time confidence.</p></article><article><b>Upside</b><p>Allows lower ownership and favourable fixtures to carry more weight.</p></article><article><b>Top-manager sample</b><p>After the deadline, compare the model shortlist with captains actually used by leading managers.</p></article></div></div>
     <div id="captainBody"></div>
   </section>
 
@@ -528,8 +554,8 @@
           <p id="plMeta">Saved automatically.</p>
         </div>
         <div class="planner-title-actions">
-          <button class="secondary-action" id="plResetGw">Reset this GW</button>
-          <button class="secondary-action danger-soft" id="plClearSquad">Clear squad</button>
+          <button class="secondary-action" id="plResetGw" title="Remove transfers, captain, chip and lineup changes for only this Gameweek">Clear this GW changes</button>
+          <button class="secondary-action danger-soft" id="plClearSquad" title="Remove the base squad and every planned Gameweek in this plan">Clear all GWs</button>
         </div>
       </div>
 
@@ -735,6 +761,7 @@
       <div class="seg fixtures-view-tabs" id="fxView" aria-label="Fixtures views">
         <button data-v="matches" class="active">Matches</button>
         <button data-v="fdr">FDR planner</button>
+        <button data-v="rotation">Rotation planner</button>
         <button data-v="table">Table</button>
       </div>
     </div>
@@ -774,6 +801,12 @@
       <div id="fxGrid" class="fx-scroll"></div>
     </div>
 
+
+    <div class="fx-view" id="fxRotationPanel" hidden>
+      <div class="rotation-controls"><div><span class="section-kicker">Goalkeeper &amp; defender rotation</span><h3>Rotation Planner</h3><p>Own one player from each selected club, then see which club has the easier fixture to start each Gameweek.</p></div><div class="rotation-selects"><select id="rotTeamA" aria-label="First rotation club"></select><span>+</span><select id="rotTeamB" aria-label="Second rotation club"></select></div><div class="seg" id="rotRange"><button data-n="5" class="active">5 GWs</button><button data-n="8">8 GWs</button></div></div>
+      <div id="rotationBody"></div>
+    </div>
+
     <div class="fx-view" id="fxTablePanel" hidden>
       <div class="fx-table-head">
         <div>
@@ -792,7 +825,7 @@
   <section class="tabpanel" id="tab-players">
     <div class="thead">
       <h2>Player explorer</h2>
-      <p>Sort and filter every player — price, form, points, ownership, and set-piece duties.</p>
+      <p>Sort and filter every player — including FPL Peek projected points, minutes, form, ownership and set-piece duties.</p>
     </div>
     <div class="ctl">
       <div class="field" style="max-width:240px">
@@ -809,6 +842,7 @@
       <button class="watch-toggle" id="plColsBtn">☰ Columns</button>
       <button class="watch-toggle" id="plWatchOnly">★ Watchlist only</button>
     </div>
+    <div class="tool-guide compact player-guide" aria-label="How Player Explorer metrics work"><div class="tool-guide-title"><span>Player metrics</span><h3>Projection and minutes in context</h3><p>Use Player Explorer to shortlist players, then open a player for more detail. Projected points combine public FPL form, expected playing time, availability and fixture difficulty; the Minutes Tracker shows recent Gameweek minutes so you can judge rotation risk.</p></div><div class="tool-guide-grid"><article><b>FPL Peek projection</b><p>A transparent estimate for comparison, not a promise of future points.</p></article><article><b>Minutes Tracker</b><p>Recent minutes and 60+ appearances help show how secure a player's role has been.</p></article><article><b>Watchlist</b><p>Save interesting players and return later as fixtures, ownership and availability change.</p></article></div></div>
     <div class="plcols-panel" id="plColsPanel" style="display:none"></div>
     <div class="tbl-scroll-top" id="plScrollTop"><div id="plScrollTopInner"></div></div>
     <div class="tbl-scroll" id="plScrollMain"><table class="dt" id="plTable"></table></div>
@@ -909,8 +943,8 @@
   <div class="mobile-more-grid">
     <button data-mobile-tab="insights">Insights</button>
     <button data-mobile-tab="planner">Planner</button>
-    <button data-mobile-tab="analyzer">Team Analyzer</button>
-    <button data-mobile-tab="transfer">Transfer Analyzer</button>
+    <button data-mobile-tab="analyzer">Team Rating</button>
+    <button data-mobile-tab="transfer">Player Compare</button>
     <button data-mobile-tab="compare">Manager Compare</button>
     <button data-mobile-tab="cards">Card Creator</button>
     <button data-mobile-tab="captains">Captain Picks</button>
