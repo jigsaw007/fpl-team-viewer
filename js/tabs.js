@@ -37,6 +37,7 @@ async function lazyLoadTab(name){
     else if(name==="players") await initPlayers();
     else if(name==="injuries") await initInjuries();
     else if(name==="setpieces") await initSetPieces();
+    else if(name==="defcon") await initDefcon();
     else if(name==="prices") await initPrices();
     else if(name==="live") await initLive();
   }catch(e){ /* per-tab handlers show their own errors */ }

@@ -213,3 +213,10 @@ Dark mode now covers nested comparison cards, manager comparison tables, Planner
 
 ## V27 - FPL Peek Team
 Adds a public-data-only FPL Peek Team challenge. The page builds one valid 15-player squad for the active/upcoming Gameweek, selects a legal starting XI plus ordered bench, captain and vice-captain, and shows live/final points with valid autosubs. Completed Gameweeks are available in the on-page record and are reconstructed from earlier-round public FPL data where possible. No real FPL account is used or changed.
+
+## V33 — DEFCON Tracker
+Adds a defensive contribution leaderboard using the official FPL `defensive_contribution` field, with position thresholds, threshold-hit counts, hit-rate context, player filters and recent DEFCON detail in the player modal.
+
+
+## V34 — DEFCON pagination
+The DEFCON leaderboard now renders 15 players per page with Previous/Next controls, reducing initial image requests and keeping the tracker fast on mobile. Filters and search reset to page 1.

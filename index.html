@@ -125,6 +125,7 @@
     <button class="tab hot-tab" data-tab="captains">Captain Picks <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="injuries">Injuries</button>
     <button class="tab" data-tab="setpieces">Set Pieces</button>
+    <button class="tab" data-tab="defcon">DEFCON Tracker</button>
     <button class="tab" data-tab="prices">Price Watch</button>
 
     <div class="tab-label">Analysis</div>
@@ -221,6 +222,7 @@
         <button class="home-tool" data-home-tab="peekteam"><span class="home-tool-icon">07</span><span><b>FPL Peek Team</b><small>See our Gameweek squad, captain and running record</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="captains"><span class="home-tool-icon">08</span><span><b>Captain Picks</b><small>See who top managers trust</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
         <button class="home-tool" data-home-tab="cards"><span class="home-tool-icon">09</span><span><b>Card Creator</b><small>Create Gameweek, Career and Rivalry cards to share</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
+        <button class="home-tool" data-home-tab="defcon"><span class="home-tool-icon">10</span><span><b>DEFCON Tracker</b><small>Track defensive contribution points, threshold hits and recent defensive work</small></span><span class="home-tool-arrow">&rsaquo;</span></button>
       </div>
     </div>
   </section>
@@ -921,6 +923,49 @@
     <div id="spBody"></div>
   </section>
 
+  <!-- ============ DEFCON TRACKER TAB ============ -->
+  <section class="tabpanel" id="tab-defcon">
+    <div class="thead defcon-head">
+      <div>
+        <div class="home-eyebrow">Defensive contributions</div>
+        <h2>DEFCON Tracker</h2>
+        <p>Track the extra FPL points earned through defensive work. Defenders need 10 combined clearances, blocks, interceptions and tackles in a match; midfielders and forwards need 12 when ball recoveries are included.</p>
+      </div>
+    </div>
+
+    <div class="defcon-guide" aria-label="How defensive contribution points work">
+      <article><span>DEF</span><b>10 actions</b><p>Clearances + blocks + interceptions + tackles.</p></article>
+      <article><span>MID / FWD</span><b>12 actions</b><p>The same defensive actions plus ball recoveries.</p></article>
+      <article><span>Reward</span><b>+2 FPL points</b><p>Maximum defensive contribution reward per player per match.</p></article>
+    </div>
+
+    <div class="ctl defcon-controls">
+      <div class="seg" id="dcPos">
+        <button data-p="all" class="active">All</button>
+        <button data-p="2">DEF</button>
+        <button data-p="3">MID</button>
+        <button data-p="4">FWD</button>
+      </div>
+      <select id="dcTeam" aria-label="Filter DEFCON by club"><option value="all">All clubs</option></select>
+      <div class="field defcon-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="dcSearch" type="search" placeholder="Search player…" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="defcon-summary" id="dcSummary"></div>
+    <div id="dcBody"><div class="status"><div class="spinner"></div>Loading DEFCON data…</div></div>
+
+    <div class="tool-guide compact defcon-method">
+      <div class="tool-guide-title"><span>How to use it</span><h3>Look beyond clean sheets</h3><p>DEFCON can add a separate route to points for defenders and hard-working midfielders or forwards. Use the tracker alongside minutes, fixtures and attacking threat rather than as a standalone pick metric.</p></div>
+      <div class="tool-guide-grid">
+        <article><b>DEFCON points</b><p>The official defensive contribution points already awarded this season.</p></article>
+        <article><b>Threshold hits</b><p>Each 2-point award counts as one match in which the player reached the position-specific threshold.</p></article>
+        <article><b>Hit rate</b><p>Threshold hits divided by starts, shown as a simple context measure rather than a prediction.</p></article>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ PRICE WATCH TAB ============ -->
   <section class="tabpanel" id="tab-prices">
     <div class="thead">
@@ -987,6 +1032,7 @@
     <button data-mobile-tab="players">Players</button>
     <button data-mobile-tab="injuries">Injuries</button>
     <button data-mobile-tab="setpieces">Set Pieces</button>
+    <button data-mobile-tab="defcon">DEFCON Tracker</button>
     <button data-mobile-tab="prices">Price Watch</button>
     <button data-mobile-tab="preseason">Pre-season</button>
     <button data-mobile-tab="peekteam">FPL Peek Team</button>
@@ -1085,6 +1131,7 @@
 <script defer src="/js/players.js"></script>
 <script defer src="/js/injuries.js"></script>
 <script defer src="/js/setpieces.js"></script>
+<script defer src="/js/defcon.js"></script>
 <script defer src="/js/prices.js"></script>
 <script defer src="/js/live.js"></script>
 <script defer src="/js/insights.js"></script>

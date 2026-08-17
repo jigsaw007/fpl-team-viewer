@@ -152,6 +152,25 @@ function minutesSecurity(e){
   return {score,label:score>=92?"Very secure":score>=82?"Secure":score>=68?"Some risk":"Rotation risk",minsPerStart:mps};
 }
 
+function defconThreshold(elementType){
+  return Number(elementType)===2 ? 10 : (Number(elementType)===3||Number(elementType)===4 ? 12 : null);
+}
+function defconPoints(row){
+  const v=Number(row&&row.defensive_contribution);
+  return Number.isFinite(v)?v:0;
+}
+function defconActions(row,elementType){
+  if(!row) return null;
+  const keys=["clearances_blocks_interceptions","tackles"];
+  if(Number(elementType)===3||Number(elementType)===4) keys.push("recoveries");
+  let seen=false,total=0;
+  keys.forEach(k=>{ if(row[k]!=null&&row[k]!==""){seen=true;total+=Number(row[k])||0;} });
+  return seen?total:null;
+}
+function defconHitsFromPoints(row){
+  return Math.floor(Math.max(0,defconPoints(row))/2);
+}
+
 function playerWindowScore(e,map,n=5){
   if(!e) return 0;
   const form=parseFloat(e.form||0)||0;

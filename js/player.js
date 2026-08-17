@@ -31,6 +31,7 @@ async function openPlayer(pid){
       ${stat("Assists", num(e.assists))}
       ${stat("Minutes", num(e.minutes))}
       ${stat("Bonus", num(e.bonus))}
+      ${stat("DEFCON pts", num(e.defensive_contribution), Number(e.element_type)===2?"10-action threshold":(Number(e.element_type)>=3?"12-action threshold":""))}
     </div>`;
     // recent gameweek history + minutes tracker
     const hist=(sum.history||[]).slice(-8).reverse();
@@ -39,10 +40,11 @@ async function openPlayer(pid){
     const avgRecent=recentChron.length?recentChron.reduce((a,h)=>a+Number(h.minutes||0),0)/recentChron.length:0;
     const minutesTracker=recentChron.length?`<div class="minutes-tracker"><div class="minutes-tracker-head"><div><span class="lg-cat">Minutes tracker</span><h4>${esc(security.label)}</h4></div><div><b>${avgRecent.toFixed(0)}</b><small>avg min · ${startsRecent}/${recentChron.length} 60+ min</small></div></div><div class="minutes-bars">${recentChron.map(h=>`<div class="minutes-bar-col" title="GW${h.round}: ${h.minutes} minutes"><div class="minutes-bar"><i style="height:${Math.max(3,Math.min(100,(Number(h.minutes||0)/90)*100))}%"></i></div><span>GW${h.round}</span><b>${h.minutes}</b></div>`).join("")}</div></div>`:"";
     const histTbl=hist.length?`<div class="lg-cat" style="margin-top:18px">Recent gameweeks</div>
-      <div class="compact-table-scroll"><table class="dt compact-dt"><thead><tr><th class="left">GW</th><th>Pts</th><th>Min</th><th>xGI</th><th>ICT</th><th class="left">Opp</th></tr></thead>
+      <div class="compact-table-scroll"><table class="dt compact-dt"><thead><tr><th class="left">GW</th><th>Pts</th><th>Min</th><th>DEFCON</th><th>Actions</th><th>xGI</th><th>ICT</th><th class="left">Opp</th></tr></thead>
       <tbody>${hist.map(h=>{
         const opp=b.teams.find(z=>z.id===h.opponent_team)||{};
-        return `<tr><td class="left">GW${h.round}</td><td>${h.total_points}</td><td>${h.minutes}</td>
+        const dcActions=defconActions(h,e.element_type);
+        return `<tr><td class="left">GW${h.round}</td><td>${h.total_points}</td><td>${h.minutes}</td><td>${h.defensive_contribution!=null?h.defensive_contribution:"—"}</td><td>${dcActions==null?"—":dcActions}</td>
           <td>${num(h.expected_goal_involvements)}</td><td>${num(h.ict_index)}</td>
           <td class="left">${esc(opp.short_name||"")} ${h.was_home?"(H)":"(A)"}</td></tr>`;
       }).join("")}</tbody></table></div>`:"";
