@@ -577,48 +577,47 @@
         <div class="planner-start-card">
           <span class="planner-start-num">03</span>
           <h4>Start from scratch</h4>
-          <p>Create an empty plan and build the base squad using the player picker.</p>
-          <button class="secondary-action" id="plBlank">Start blank</button>
+          <p>Create an empty plan and build it yourself, or let AutoPick create a balanced legal squad that you can edit afterwards.</p>
+          <div class="planner-start-actions"><button class="secondary-action" id="plBlank">Start blank</button><button class="primary-action planner-autopick-start" id="plAutoStart">✨ AutoPick squad</button></div>
         </div>
       </div>
     </div>
 
-    <div id="plWorkspace" class="planner-workspace" style="display:none">
-      <div class="planner-title-row">
-        <div>
+    <div id="plSharedView" class="planner-shared-view" hidden aria-live="polite"></div>
+
+    <div id="plWorkspace" class="planner-workspace planner-focus-workspace" style="display:none">
+      <div class="planner-focus-topbar">
+        <div class="planner-focus-title">
           <span class="analysis-eyebrow" id="plSource">Local plan</span>
-          <h3 id="plTitle">My plan</h3>
+          <div><h3 id="plTitle">My plan</h3><span class="planner-focus-dot">·</span><b id="plGwHeading">Gameweek</b></div>
           <p id="plMeta">Saved automatically.</p>
         </div>
-        <div class="planner-title-actions">
-          <button class="secondary-action" id="plResetGw" title="Remove transfers, captain, chip and lineup changes for only this Gameweek">Clear this GW changes</button>
-          <button class="secondary-action danger-soft" id="plClearSquad" title="Remove the base squad and every planned Gameweek in this plan">Clear all GWs</button>
+        <div class="planner-focus-actions">
+          <button class="secondary-action planner-multi-btn" id="plBatchTransfers" type="button">Edit transfers</button>
+          <button class="secondary-action planner-share-btn" id="plShare" type="button" disabled title="Complete a valid squad before sharing">↗ Share GW</button>
+          <div class="planner-chip-wrap planner-chip-compact">
+            <label for="plChip">Chip</label>
+            <select id="plChip">
+              <option value="">None</option>
+              <option value="WC">Wildcard</option>
+              <option value="FH">Free Hit</option>
+              <option value="BB">Bench Boost</option>
+              <option value="TC">Triple Captain</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div class="planner-gw-strip" id="plGwStrip" aria-label="Planned gameweeks"></div>
-
-      <div class="planner-summary" id="plSummary"></div>
-
-      <div class="planner-layout">
-        <div class="planner-main">
-          <div class="planner-section-head">
-            <div>
-              <span class="home-section-kicker">Squad plan</span>
-              <h3 id="plGwHeading">Gameweek</h3>
-            </div>
-            <div class="planner-chip-wrap">
-              <label for="plChip">Planned chip</label>
-              <select id="plChip">
-                <option value="">None</option>
-                <option value="WC">Wildcard</option>
-                <option value="FH">Free Hit</option>
-                <option value="BB">Bench Boost</option>
-                <option value="TC">Triple Captain</option>
-              </select>
-            </div>
-          </div>
-          <div id="plTransfers" class="planner-transfers"></div>
+      <div class="planner-gw-strip planner-gw-strip-focus" id="plGwStrip" aria-label="Planned gameweeks"></div>
+      <div class="planner-near-pitch-actions" aria-label="Gameweek plan actions">
+        <button class="secondary-action" id="plResetGw" title="Remove transfers, captain, chip and lineup changes for only this Gameweek">Clear this GW changes</button>
+        <button class="secondary-action planner-fresh-btn" id="plFreshGw" title="Start this Gameweek independently from a completely blank 15-player squad">Start this GW independently</button>
+        <button class="secondary-action planner-autopick-btn" id="plAutoPick" type="button" hidden title="Build a balanced legal squad from current public FPL data">✨ AutoPick squad</button>
+        <button class="secondary-action danger-soft" id="plClearSquad" title="Remove the base squad and every planned Gameweek in this plan">Clear all GWs</button>
+      </div>
+      <div class="planner-summary planner-summary-top" id="plSummary"></div>
+      <div class="planner-layout planner-layout-focus">
+        <div class="planner-main planner-main-focus">
           <div id="plSquad" class="planner-squad"></div>
         </div>
 
@@ -643,10 +642,54 @@
               <option value="4">Forwards</option>
             </select>
             <select id="plannerTeam" aria-label="Team filter"><option value="0">All clubs</option></select>
+            <select id="plannerSort" aria-label="Sort available players">
+              <option value="suggested">Sort: Suggested</option>
+              <option value="projection">Next 5 projected</option>
+              <option value="ownership">Ownership</option>
+              <option value="points">Total points</option>
+              <option value="ppg">Points per game</option>
+              <option value="form">Form</option>
+              <option value="value">Points per £m</option>
+              <option value="priceHigh">Price: high to low</option>
+              <option value="priceLow">Price: low to high</option>
+              <option value="minutes">Minutes</option>
+            </select>
           </div>
+          <div class="planner-picker-guide planner-fdr-guide"><span>Next 5 fixtures</span><div class="planner-fdr-legend"><b class="pl-fixture fdr2">EASY</b><em>FDR 1–2</em><b class="pl-fixture fdr3">AVG</b><em>FDR 3</em><b class="pl-fixture fdr5">HARD</b><em>FDR 4–5</em></div><p><strong>ARS</strong> = home, <strong>ars</strong> = away, <strong>—</strong> = blank Gameweek. A combined chip means a double Gameweek.</p></div>
           <div class="planner-player-list" id="plPlayerList"></div>
-          <div class="planner-price-note">Planner uses current public FPL prices. A manager's exact in-game selling value can differ after price rises.</div>
+          <div class="planner-price-note">Planner uses current public FPL prices. Sort by ownership, price, points, PPG, form, value or the FPL Peek next-five estimate. A manager's exact in-game selling value can differ after price rises.</div>
+          <div id="plTransferMode" class="planner-transfer-mode planner-transfer-mode-below planner-transfer-mode-sidebar" aria-live="polite"></div>
         </aside>
+      </div>
+
+      <div class="planner-bottom-details">
+        <div id="plTransfers" class="planner-transfers planner-transfer-log"></div>
+
+        <details class="planner-help-details">
+          <summary>How Planner works <span>Squad flow, FDR colours, fresh Gameweeks and transfer editing</span></summary>
+          <div class="planner-explainer planner-explainer-bottom" aria-label="How the Gameweek Planner works">
+            <div class="planner-explainer-grid">
+              <div><b>Squad carries forward</b><span>Build GW1, then that squad becomes the starting point for GW2, GW3 and later weeks unless you change it.</span></div>
+              <div><b>Edit several transfers at once</b><span>Click Edit transfers, remove several players, keep the empty slots visible, then refill them from the player list. Nothing is committed until you confirm.</span></div>
+              <div><b>Plan any Gameweek independently</b><span>Start any GW from a blank squad even if an earlier GW is unfinished. Earlier weeks stay unchanged, and an independent GW is never overwritten by changes you make before it.</span></div>
+              <div><b>Next 5 fixture colours</b><span><i class="pl-fixture fdr2">ARS</i> easier · <i class="pl-fixture fdr3">EVE</i> average · <i class="pl-fixture fdr5">MCI</i> harder. UPPERCASE = home, lowercase = away, — = blank.</span></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="planner-help-details planner-autopick-help">
+          <summary>How AutoPick works <span>A balanced starting point you can still change</span></summary>
+          <div class="planner-explainer planner-explainer-bottom" aria-label="How Planner AutoPick works">
+            <div class="planner-explainer-grid planner-autopick-grid">
+              <div><b>Looks beyond one Gameweek</b><span>AutoPick considers FPL Peek next-five projections, the upcoming fixture run, recent form and points-per-game rather than simply choosing the highest season totals.</span></div>
+              <div><b>Checks reliability and value</b><span>Expected minutes, current availability and price efficiency help separate dependable picks from players who may be difficult to trust or fit into the budget.</span></div>
+              <div><b>Always respects squad rules</b><span>The finished squad stays within £100.0m, uses the required positions and never selects more than three players from one club. If you already picked players, AutoPick tries to keep them.</span></div>
+              <div><b>Sets up the Gameweek too</b><span>After choosing 15 players, AutoPick selects a valid starting XI for the active Gameweek and suggests a captain and vice-captain from that XI. Everything remains editable.</span></div>
+            </div>
+            <p class="planner-autopick-note">AutoPick is a planning suggestion built from current public FPL data and FPL Peek estimates. It is not a guarantee of future points.</p>
+          </div>
+        </details>
+
       </div>
     </div>
   </section>

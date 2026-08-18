@@ -220,3 +220,8 @@ Adds a defensive contribution leaderboard using the official FPL `defensive_cont
 
 ## V34 — DEFCON pagination
 The DEFCON leaderboard now renders 15 players per page with Previous/Next controls, reducing initial image requests and keeping the tracker fast on mobile. Filters and search reset to page 1.
+
+## V35 planner improvements
+- Planner player cards show the next five Gameweeks as compact FDR-coloured fixture chips.
+- Player picker includes sorting by suggested projection, ownership, total points, PPG, form, points per £m, price and minutes.
+- Picker rows expose price, total points, PPG, ownership and form without opening another page.

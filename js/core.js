@@ -20,6 +20,28 @@ const money = t => "£"+(t/10).toFixed(1);
 const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const POS = {1:"GKP",2:"DEF",3:"MID",4:"FWD"};
 
+/* ============ FPL Peek dialogs ============ */
+function fplPeekDialog({title="FPL Peek",message="",confirmText="Confirm",cancelText="Cancel",danger=false,input=false,value=""}={}){
+  return new Promise(resolve=>{
+    let root=document.getElementById("fplPeekDialogRoot");
+    if(!root){root=document.createElement("div");root.id="fplPeekDialogRoot";document.body.appendChild(root)}
+    root.innerHTML=`<div class="fpl-dialog-backdrop" role="presentation"><div class="fpl-dialog" role="dialog" aria-modal="true" aria-labelledby="fplDialogTitle">
+      <div class="fpl-dialog-brand"><span class="fpl-dialog-logo">P</span><span>FPL Peek</span></div>
+      <h3 id="fplDialogTitle">${esc(title)}</h3><p>${esc(message)}</p>
+      ${input?`<input class="fpl-dialog-input" type="text" value="${esc(value)}" aria-label="${esc(title)}">`:""}
+      <div class="fpl-dialog-actions"><button class="secondary-action" data-dialog-cancel>${esc(cancelText)}</button><button class="${danger?"danger-action":"primary-action"}" data-dialog-confirm>${esc(confirmText)}</button></div>
+    </div></div>`;
+    const backdrop=root.querySelector(".fpl-dialog-backdrop"),field=root.querySelector(".fpl-dialog-input"),ok=root.querySelector("[data-dialog-confirm]"),cancel=root.querySelector("[data-dialog-cancel]");
+    const previousOverflow=document.body.style.overflow;document.body.style.overflow="hidden";
+    let done=false; const finish=v=>{if(done)return;done=true;document.removeEventListener("keydown",onKey);document.body.style.overflow=previousOverflow;root.innerHTML="";resolve(v)};
+    const onKey=e=>{if(e.key==="Escape")finish(input?null:false);if(e.key==="Enter"&&(!input||document.activeElement===field))finish(input?field.value:true)};
+    ok.onclick=()=>finish(input?field.value:true);cancel.onclick=()=>finish(input?null:false);backdrop.addEventListener("click",e=>{if(e.target===backdrop)finish(input?null:false)});document.addEventListener("keydown",onKey);
+    requestAnimationFrame(()=>{(field||ok).focus();if(field)field.select()});
+  });
+}
+window.fplConfirm=(message,opts={})=>fplPeekDialog({title:opts.title||"Confirm action",message,confirmText:opts.confirmText||"Confirm",cancelText:opts.cancelText||"Cancel",danger:!!opts.danger});
+window.fplPrompt=(title,value="",opts={})=>fplPeekDialog({title,message:opts.message||"",confirmText:opts.confirmText||"Save",cancelText:opts.cancelText||"Cancel",input:true,value});
+
 /* season / gameweek state helpers */
 function seasonStarted(){ return !!(boot && boot.events && boot.events.some(e=>e.finished||e.is_current)); }
 function nextDeadlineEvent(){
