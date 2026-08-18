@@ -114,7 +114,7 @@
     <div class="tab-label">Planning</div>
     <button class="tab" data-tab="insights">Insights</button>
     <button class="tab hot-tab" data-tab="builder">Team Builder <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
-    <button class="tab hot-tab" data-tab="planner">Gameweek Planner <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
+    <button class="tab hot-tab" data-tab="planner">Planner <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="scout">Scout</button>
     <button class="tab hot-tab" data-tab="transfer">Player Compare <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="fixtures">Fixtures &amp; Results</button>
@@ -698,7 +698,7 @@
   <section class="tabpanel" id="tab-builder">
     <div class="thead">
       <h2>Team Builder</h2>
-      <p>Build the real 15-player FPL squad, then see the suggested starting XI and four substitutes with an instant Squad Score.</p>
+      <p>Draft a 15-player squad under the real rules and get an instant Squad Score. Swap players and watch it move.</p>
     </div>
 
     <div class="bld-top">
@@ -714,23 +714,20 @@
           <span class="bld-stat"><b id="bldBank">£100.0</b> bank</span>
         </div>
         <div class="bld-detailstats" aria-label="Team Builder squad statistics">
-          <span title="Projected optimized Gameweek score over the selected window. Triple Captain or Bench Boost affects the first Gameweek in the window."><small>Projected score</small><b id="bldSquadProj">—</b></span>
-          <span title="Suggested legal formation from your current squad"><small>Suggested XI</small><b id="bldXiProj">—</b></span>
-          <span title="Suggested captain from the starting XI"><small>Captain</small><b id="bldAvgForm">—</b></span>
+          <span title="Sum of FPL Peek projections for all currently selected players over the chosen Gameweek window"><small>15-player projection</small><b id="bldSquadProj">0.0</b></span>
+          <span title="Projected best legal starting XI plus doubled captain over the chosen Gameweek window"><small>Best XI + captain</small><b id="bldXiProj">—</b></span>
           <span title="Average selected-by percentage of your current picks"><small>Average ownership</small><b id="bldAvgOwn">—</b></span>
+          <span title="Average current FPL form of your current picks"><small>Form</small><b id="bldAvgForm">—</b></span>
           <span title="Average FPL points per game of your current picks"><small>Average PPG</small><b id="bldAvgPpg">—</b></span>
           <span title="Number of different Premier League clubs represented in your current picks"><small>Clubs used</small><b id="bldClubSpread">0</b></span>
         </div>
       </div>
       <div class="bld-actions">
-        <label class="bld-chip-control" title="A chip applies to GW1 of the selected Builder window"><span>Chip</span><select id="bldChip" class="bld-chip-select"><option value="none">No chip</option><option value="triple_captain">Triple Captain</option><option value="bench_boost">Bench Boost</option><option value="wildcard">Wildcard</option><option value="free_hit">Free Hit</option></select></label>
         <div class="seg" id="bldRange">
           <button data-n="1">1</button>
           <button data-n="3">3</button>
           <button data-n="5" class="active">5 GW</button>
         </div>
-        <button class="bld-btn" id="bldAutoPick" type="button" title="Build or complete a balanced legal 15-player squad">✨ AutoPick squad</button>
-        <button class="bld-btn bld-optimize-btn" id="bldOptimize" type="button" disabled title="Complete a valid 15-player squad to optimize">⚡ Optimize squad</button>
         <button class="bld-btn ghost" id="bldClear">Clear</button>
       </div>
     </div>
@@ -738,9 +735,7 @@
 
     <div class="bld-cols">
       <div class="bld-pitch-wrap">
-        <div class="bld-xi-label"><span>Suggested starting XI</span><small>Automatically optimized from your 15-player squad</small></div>
         <div class="pitch bld-pitch" id="bldPitch"></div>
-        <div class="bld-bench" id="bldBench"></div>
       </div>
       <div class="bld-picker">
         <div class="bld-search-row">
@@ -811,13 +806,13 @@
         <div class="bld-info-card">
           <div class="bld-info-ic">02</div>
           <h4>How the score is built</h4>
-          <p>Your full squad is still <b>15 players</b>, but the Builder shows the suggested <b>11 starters on the pitch</b> and the other <b>4 on the bench</b>. For each Gameweek in the selected 1, 3 or 5-GW window, FPL Peek chooses the strongest legal XI and captain.</p>
-          <p>If you activate <b>Triple Captain</b> or <b>Bench Boost</b>, the chip changes the projected score for the first Gameweek in that window. Wildcard and Free Hit are shown as planning chips but do not add artificial points.</p>
+          <p>From your 15, we pick the <b>best-scoring legal starting XI</b> (min. 1 GK, 3 DEF, 1 FWD) and <b>double your highest scorer as captain</b> — just like real FPL. That total is measured over your chosen <b>1, 3 or 5 gameweek</b> window.</p>
+          <p>Your squad is then compared to the <b>best possible squad</b> we can assemble under the same budget and club limits. Your score is how close you get, on a <b>0–99</b> scale.</p>
         </div>
         <div class="bld-info-card">
           <div class="bld-info-ic">03</div>
           <h4>Grades</h4>
-          <p>The squad is compared with a stronger optimized benchmark. Small projection gaps now matter more, so top grades are deliberately harder to earn:</p>
+          <p>The percentage of optimal maps to a letter grade:</p>
           <div class="bld-grades">
             <span class="gg" style="--c:#00e57a">S</span>
             <span class="gg" style="--c:#4ade80">A</span>
@@ -833,20 +828,6 @@
           <div class="bld-info-ic">04</div>
           <h4>An honest note on the numbers</h4>
           <p>The per-player estimate is <b>our own transparent formula</b> — recent form, how easy the upcoming fixtures are, and whether the player is fit and starting. It is <b>not a trained prediction model</b>, so treat the score as a smart guide for comparing squads, not a guaranteed forecast.</p>
-        </div>
-        <div class="bld-info-card">
-          <div class="bld-info-ic">05</div>
-          <h4>How AutoPick works</h4>
-          <p>AutoPick builds a legal <b>15-player squad</b> for the selected 1, 3 or 5-GW window. It looks at FPL Peek projections, upcoming fixtures, form, points-per-game, availability and value while respecting the <b>£100.0m budget</b>, required positions and the <b>3-player-per-club</b> limit.</p>
-          <p>If you already picked some players, AutoPick tries to <b>keep those choices and fill the remaining slots</b>. Once the squad is complete, the Builder automatically chooses the suggested XI, bench and captain. You can change every AutoPick choice afterwards.</p>
-          <p class="bld-info-sm">AutoPick is a planning suggestion, not a guarantee of future points. The active chip is reflected in the projected squad score.</p>
-        </div>
-        <div class="bld-info-card">
-          <div class="bld-info-ic">06</div>
-          <h4>How Optimize works</h4>
-          <p><b>Optimize squad</b> is for a team you already built and want to improve. It keeps the same legal 15-player structure, searches for meaningful same-position upgrades, and respects your budget, club limit, selected 1/3/5-GW window and active chip.</p>
-          <p>It deliberately ignores tiny sideways moves. Before anything changes, you get a <b>before-and-after review</b> showing the projected gain, grade change and every suggested OUT → IN swap. You choose whether to apply them.</p>
-          <p class="bld-info-sm">AutoPick can rebuild the squad. Optimize is the lighter-touch option for improving your existing choices.</p>
         </div>
       </div>
     </div>
@@ -1106,7 +1087,7 @@
   <div class="mobile-more-head"><div><b>More from FPL Peek</b><span>Tools, gameweek pages and account options</span></div><button id="mobileMoreClose" aria-label="Close more options">Done</button></div>
   <div class="mobile-more-grid">
     <button data-mobile-tab="insights">Insights</button>
-    <button class="hot-mobile" data-mobile-tab="planner">Gameweek Planner <span class="tab-hot" aria-hidden="true">🔥</span></button>
+    <button class="hot-mobile" data-mobile-tab="planner">Planner <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button class="hot-mobile" data-mobile-tab="analyzer">Team Rating <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button class="hot-mobile" data-mobile-tab="transfer">Player Compare <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button data-mobile-tab="compare">Manager Compare</button>
