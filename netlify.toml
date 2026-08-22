@@ -10,6 +10,7 @@
   status = 200
   force = true
 
+
 [build]
   publish = "."
   functions = "netlify/functions"
@@ -17,38 +18,197 @@
 [build.environment]
   NODE_VERSION = "20"
 
+
+# -------------------------
+# SECURITY HEADERS
+# -------------------------
+
 [[headers]]
   for = "/*"
+
   [headers.values]
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
+
+# -------------------------
+# CACHE HEADERS
+# -------------------------
+
 [[headers]]
   for = "/favicon.ico"
+
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
 
 [[headers]]
   for = "/*.png"
+
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
+
 [[headers]]
   for = "/site.webmanifest"
+
   [headers.values]
     Content-Type = "application/manifest+json; charset=UTF-8"
     Cache-Control = "public, max-age=86400"
 
+
 [[headers]]
   for = "/robots.txt"
+
   [headers.values]
     Content-Type = "text/plain; charset=UTF-8"
     Cache-Control = "public, max-age=3600"
 
+
 [[headers]]
   for = "/sitemap.xml"
+
   [headers.values]
     Content-Type = "application/xml; charset=UTF-8"
     Cache-Control = "public, max-age=3600"
+
+
+[[headers]]
+  for = "/index.html"
+
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+
+[[headers]]
+  for = "/js/*.js"
+
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+
+[[headers]]
+  for = "/css/*.css"
+
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+
+# -------------------------
+# SEO-FRIENDLY APP ROUTES
+# -------------------------
+
+[[redirects]]
+  from = "/gameweek-planner"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/team-builder"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/price-watch"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/price-change-prediction"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/player-compare"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/captain-picks"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/team-rating"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/manager-compare"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/fixtures"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/players"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/injuries"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/set-pieces"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/defcon-tracker"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/pre-season"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/fpl-peek-team"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/live-center"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/scout"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/insights-page"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/card-creator"
+  to = "/index.html"
+  status = 200

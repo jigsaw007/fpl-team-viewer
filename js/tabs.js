@@ -8,7 +8,7 @@ function markActiveSidebarGroup(name){
   while(node && !node.classList.contains("tab-label")) node=node.previousElementSibling;
   if(node) node.classList.add("active-group");
 }
-function switchTab(name){
+function switchTab(name,opts={}){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
   markActiveSidebarGroup(name);
   document.querySelectorAll(".tabpanel").forEach(p=>p.classList.toggle("active",p.id==="tab-"+name));
@@ -16,7 +16,9 @@ function switchTab(name){
   const primaryMobile=["home","team","scout","builder"];
   if($("mobileMore")) $("mobileMore").classList.toggle("active",!primaryMobile.includes(name));
   closeMobileMore();
-  window.scrollTo({top:0,behavior:"smooth"});
+  if(!opts.fromRoute && window.FPLPeekSEO) window.FPLPeekSEO.navigate(name,!!opts.replace);
+  else if(window.FPLPeekSEO) window.FPLPeekSEO.setMetadata(name);
+  if(!opts.noScroll) window.scrollTo({top:0,behavior:opts.fromRoute?"auto":"smooth"});
   if(!_tabLoaded[name]){ _tabLoaded[name]=true; lazyLoadTab(name); }
 }
 async function lazyLoadTab(name){
@@ -57,5 +59,10 @@ if($("mobileMore")) $("mobileMore").addEventListener("click",()=>{
   sheet.classList.toggle("open",open);sheet.setAttribute("aria-hidden",open?"false":"true");$("mobileMore").setAttribute("aria-expanded",open?"true":"false");
 });
 if($("mobileMoreClose")) $("mobileMoreClose").addEventListener("click",closeMobileMore);
+
+window.addEventListener("popstate",()=>{
+  const tab=window.FPLPeekSEO?.tabForPath(location.pathname)||"home";
+  if(document.getElementById("tab-"+tab)) switchTab(tab,{fromRoute:true,noScroll:true});
+});
 
 markActiveSidebarGroup("home");
