@@ -733,64 +733,9 @@ function drawBldPitch(st){
   const b=boot,display=bldDisplayLineup(_bldPicks),shape=display.shape||{1:1,2:3,3:4,4:3},captainId=display.captain?.id||0,viceId=display.vice?.id||0;
   const label=document.querySelector(".bld-xi-label");
 
-  // While the squad is incomplete, keep a stable 4-3-3 pitch template.
-  // This avoids the Builder switching between a progress panel and a football pitch.
-  if(!st.complete){
-    const template={1:1,2:4,3:3,4:3};
-    if(label) label.innerHTML=`<span>Build your squad</span><small>4-3-3 starting template · your final suggested XI is chosen when all 15 players are selected.</small>`;
-
-    const pickedByPos={1:[],2:[],3:[],4:[]};
-    st.picks.forEach(e=>(pickedByPos[e.element_type]||=[]).push(e));
-    const starterByPos={1:[],2:[],3:[],4:[]},bench=[];
-    [1,2,3,4].forEach(pos=>{
-      const list=pickedByPos[pos]||[],take=template[pos];
-      starterByPos[pos]=list.slice(0,take);
-      bench.push(...list.slice(take));
-    });
-
-    const previewSlot=(e,pos,{benchSlot=false}={})=>{
-      if(!e)return `<div class="bld-slot empty ${benchSlot?'bench-empty':''}" data-slotpos="${pos}" title="Add a ${POS[pos]}"><span class="bld-empty-plus">+</span><div class="bld-slot-lbl">${benchSlot?`BENCH ${POS[pos]}`:POS[pos]}</div></div>`;
-      const t=b.teams.find(z=>z.id===e.team)||{};
-      return `<div class="bld-slot ${benchSlot?'on-bench':''}" data-player="${e.id}" title="Open ${esc(e.web_name)} options">
-        <div class="bld-price-badge">${money(e.now_cost)}</div>
-        <div class="bld-kit-wrap">${teamKitImg(t,"bld-kit",`${e.web_name} ${t.name||'club'} kit`)}</div>
-        <div class="bld-pl-nm">${esc(e.web_name)}</div>
-        ${bldPitchFixtureRun(e)}<button class="bld-rm" type="button" data-bld-remove="${e.id}" title="Remove ${esc(e.web_name)}" aria-label="Remove ${esc(e.web_name)}">✕</button>
-      </div>`;
-    };
-
-    const pitchRows=[1,2,3,4].map(pos=>{
-      const row=[];for(let i=0;i<template[pos];i++)row.push(previewSlot(starterByPos[pos][i]||null,pos));
-      return `<div class="bld-prow bld-prow-${pos}">${row.join("")}</div>`;
-    }).join("");
-    $("bldPitch").innerHTML=pitchRows;
-
-    const expectedBench=[1,2,2,3]; // second GK + spare DEF + spare DEF/MID + spare MID/FWD visual slots
-    const benchPlayers=bench.slice(0,4);
-    const benchHtml=expectedBench.map((pos,i)=>previewSlot(benchPlayers[i]||null,benchPlayers[i]?.element_type||pos,{benchSlot:true})).join("");
-    if($("bldBench")){
-      $("bldBench").style.display="block";
-      $("bldBench").innerHTML=`<div class="bld-bench-head"><span>Substitutes</span><small>${st.picks.length}/15 selected</small></div><div class="bld-bench-row">${benchHtml}</div>`;
-    }
-
-    const wire=root=>{
-      root?.querySelectorAll('.bld-slot[data-player]').forEach(card=>card.onclick=e=>{if(e.target.closest('[data-bld-remove]'))return;bldPlayerActions(card.dataset.player)});
-      root?.querySelectorAll('[data-bld-remove]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();bldToggle(btn.dataset.bldRemove)});
-      root?.querySelectorAll('.bld-slot.empty[data-slotpos]').forEach(slot=>slot.onclick=()=>{
-        const pos=+slot.dataset.slotpos;_bldPos=pos;$('bldPos').querySelectorAll('button').forEach(y=>y.classList.toggle('active',+y.dataset.p===pos));drawBldList();$('bldList').scrollTop=0;
-      });
-    };
-    wire($("bldPitch"));wire($("bldBench"));
-    return;
-  }
-
-  if(label) label.innerHTML=`<span>Suggested starting XI</span><small>Automatically optimized from your complete 15-player squad · ${bldFormationText(shape)}</small>`;
-  if($('bldBench')) $('bldBench').style.display='block';
-  const xiByPos={1:[],2:[],3:[],4:[]},benchByPos={1:[],2:[],3:[],4:[]};
-  display.xi.forEach(e=>xiByPos[e.element_type].push(e));display.bench.forEach(e=>benchByPos[e.element_type].push(e));
-  const slot=(e,pos,{bench=false}={})=>{
+  const slot=(e,pos,{bench=false,allowRole=true}={})=>{
     if(!e)return `<div class="bld-slot empty ${bench?'bench-empty':''}" data-slotpos="${pos}" title="Add a ${POS[pos]}">+<div class="bld-slot-lbl">${bench?`BENCH ${POS[pos]}`:POS[pos]}</div></div>`;
-    const t=b.teams.find(z=>z.id===e.team)||{},cap=e.id===captainId&&!bench,vice=e.id===viceId&&!bench;
+    const t=b.teams.find(z=>z.id===e.team)||{},cap=allowRole&&e.id===captainId&&!bench,vice=allowRole&&e.id===viceId&&!bench;
     return `<div class="bld-slot ${bench?'on-bench':''}" data-player="${e.id}" title="Open ${esc(e.web_name)} options">
       <div class="bld-price-badge">${money(e.now_cost)}</div>
       <div class="bld-kit-wrap">${teamKitImg(t,"bld-kit",`${e.web_name} ${t.name||"club"} kit`)}</div>
@@ -798,6 +743,64 @@ function drawBldPitch(st){
       ${bldPitchFixtureRun(e)}<button class="bld-rm" type="button" data-bld-remove="${e.id}" title="Remove ${esc(e.web_name)}" aria-label="Remove ${esc(e.web_name)}">✕</button>
     </div>`;
   };
+
+  const wire=root=>{
+    root?.querySelectorAll(".bld-slot[data-player]").forEach(s=>s.onclick=e=>{if(e.target.closest("[data-bld-remove]"))return;bldPlayerActions(s.dataset.player)});
+    root?.querySelectorAll("[data-bld-remove]").forEach(btn=>btn.onclick=e=>{e.stopPropagation();bldToggle(btn.dataset.bldRemove)});
+    root?.querySelectorAll(".bld-slot.empty[data-slotpos]").forEach(s=>s.onclick=()=>{
+      const pos=+s.dataset.slotpos;_bldPos=pos;
+      $("bldPos")?.querySelectorAll("button").forEach(y=>y.classList.toggle("active",+y.dataset.p===pos));
+      drawBldList();if($("bldList"))$("bldList").scrollTop=0;
+    });
+  };
+
+  // Incomplete squads always use a stable blank 4-3-3 pitch. This keeps the
+  // Builder visually consistent before and after refresh instead of switching
+  // to a completely different progress-card layout.
+  if(!st.complete){
+    const blankShape={1:1,2:4,3:3,4:3};
+    if(label) label.innerHTML=`<span>Build your squad · 4-3-3 template</span><small>${st.picks.length}/15 selected · fill the empty slots or use AutoPick. The final suggested XI is calculated at 15/15.</small>`;
+
+    const byPos={1:[],2:[],3:[],4:[]};
+    st.picks.forEach(e=>byPos[e.element_type]?.push(e));
+    const used=new Set(),xiByPos={1:[],2:[],3:[],4:[]};
+    for(const pos of [1,2,3,4]){
+      xiByPos[pos]=byPos[pos].slice(0,blankShape[pos]);
+      xiByPos[pos].forEach(e=>used.add(e.id));
+    }
+    const benchPlayers=st.picks.filter(e=>!used.has(e.id));
+
+    const line=pos=>{
+      const cells=[];for(let i=0;i<blankShape[pos];i++)cells.push(slot(xiByPos[pos][i],pos,{allowRole:false}));
+      return `<div class="prow">${cells.join("")}</div>`;
+    };
+    $("bldPitch").innerHTML=line(1)+line(2)+line(3)+line(4);
+
+    // Bench capacity follows the real 15-player squad: 1 GK + 3 outfield slots.
+    const benchSlots=[];
+    benchPlayers.slice(0,4).forEach(e=>benchSlots.push(slot(e,e.element_type,{bench:true,allowRole:false})));
+    const missingBench=4-benchSlots.length;
+    for(let i=0;i<missingBench;i++){
+      // Prefer a useful required-position hint for the next empty bench slot.
+      let pos=2;
+      if((st.posCount[1]||0)<SQUAD[1]) pos=1;
+      else if((st.posCount[2]||0)<SQUAD[2]) pos=2;
+      else if((st.posCount[3]||0)<SQUAD[3]) pos=3;
+      else if((st.posCount[4]||0)<SQUAD[4]) pos=4;
+      benchSlots.push(slot(null,pos,{bench:true,allowRole:false}));
+    }
+    if($("bldBench")){
+      $("bldBench").style.display="block";
+      $("bldBench").innerHTML=`<div class="bld-bench-head"><span>Substitutes</span><small>${15-st.picks.length} player${15-st.picks.length===1?'':'s'} still required</small></div><div class="bld-bench-row">${benchSlots.join("")}</div>`;
+    }
+    wire($("bldPitch"));wire($("bldBench"));
+    return;
+  }
+
+  if(label) label.innerHTML=`<span>Suggested starting XI</span><small>Automatically optimized from your complete 15-player squad · ${bldFormationText(shape)}</small>`;
+  if($("bldBench")) $("bldBench").style.display="block";
+  const xiByPos={1:[],2:[],3:[],4:[]},benchByPos={1:[],2:[],3:[],4:[]};
+  display.xi.forEach(e=>xiByPos[e.element_type].push(e));display.bench.forEach(e=>benchByPos[e.element_type].push(e));
   const line=pos=>{
     const need=shape[pos]||0,row=xiByPos[pos]||[],cells=[];
     for(let i=0;i<need;i++)cells.push(slot(row[i],pos));
@@ -807,12 +810,9 @@ function drawBldPitch(st){
   const benchNeeds={1:SQUAD[1]-(shape[1]||0),2:SQUAD[2]-(shape[2]||0),3:SQUAD[3]-(shape[3]||0),4:SQUAD[4]-(shape[4]||0)},benchCells=[];
   for(const pos of [1,2,3,4])for(let i=0;i<benchNeeds[pos];i++)benchCells.push(slot((benchByPos[pos]||[])[i],pos,{bench:true}));
   if($("bldBench")) $("bldBench").innerHTML=`<div class="bld-bench-head"><span>Substitutes</span><small>Suggested bench · ${bldChipLabel()}</small></div><div class="bld-bench-row">${benchCells.join("")}</div>`;
-  const wire=root=>{
-    root?.querySelectorAll(".bld-slot[data-player]").forEach(s=>s.onclick=e=>{if(e.target.closest("[data-bld-remove]"))return;bldPlayerActions(s.dataset.player)});
-    root?.querySelectorAll("[data-bld-remove]").forEach(btn=>btn.onclick=e=>{e.stopPropagation();bldToggle(btn.dataset.bldRemove)});
-  };
   wire($("bldPitch"));wire($("bldBench"));
 }
+
 let _bldFilteredCount=0;
 function drawBldList(append){
   const b=boot; const st=bldState();
