@@ -257,7 +257,7 @@ function updateTransferActions(){
 }
 function taPlayerHead(e){
   const t=(boot.teams||[]).find(x=>x.id===e.team)||{};
-  return `<div class="transfer-player-head">${teamKitImg(t,"transfer-kit")}<div><h3>${esc(e.web_name)}</h3><p>${esc(t.name||"")} · ${POS[e.element_type]}</p></div><b>${money(e.now_cost)}</b></div>`;
+  return `<div class="transfer-player-head"><div class="transfer-head-visual">${faceImg(e,"transfer-face")}</div><div><h3>${esc(e.web_name)}</h3><p>${esc(t.name||"")} · ${POS[e.element_type]}</p></div><b>${money(e.now_cost)}</b></div>`;
 }
 function taMetricValue(e,key){
   const avg=fixtureAverageForTeam(e.team,_taFixtureMap,5);
@@ -272,6 +272,38 @@ function taMetricValue(e,key){
   if(key==="proj5") return fplPeekProjectedPoints(e,_taFixtureMap,5).toFixed(1);
   return "-";
 }
+function taMetricNumeric(e,key){
+  const avg=fixtureAverageForTeam(e.team,_taFixtureMap,5);
+  if(key==="price") return Number(e.now_cost||0);
+  if(key==="points") return Number(e.total_points||0);
+  if(key==="form") return parseFloat(e.form||0)||0;
+  if(key==="minutes") return Number(e.minutes||0);
+  if(key==="fdr") return avg==null?null:avg;
+  if(key==="proj") return parseFloat(fplPeekProjectedPoints(e,_taFixtureMap,1))||0;
+  if(key==="proj5") return parseFloat(fplPeekProjectedPoints(e,_taFixtureMap,5))||0;
+  if(key==="own") return parseFloat(e.selected_by_percent||0)||0;
+  if(key==="security"){
+    const label=(minutesSecurity(e).label||"").toLowerCase();
+    if(label.includes("very secure")) return 4;
+    if(label.includes("secure")) return 3;
+    if(label.includes("moderate")) return 2;
+    if(label.includes("risky")) return 1;
+    return 0;
+  }
+  return null;
+}
+function taLowerIsBetter(key){ return key==="price" || key==="fdr"; }
+function taShouldHighlight(key){ return key!=="own"; }
+function taBestIndexes(players,key){
+  if(!taShouldHighlight(key)) return new Set();
+  const vals=players.map(p=>taMetricNumeric(p,key));
+  const usable=vals.filter(v=>v!=null && !Number.isNaN(v));
+  if(!usable.length) return new Set();
+  const target=taLowerIsBetter(key)?Math.min(...usable):Math.max(...usable);
+  const out=new Set();
+  vals.forEach((v,i)=>{ if(v!=null && !Number.isNaN(v) && v===target) out.add(i); });
+  return out;
+}
 function drawTransferComparison(){
   const players=[_taSelected.from,_taSelected.to,_taSelected.third].filter(Boolean),out=$("transferBody");
   if(players.length<2){out.innerHTML=`<div class="tool-empty bad">Choose at least two players first.</div>`;return;}
@@ -283,6 +315,6 @@ function drawTransferComparison(){
   const easiest=[...scored].filter(x=>x.fdr!=null).sort((a,b)=>a.fdr-b.fdr)[0];
   out.innerHTML=`
     <div class="transfer-compare-grid cols-${players.length}">${players.map(e=>`<div class="transfer-side">${taPlayerHead(e)}<div class="fixture-run">${fixtureRunHtml(e.team,_taFixtureMap,teams,5)}</div></div>`).join("")}</div>
-    <div class="transfer-table-scroll"><table class="transfer-compare-table"><thead><tr><th>Metric</th>${players.map(e=>`<th>${esc(e.web_name)}</th>`).join("")}</tr></thead><tbody>${metrics.map(([k,label])=>`<tr><th>${esc(label)}</th>${players.map(e=>`<td>${esc(String(taMetricValue(e,k)))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="transfer-table-scroll"><table class="transfer-compare-table"><thead><tr><th>Metric</th>${players.map(e=>`<th>${esc(e.web_name)}</th>`).join("")}</tr></thead><tbody>${metrics.map(([k,label])=>{const bestIdx=taBestIndexes(players,k);return `<tr><th>${esc(label)}</th>${players.map((e,i)=>`<td class="${bestIdx.has(i)?"stat-better":""}">${esc(String(taMetricValue(e,k)))}</td>`).join("")}</tr>`;}).join("")}</tbody></table></div>
     <div class="transfer-verdict"><span>FPL Peek view</span><h4>${esc(best.e.web_name)} has the strongest next-five projected profile.</h4><p>${easiest?`${esc(easiest.e.web_name)} has the easiest fixture run of this group. `:""}${esc(cheapest.web_name)} is the cheapest option at ${money(cheapest.now_cost)}. Projected points are a transparent FPL Peek estimate using public FPL form, output, minutes, availability and fixture difficulty - not a guarantee.</p></div>`;
 }
