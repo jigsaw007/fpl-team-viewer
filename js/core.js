@@ -269,11 +269,14 @@ function playerCard(el, pick, bench){
   }).join("")||`<span class="fdr3">—</span>`;
   const price=money(el.now_cost);
   const form=el.form??"0.0";
-  const kit=kitUrl(t,isGk);
+  const primaryKit=teamKitUrl(t);
+  const fallbackKit=kitUrl(t,isGk)||kitUrl(t,false)||"";
   const jerseyFallback=`<div class=\\'jersey\\' style=\\'background:${teamColor(t.short_name)}\\'>${esc(t.short_name||"")}</div>`;
-  const shirt = kit
-    ? `<img class="kit" src="${kit}" alt="${esc(t.name||"")} kit" loading="lazy" onerror="this.outerHTML='${jerseyFallback}'">`
-    : `<div class="jersey" style="background:${teamColor(t.short_name)}">${esc(t.short_name||"")}</div>`;
+  const shirt = primaryKit
+    ? `<img class="kit" src="${primaryKit}" alt="${esc(t.name||"")} kit" loading="lazy" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='${fallbackKit}'}else{this.outerHTML='${jerseyFallback}'}">`
+    : fallbackKit
+      ? `<img class="kit" src="${fallbackKit}" alt="${esc(t.name||"")} kit" loading="lazy" decoding="async" onerror="this.outerHTML='${jerseyFallback}'">`
+      : `<div class="jersey" style="background:${teamColor(t.short_name)}">${esc(t.short_name||"")}</div>`;
   return `<div class="pl ${bench?'benchpl':''}">
     ${arm}
     <div class="shirt">${shirt}</div>

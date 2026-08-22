@@ -8,6 +8,7 @@ const PL_MAX_CLUB=3;
 let _plInit=false,_plPlans=[],_plActiveId=null,_plActiveGw=null,_plGwWindowStart=null,_plFixtures=[],_plOutId=null,_plSwapId=null,_plActionId=null,_plQuery="",_plPos=0,_plTeam=0,_plSort="suggested";
 let _plBatchMode=false,_plBatchOut=[],_plBatchIn=[];
 let _plSharedSnapshot=null;
+let _plScoreCache=new Map();
 
 function plUuid(){
   if(window.crypto&&crypto.randomUUID) return crypto.randomUUID();
@@ -28,7 +29,7 @@ function plStartGw(){
   return ev?ev.id:1;
 }
 function plMakeWeeks(start){
-  const out=[]; for(let gw=start;gw<=38;gw++) out.push({gw,transfers:[],captain:null,vice:null,chip:"",starters:null});
+  const out=[]; for(let gw=start;gw<=38;gw++) out.push({gw,transfers:[],captain:null,vice:null,captainCarried:gw>start,viceCarried:gw>start,chip:"",starters:null});
   return out;
 }
 function plNewPlan({name="New plan",baseSquad=[],baseBank=PL_BUDGET,source="Blank squad",sourceTeamId=null,sellPrices={}}={}){
@@ -52,7 +53,13 @@ function plNormalize(plan){
   const existing=new Map(plan.weeks.map(w=>[Number(w.gw),w]));
   plan.weeks=plMakeWeeks(plan.baseGw).map(w=>{
     const x=existing.get(w.gw)||w;
-    x.gw=w.gw;x.transfers=Array.isArray(x.transfers)?x.transfers:[];x.captain=x.captain?Number(x.captain):null;x.vice=x.vice?Number(x.vice):null;x.chip=x.chip||"";x.starters=Array.isArray(x.starters)?x.starters.map(Number):null;x.freshSquad=Array.isArray(x.freshSquad)?x.freshSquad.map(Number):null;x.independent=!!x.independent;
+    x.gw=w.gw;x.transfers=Array.isArray(x.transfers)?x.transfers:[];x.captain=x.captain?Number(x.captain):null;x.vice=x.vice?Number(x.vice):null;
+    x.captainCarried=typeof x.captainCarried==="boolean"?x.captainCarried:(+x.gw>+plan.baseGw&&!x.captain);
+    x.viceCarried=typeof x.viceCarried==="boolean"?x.viceCarried:(+x.gw>+plan.baseGw&&!x.vice);
+    x.chip=x.chip||"";x.starters=Array.isArray(x.starters)?x.starters.map(Number):null;x.freshSquad=Array.isArray(x.freshSquad)?x.freshSquad.map(Number):null;x.independent=!!x.independent;
+    x.preDeadlineSnapshot=x.preDeadlineSnapshot&&typeof x.preDeadlineSnapshot==="object"?x.preDeadlineSnapshot:null;
+    x.scoreSnapshot=x.scoreSnapshot&&typeof x.scoreSnapshot==="object"?x.scoreSnapshot:null;
+    x.finalResult=x.finalResult&&typeof x.finalResult==="object"?x.finalResult:null;
     return x;
   });
   return plan;
@@ -383,9 +390,63 @@ function plLineupValid(ids,st){
   const pc=plPosCounts(ids,st.byId);
   return pc[1]===1&&pc[2]>=3&&pc[2]<=5&&pc[3]>=2&&pc[3]<=5&&pc[4]>=1&&pc[4]<=3;
 }
+function plInheritedXi(plan,targetGw,targetState){
+  if(!plan||!targetState)return plAutoXi(targetState?.squad||[]);
+  let xi=null;
+  const start=Math.max(Number(plan.baseGw)||1,1),end=Number(targetGw)||start;
+  for(let gw=start;gw<=end;gw++){
+    const week=plWeek(plan,gw),state=gw===end?targetState:plDerive(plan,gw);
+    if(!week||!state)continue;
+    const saved=Array.isArray(week.starters)?week.starters.map(Number):null;
+    const isIndependent=plWeekIsFresh(week);
+
+    // An independently-built Gameweek starts a new lineup chain. If the user
+    // explicitly saved an XI, use it; otherwise choose a legal XI for that new squad.
+    if(isIndependent){
+      xi=plLineupValid(saved,state)?saved:plAutoXi(state.squad);
+      continue;
+    }
+
+    // Carry the previous Gameweek's exact XI forward. Transfers keep the same
+    // starter/bench role: a transferred-in player replaces the transferred-out
+    // player in the XI only when that outgoing player was a starter.
+    if(Array.isArray(xi)){
+      (week.transfers||[]).forEach(tr=>{
+        const out=Number(tr.out),inn=Number(tr.in),idx=xi.indexOf(out);
+        if(idx>=0)xi[idx]=inn;
+      });
+    }
+
+    if(plLineupValid(saved,state))xi=saved;
+    else if(!plLineupValid(xi,state))xi=plAutoXi(state.squad);
+  }
+  return plLineupValid(xi,targetState)?xi:plAutoXi(targetState.squad);
+}
 function plCurrentXi(st,w){
   const saved=Array.isArray(w?.starters)?w.starters.map(Number):null;
-  return plLineupValid(saved,st)?saved:plAutoXi(st.squad);
+  if(plLineupValid(saved,st))return saved;
+  const plan=plActive();
+  return plInheritedXi(plan,w?.gw??_plActiveGw,st);
+}
+function plSyncCarriedRoles(plan){
+  if(!plan||!Array.isArray(plan.weeks))return;
+  let prevCaptain=null,prevVice=null,changed=false;
+  const weeks=[...plan.weeks].sort((a,b)=>+a.gw-+b.gw);
+  weeks.forEach((w,i)=>{
+    const st=plDerive(plan,w.gw),xi=new Set(plCurrentXi(st,w));
+    if(plWeekIsFresh(w)){
+      if(w.captainCarried){w.captainCarried=false;changed=true}
+      if(w.viceCarried){w.viceCarried=false;changed=true}
+    }else if(i>0){
+      if(w.captainCarried){const next=prevCaptain&&xi.has(+prevCaptain)&&st.squad.includes(+prevCaptain)?+prevCaptain:null;if(+w.captain!==+(next||0)){w.captain=next;changed=true}}
+      if(w.viceCarried){const next=prevVice&&xi.has(+prevVice)&&st.squad.includes(+prevVice)?+prevVice:null;if(+w.vice!==+(next||0)){w.vice=next;changed=true}}
+    }
+    if(w.captain&&!xi.has(+w.captain)){w.captain=null;w.captainCarried=false;changed=true}
+    if(w.vice&&!xi.has(+w.vice)){w.vice=null;w.viceCarried=false;changed=true}
+    if(w.captain&&w.vice&&+w.captain===+w.vice){w.vice=null;w.viceCarried=false;changed=true}
+    prevCaptain=w.captain||null;prevVice=w.vice||null;
+  });
+  if(changed)plWrite(_plPlans);
 }
 function plCaptainOptions(st,w,selected){
   const xi=new Set(plCurrentXi(st,w));
@@ -468,6 +529,131 @@ function plPickerSort(list){
     return plPlayerScore(b)-plPlayerScore(a)||String(a.web_name||"").localeCompare(String(b.web_name||""));
   });
 }
+function plGwEvent(gw){return (boot?.events||[]).find(e=>+e.id===+gw)||null}
+function plGwStatus(gw){
+  const ev=plGwEvent(gw);if(!ev)return "upcoming";
+  if(ev.finished)return "final";
+  const deadline=ev.deadline_time?new Date(ev.deadline_time).getTime():Infinity;
+  if(ev.is_current||Date.now()>=deadline)return "live";
+  return "upcoming";
+}
+function plScoreBenchOrder(st,w){
+  const xi=new Set(plCurrentXi(st,w));
+  return st.squad.filter(id=>!xi.has(+id)).sort((a,b)=>(st.byId[a]?.element_type||0)-(st.byId[b]?.element_type||0)||plPlayerScore(st.byId[b])-plPlayerScore(st.byId[a]));
+}
+function plProjectionForSnapshot(st,w,gw){
+  if(!plValidSquadState(st))return null;
+  const xi=plCurrentXi(st,w),xiSet=new Set(xi),map=plUpcomingFixtureMap(gw,1);
+  const project=id=>{const e=st.byId[+id];if(!e)return 0;return typeof fplPeekProjectedPoints==="function"?(Number(fplPeekProjectedPoints(e,map,1))||0):Math.max(0,plPlayerScore(e));};
+  let total=(w.chip==="BB"?st.squad:xi).reduce((sum,id)=>sum+project(id),0);
+  const cap=+w.captain||0;if(cap&&xiSet.has(cap))total+=project(cap)*(w.chip==="TC"?2:1);
+  return Math.round(total*10)/10;
+}
+function plBuildScoreSnapshot(st,w,gw,{lateCapture=false}={}){
+  const xi=plCurrentXi(st,w),bench=plScoreBenchOrder(st,w);
+  return {gw:+gw,squad:[...st.squad],xi:[...xi],bench:[...bench],captain:+w.captain||null,vice:+w.vice||null,chip:w.chip||"",transfers:(w.transfers||[]).length,projected:plProjectionForSnapshot(st,w,gw),capturedAt:new Date().toISOString(),lateCapture:!!lateCapture};
+}
+function plKeepPreDeadlineSnapshot(plan,w,st){
+  if(plGwStatus(w.gw)!=="upcoming"||!plValidSquadState(st))return;
+  w.preDeadlineSnapshot=plBuildScoreSnapshot(st,w,w.gw);
+  plWrite(_plPlans);
+}
+function plEnsureScoreSnapshot(plan,w,st,status=plGwStatus(w.gw)){
+  if(status==="upcoming"||!plValidSquadState(st))return null;
+  if(!w.scoreSnapshot){
+    w.scoreSnapshot=w.preDeadlineSnapshot||plBuildScoreSnapshot(st,w,w.gw,{lateCapture:true});
+    plWrite(_plPlans);
+  }else if(status==="live"&&w.scoreSnapshot.lateCapture){
+    // Old Gameweeks created before Planner snapshots existed do not have a true
+    // pre-deadline state. While that GW is still live, keep the late snapshot
+    // aligned with the squad currently shown on the Planner pitch. This avoids
+    // scoring an earlier/stale XI after the user has corrected the historical team.
+    w.scoreSnapshot=plBuildScoreSnapshot(st,w,w.gw,{lateCapture:true});
+    w.finalResult=null;
+    plWrite(_plPlans);
+  }
+  return w.scoreSnapshot;
+}
+function plLiveStatsMap(live){const m=new Map();for(const row of live?.elements||[])m.set(+row.id,row.stats||{});return m}
+function plScoreFormationValid(ids,byId){
+  if(ids.length!==11)return false;const pc=plPosCounts(ids,byId);
+  return pc[1]===1&&pc[2]>=3&&pc[2]<=5&&pc[3]>=2&&pc[3]<=5&&pc[4]>=1&&pc[4]<=3;
+}
+function plScorePlannedSnapshot(snapshot,live,{applyAutosubs=false}={}){
+  const byId=plById(),stats=plLiveStatsMap(live),squad=(snapshot.squad||[]).map(Number).filter(id=>byId[id]),xi=(snapshot.xi||[]).map(Number).filter(id=>byId[id]),bench=(snapshot.bench||[]).map(Number).filter(id=>byId[id]);
+  const minutes=id=>Number(stats.get(+id)?.minutes)||0,raw=id=>Number(stats.get(+id)?.total_points)||0;
+  let active=[...xi],used=new Set(active),autosubs=[];
+  const startGk=active.find(id=>byId[id]?.element_type===1),benchGk=bench.find(id=>byId[id]?.element_type===1);
+  // FPL does not confirm autosubs while a Gameweek is still live. Apply them
+  // only once the Gameweek is final; otherwise show the actual selected XI and
+  // keep bench points separate, matching the official My Team live view.
+  if(applyAutosubs&&snapshot.chip!=="BB"&&startGk&&minutes(startGk)===0&&benchGk&&minutes(benchGk)>0){active=active.map(id=>id===startGk?benchGk:id);used.add(benchGk);autosubs.push([startGk,benchGk]);}
+  if(applyAutosubs&&snapshot.chip!=="BB"){
+    const outBench=bench.filter(id=>byId[id]?.element_type!==1&&minutes(id)>0);
+    for(const missing of [...active].filter(id=>byId[id]?.element_type!==1&&minutes(id)===0)){
+      for(const sub of outBench){
+        if(used.has(sub))continue;
+        const proposed=active.map(id=>id===missing?sub:id);
+        if(plScoreFormationValid(proposed,byId)){active=proposed;used.add(sub);autosubs.push([missing,sub]);break;}
+      }
+    }
+  }
+  // Score the actual XI separately from the bench so the UI never makes it
+  // look as if normal bench points were part of the starting-XI score.
+  let startingXiPoints=active.reduce((sum,id)=>sum+raw(id),0);
+  let doubledId=null;
+  if(snapshot.captain&&minutes(snapshot.captain)>0)doubledId=+snapshot.captain;
+  else if(applyAutosubs&&snapshot.vice&&minutes(snapshot.vice)>0)doubledId=+snapshot.vice;
+  const capMultiplier=snapshot.chip==="TC"?3:2;
+  if(doubledId)startingXiPoints+=raw(doubledId)*(capMultiplier-1);
+
+  // Without Bench Boost, an autosubbed player is now part of the active XI,
+  // so don't also count that same player inside the displayed bench points.
+  const activeSet=new Set(active.map(Number));
+  const remainingBench=snapshot.chip==="BB"?bench:bench.filter(id=>!activeSet.has(+id));
+  const benchPoints=remainingBench.reduce((sum,id)=>sum+raw(id),0);
+  const gameweekTotal=startingXiPoints+(snapshot.chip==="BB"?benchPoints:0);
+  const bestId=squad.slice().sort((a,b)=>raw(b)-raw(a))[0]||null;
+  const projected=Number.isFinite(Number(snapshot.projected))?Number(snapshot.projected):null;
+  return {total:gameweekTotal,startingXiPoints,gameweekTotal,projected,difference:projected==null?null:Math.round((gameweekTotal-projected)*10)/10,doubledId,capMultiplier,captainPoints:doubledId?raw(doubledId)*capMultiplier:0,benchPoints,bestId,bestPoints:bestId?raw(bestId):0,autosubs,active,remainingBench,scoredAt:new Date().toISOString()};
+}
+async function plGetGwLive(gw){
+  const cached=_plScoreCache.get(+gw),now=Date.now();if(cached&&now-cached.at<60000)return cached.promise;
+  const promise=get(`/event/${gw}/live/`).catch(()=>({elements:[]}));_plScoreCache.set(+gw,{at:now,promise});return promise;
+}
+function plEnsureScorePanel(){
+  let el=$("plGwResult");if(el)return el;const summary=$("plSummary");if(!summary)return null;
+  summary.insertAdjacentHTML("afterend",`<div id="plGwResult" class="planner-gw-result" style="display:none" aria-live="polite"></div>`);return $("plGwResult");
+}
+function plScorePlayerLabel(id,byId){const e=byId[+id];return e?esc(e.web_name):"—"}
+function plRenderScoreCard(result,snapshot,status){
+  const box=plEnsureScorePanel();if(!box)return;const byId=plById(),final=status==="final",diff=result.difference;
+  const diffText=diff==null?"—":`${diff>0?"+":""}${diff.toFixed(1)}`;
+  const autosubText=result.autosubs?.length?result.autosubs.map(([a,b])=>`${plScorePlayerLabel(a,byId)} → ${plScorePlayerLabel(b,byId)}`).join(" · "):"No autosubs";
+  const capName=result.doubledId?plScorePlayerLabel(result.doubledId,byId):"No captain return";
+  const xiPoints=result.startingXiPoints??result.total??0;
+  const bbTotal=snapshot.chip==="BB"?(result.gameweekTotal??(xiPoints+result.benchPoints)):null;
+  box.style.display="block";box.innerHTML=`<div class="planner-result-head"><div><span class="planner-result-status ${final?"final":"live"}">${final?"Final":"Live"}</span><h3>GW${snapshot.gw} planned squad result</h3><p>${final?"Official FPL points with captaincy, chips and valid autosubs applied.":"Live points are provisional and update as matches finish."}</p></div><div class="planner-result-total"><span>Starting XI points</span><b>${xiPoints}</b>${snapshot.chip==="TC"?`<small>Triple Captain applied</small>`:snapshot.chip==="BB"?`<small>Bench shown separately</small>`:""}</div></div>
+    <div class="planner-result-grid">
+      <div><span>Bench points</span><b>${result.benchPoints}</b><small>${snapshot.chip==="BB"?`Bench Boost active · GW total ${bbTotal}`:"Not counted unless autosubbed"}</small></div>
+      <div><span>Projected</span><b>${result.projected==null?"—":result.projected.toFixed(1)}</b><small>${result.projected==null?"No pre-deadline projection saved":"Planner estimate saved before deadline"}</small></div>
+      <div class="${diff!=null?(diff>=0?"positive":"negative"):""}"><span>Vs projection</span><b>${diffText}</b><small>${diff==null?"Not available":diff>=0?"Above projection":"Below projection"}</small></div>
+      <div><span>Captain return</span><b>${capName}</b><small>${result.doubledId?`${result.captainPoints} pts · ${result.capMultiplier}×`:`0 pts`}</small></div>
+      <div><span>Top performer</span><b>${plScorePlayerLabel(result.bestId,byId)}</b><small>${result.bestPoints} pts</small></div>
+      <div><span>Autosubs</span><b>${result.autosubs?.length||0}</b><small>${autosubText}</small></div>
+    </div>
+    ${snapshot.lateCapture?`<div class="planner-result-note">This older Gameweek did not have a saved pre-deadline snapshot, so FPL Peek locked the first planner state it found after the deadline. Future Gameweeks are snapshotted automatically before their deadline.</div>`:`<div class="planner-result-note good">Historical scoring uses the saved Gameweek snapshot. Editing later Gameweeks will not change this result.</div>`}`;
+}
+async function plRenderGwScore(plan,w,st){
+  const box=plEnsureScorePanel();if(!box)return;const status=plGwStatus(w.gw);
+  if(status==="upcoming"){box.style.display="none";box.innerHTML="";plKeepPreDeadlineSnapshot(plan,w,st);return;}
+  const snapshot=plEnsureScoreSnapshot(plan,w,st,status);if(!snapshot){box.style.display="block";box.innerHTML=`<div class="planner-result-empty"><b>GW${w.gw} has started.</b><span>Complete a valid planned squad to calculate its live or final score.</span></div>`;return;}
+  if(status==="final"&&w.finalResult){plRenderScoreCard(w.finalResult,snapshot,status);return;}
+  const planId=plan.id,gw=+w.gw;box.style.display="block";box.innerHTML=`<div class="planner-result-loading"><span class="spinner"></span> Calculating GW${gw} ${status==="final"?"final":"live"} score…</div>`;
+  const live=await plGetGwLive(gw);if(plActive()?.id!==planId||+_plActiveGw!==gw)return;
+  const result=plScorePlannedSnapshot(snapshot,live,{applyAutosubs:status==="final"});if(status==="final"){w.finalResult=result;plWrite(_plPlans);}plRenderScoreCard(result,snapshot,status);
+}
+
 function plRenderPlanSelect(){
   const sel=$("plPlanSelect");if(!sel)return;
   sel.innerHTML=_plPlans.length?_plPlans.map(p=>`<option value="${p.id}" ${p.id===_plActiveId?"selected":""}>${esc(p.name||"Plan")}</option>`).join(""):`<option value="">No saved plans</option>`;
@@ -485,6 +671,7 @@ function plRenderAll(){
   $("plEmpty").style.display=plan?"none":"block";$("plWorkspace").style.display=plan?"block":"none";
   if(!plan)return;
   if(!plWeek(plan,_plActiveGw))_plActiveGw=plan.baseGw;
+  plSyncCarriedRoles(plan);
   $("plTitle").textContent=plan.name||"Plan";$("plSource").textContent=plan.source||"Local plan";
   $("plMeta").textContent=`${plan.baseSquad.length}/15 base squad · saved automatically${window.FPLPeekCloud?.isSignedIn?.()?" and synced":" on this device"}.`;
   plRenderGwStrip();plRenderWorkspace();
@@ -523,7 +710,7 @@ function plRenderWorkspace(){
     <div><span>Bank</span><b>${money(st.bank)}</b><small>Planner balance</small></div>
     <div><span>GW moves</span><b>${w.transfers?.length||0}</b><small>Planned only</small></div>
     <div><span>Captain</span><b>${w.captain&&st.byId[w.captain]?esc(st.byId[w.captain].web_name):"—"}</b><small>${w.vice&&st.byId[w.vice]?`Vice: ${esc(st.byId[w.vice].web_name)}`:"No vice selected"}</small></div>`;
-  plRenderTransfers(st,w);plRenderSquad(st,w);plRenderPicker(st);
+  plRenderGwScore(plan,w,st);plRenderTransfers(st,w);plRenderSquad(st,w);plRenderPicker(st);
 }
 function plRenderTransfers(st,w){
   const box=$("plTransfers"),mode=$("plTransferMode");if(!box)return;
@@ -564,6 +751,7 @@ function plPitchPlayer(e,st,w,{starter=false,baseIncomplete=false,bench=false}={
   return `<div class="planner-pitch-player ${starter?"starter":""} ${bench?"bench":""} ${isOut?"selected-out":""} ${isSwap?"selected-swap":""} ${swapEligible?"swap-eligible":""} ${swapIneligible?"swap-ineligible":""}">
     ${_plBatchMode?`<button class="planner-transfer-remove" data-pl-player="${e.id}" aria-label="Remove ${esc(e.web_name)} from transfer draft" title="Remove ${esc(e.web_name)}">−</button>`:""}
     <button class="planner-pitch-main" data-pl-player="${e.id}" title="${esc(title)}">
+      ${baseIncomplete?"":`<span class="planner-pitch-price">${money(e.now_cost)}</span>`}
       <span class="planner-pitch-kit">${teamKitImg(t,"planner-pitch-kit-img",`${e.web_name} ${t.name||"club"} kit`)}</span>
       <span class="planner-pitch-name">${esc(e.web_name)}</span>
       <span class="planner-pitch-meta">${baseIncomplete?money(e.now_cost):fixture}</span>
@@ -747,7 +935,7 @@ async function plBatchConfirm(){
   if(!await fplConfirm(message,{title:`Confirm ${count} transfer${count===1?"":"s"}?`,confirmText:`Confirm ${count} transfer${count===1?"":"s"}`}))return;
   const map=new Map(transfers.map(tr=>[tr.out,tr.in]));w.transfers.push(...transfers);
   if(Array.isArray(w.starters))w.starters=w.starters.map(id=>map.get(+id)||id);
-  if(w.captain&&map.has(+w.captain))w.captain=null;if(w.vice&&map.has(+w.vice))w.vice=null;
+  if(w.captain&&map.has(+w.captain)){w.captain=null;w.captainCarried=false}if(w.vice&&map.has(+w.vice)){w.vice=null;w.viceCarried=false}
   plResetBatch();_plOutId=null;_plSwapId=null;_plActionId=null;plTouch(plan);plRenderAll();toast(`${count} transfer${count===1?"":"s"} planned for GW${_plActiveGw}`);
 }
 
@@ -772,12 +960,18 @@ function plAddOrTransfer(id){
   }
   if(!_plOutId)return toast("Choose a player in your squad to transfer out first");const out=st.byId[_plOutId];if(!out||out.element_type!==incoming.element_type)return toast("Replacement must be the same position");
   const sell=Number(st.sellPrices[out.id]??out.now_cost),buy=Number(incoming.now_cost);if(st.bank+sell-buy<0)return toast("Not enough money in the bank");const test=st.squad.map(x=>x===out.id?incoming.id:x),cc=plClubCounts(test,st.byId);if((cc[incoming.team]||0)>PL_MAX_CLUB)return toast("Maximum 3 players from one club");
-  w.transfers.push({id:plUuid(),out:out.id,in:incoming.id,sellPrice:sell,buyPrice:buy});if(Array.isArray(w.starters)&&w.starters.includes(out.id))w.starters=w.starters.map(x=>x===out.id?incoming.id:x);if(w.captain===out.id)w.captain=null;if(w.vice===out.id)w.vice=null;_plOutId=null;_plSwapId=null;_plActionId=null;plTouch(plan);plRenderAll();
+  w.transfers.push({id:plUuid(),out:out.id,in:incoming.id,sellPrice:sell,buyPrice:buy});if(Array.isArray(w.starters)&&w.starters.includes(out.id))w.starters=w.starters.map(x=>x===out.id?incoming.id:x);if(w.captain===out.id){w.captain=null;w.captainCarried=false}if(w.vice===out.id){w.vice=null;w.viceCarried=false}_plOutId=null;_plSwapId=null;_plActionId=null;plTouch(plan);plRenderAll();
 }
 function plSetCaptain(id,type){
   const plan=plActive(),w=plWeek(plan,_plActiveGw),st=plDerive(plan,_plActiveGw);id=id?+id:null;const xi=new Set(plCurrentXi(st,w));
   if(id&&!xi.has(id))return toast("Captain and vice captain must be in the starting XI");
-  if(type==="cap"){w.captain=id;if(w.captain&&w.captain===w.vice)w.vice=null}else{w.vice=id;if(w.vice&&w.vice===w.captain)w.captain=null}plTouch(plan);plRenderAll();
+  if(type==="cap"){
+    w.captain=id;w.captainCarried=false;
+    if(w.captain&&w.captain===w.vice){w.vice=null;w.viceCarried=false}
+  }else{
+    w.vice=id;w.viceCarried=false;
+    if(w.vice&&w.vice===w.captain){w.captain=null;w.captainCarried=false}
+  }plTouch(plan);plRenderAll();
 }
 function plSubstitute(id){
   const plan=plActive(),w=plWeek(plan,_plActiveGw),st=plDerive(plan,_plActiveGw);id=+id;if(!st.squad.includes(id)||!plValidSquadState(st))return;
@@ -787,7 +981,7 @@ function plSubstitute(id){
   if(aIn===bIn)return toast(aIn?"Choose a player from the bench":"Choose a player from the starting XI");
   const next=xi.map(pid=>pid===(aIn?+_plSwapId:id)?(aIn?id:+_plSwapId):pid);
   if(!plLineupValid(next,st))return toast("That substitution would create an invalid FPL formation");
-  w.starters=next;if(w.captain&&!next.includes(+w.captain))w.captain=null;if(w.vice&&!next.includes(+w.vice))w.vice=null;_plSwapId=null;plTouch(plan);plRenderAll();
+  w.starters=next;if(w.captain&&!next.includes(+w.captain)){w.captain=null;w.captainCarried=false}if(w.vice&&!next.includes(+w.vice)){w.vice=null;w.viceCarried=false}_plSwapId=null;plTouch(plan);plRenderAll();
 }
 async function plClearSquad(){
   const plan=plActive();if(!plan||!plan.baseSquad.length)return;if(!await fplConfirm("Clear the base squad and every planned Gameweek in this plan? This cannot be undone.",{title:"Clear all Gameweeks?",confirmText:"Clear all",danger:true}))return;
@@ -798,12 +992,12 @@ async function plResetGw(){
   const hasChanges=!!(w.transfers?.length||w.captain||w.vice||w.chip||w.starters||plWeekIsFresh(w));
   if(!hasChanges)return;
   if(!await fplConfirm(`Clear only the planned changes for GW${_plActiveGw}?${plWeekIsFresh(w)?" This will also return the Gameweek to the squad flowing in from the previous GW.":""}`,{title:`Clear GW${_plActiveGw} changes?`,confirmText:"Clear changes"}))return;
-  w.transfers=[];w.captain=null;w.vice=null;w.chip="";w.starters=null;w.freshSquad=null;w.independent=false;plResetBatch();_plOutId=null;_plSwapId=null;_plActionId=null;plTouch(plan);plRenderAll();
+  w.transfers=[];w.captain=null;w.vice=null;w.captainCarried=+w.gw>+plan.baseGw;w.viceCarried=+w.gw>+plan.baseGw;w.chip="";w.starters=null;w.freshSquad=null;w.independent=false;plResetBatch();_plOutId=null;_plSwapId=null;_plActionId=null;plTouch(plan);plRenderAll();
 }
 async function plStartFreshGw(){
   const plan=plActive(),w=plWeek(plan,_plActiveGw);if(!plan||!w)return;
   if(!await fplConfirm(`Start GW${_plActiveGw} independently with a completely blank squad? Earlier and later Gameweeks will stay exactly as they are.`,{title:`Start GW${_plActiveGw} independently?`,confirmText:"Start independently"}))return;
-  w.transfers=[];w.captain=null;w.vice=null;w.chip="";w.starters=null;w.freshSquad=[];w.independent=true;
+  w.transfers=[];w.captain=null;w.vice=null;w.captainCarried=false;w.viceCarried=false;w.chip="";w.starters=null;w.freshSquad=[];w.independent=true;
   plResetBatch();_plOutId=null;_plSwapId=null;_plActionId=null;_plQuery="";_plPos=0;_plTeam=0;
   if($("plannerSearch"))$("plannerSearch").value="";if($("plannerPos"))$("plannerPos").value="0";if($("plannerTeam"))$("plannerTeam").value="0";
   plTouch(plan);plRenderAll();toast(`GW${_plActiveGw} is now independent and ready to build`);

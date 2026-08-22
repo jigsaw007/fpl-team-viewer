@@ -595,21 +595,21 @@
         <div class="planner-focus-actions">
           <button class="secondary-action planner-multi-btn" id="plBatchTransfers" type="button">Edit transfers</button>
           <button class="secondary-action planner-share-btn" id="plShare" type="button" disabled title="Complete a valid squad before sharing">↗ Share GW</button>
-          <div class="planner-chip-wrap planner-chip-compact">
-            <label for="plChip">Chip</label>
-            <select id="plChip">
-              <option value="">None</option>
-              <option value="WC">Wildcard</option>
-              <option value="FH">Free Hit</option>
-              <option value="BB">Bench Boost</option>
-              <option value="TC">Triple Captain</option>
-            </select>
-          </div>
         </div>
       </div>
 
       <div class="planner-gw-strip planner-gw-strip-focus" id="plGwStrip" aria-label="Planned gameweeks"></div>
       <div class="planner-near-pitch-actions" aria-label="Gameweek plan actions">
+        <div class="planner-chip-wrap planner-chip-near-pitch">
+          <label for="plChip">Planned chip for this GW</label>
+          <select id="plChip" title="Choose the chip you plan to use in this Gameweek">
+            <option value="">No chip</option>
+            <option value="WC">Wildcard</option>
+            <option value="FH">Free Hit</option>
+            <option value="BB">Bench Boost</option>
+            <option value="TC">Triple Captain</option>
+          </select>
+        </div>
         <button class="secondary-action" id="plResetGw" title="Remove transfers, captain, chip and lineup changes for only this Gameweek">Clear this GW changes</button>
         <button class="secondary-action planner-fresh-btn" id="plFreshGw" title="Start this Gameweek independently from a completely blank 15-player squad">Start this GW independently</button>
         <button class="secondary-action planner-autopick-btn" id="plAutoPick" type="button" hidden title="Build a balanced legal squad from current public FPL data">✨ AutoPick squad</button>
@@ -671,24 +671,14 @@
             <div class="planner-explainer-grid">
               <div><b>Squad carries forward</b><span>Build GW1, then that squad becomes the starting point for GW2, GW3 and later weeks unless you change it.</span></div>
               <div><b>Edit several transfers at once</b><span>Click Edit transfers, remove several players, keep the empty slots visible, then refill them from the player list. Nothing is committed until you confirm.</span></div>
+              <div><b>Plan chips by Gameweek</b><span>Use the Planned chip selector above the pitch to assign Wildcard, Free Hit, Bench Boost or Triple Captain to the active Gameweek. The planned score reflects the relevant chip rules.</span></div>
               <div><b>Plan any Gameweek independently</b><span>Start any GW from a blank squad even if an earlier GW is unfinished. Earlier weeks stay unchanged, and an independent GW is never overwritten by changes you make before it.</span></div>
               <div><b>Next 5 fixture colours</b><span><i class="pl-fixture fdr2">ARS</i> easier · <i class="pl-fixture fdr3">EVE</i> average · <i class="pl-fixture fdr5">MCI</i> harder. UPPERCASE = home, lowercase = away, — = blank.</span></div>
             </div>
           </div>
         </details>
 
-        <details class="planner-help-details planner-autopick-help">
-          <summary>How AutoPick works <span>A balanced starting point you can still change</span></summary>
-          <div class="planner-explainer planner-explainer-bottom" aria-label="How Planner AutoPick works">
-            <div class="planner-explainer-grid planner-autopick-grid">
-              <div><b>Looks beyond one Gameweek</b><span>AutoPick considers FPL Peek next-five projections, the upcoming fixture run, recent form and points-per-game rather than simply choosing the highest season totals.</span></div>
-              <div><b>Checks reliability and value</b><span>Expected minutes, current availability and price efficiency help separate dependable picks from players who may be difficult to trust or fit into the budget.</span></div>
-              <div><b>Always respects squad rules</b><span>The finished squad stays within £100.0m, uses the required positions and never selects more than three players from one club. If you already picked players, AutoPick tries to keep them.</span></div>
-              <div><b>Sets up the Gameweek too</b><span>After choosing 15 players, AutoPick selects a valid starting XI for the active Gameweek and suggests a captain and vice-captain from that XI. Everything remains editable.</span></div>
-            </div>
-            <p class="planner-autopick-note">AutoPick is a planning suggestion built from current public FPL data and FPL Peek estimates. It is not a guarantee of future points.</p>
-          </div>
-        </details>
+
 
       </div>
     </div>

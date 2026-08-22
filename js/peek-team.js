@@ -274,9 +274,12 @@ function peekFixtureText(p){
   return `${opp.short_name||'—'} ${p._peekFx.home?'(H)':'(A)'}`;
 }
 function peekPlayerHtml(p,team,score){
-  const s=score?.stats?.get(p.id); const actual=s?Number(s.total_points)||0:null;
+  const s=score?.stats?.get(p.id);
+  const rawActual=s?Number(s.total_points)||0:null;
+  const isDoubled=!!(score?.doubled&&score.doubled.id===p.id);
+  const actual=rawActual==null?null:rawActual*(isDoubled?2:1);
   const cap=team.captain?.id===p.id?'C':team.vice?.id===p.id?'V':'';
-  return `<div class="peek-player">${cap?`<span class="peek-arm ${cap==='V'?'vice':''}">${cap}</span>`:''}<div class="peek-shirt">${peekKit(p)}</div><b>${esc(p.web_name)}</b><span>${esc(peekFixtureText(p))}</span><small>${actual==null?`${p._peek.toFixed(1)} proj`:`${actual} pt${actual===1?'':'s'}`}</small></div>`;
+  return `<div class="peek-player">${cap?`<span class="peek-arm ${cap==='V'?'vice':''}">${cap}</span>`:''}<div class="peek-shirt">${peekKit(p)}</div><b>${esc(p.web_name)}</b><span>${esc(peekFixtureText(p))}</span><small>${actual==null?`${p._peek.toFixed(1)} proj`:`${actual} pt${actual===1?'':'s'}${isDoubled?' · 2×':''}`}</small></div>`;
 }
 function peekPitchRows(team,score){
   const rows=[1,2,3,4].map(pos=>team.xi.filter(p=>p.element_type===pos));

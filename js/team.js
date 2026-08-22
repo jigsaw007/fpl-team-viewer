@@ -253,15 +253,21 @@ function renderRecap(picks, history, gwUsed, b){
     const d=prevGw.overall_rank-thisGw.overall_rank;
     rankMove = d>0?`<span class="delta up">▲ ${short(Math.abs(d))}</span>`:d<0?`<span class="delta down">▼ ${short(Math.abs(d))}</span>`:`<span class="delta">–</span>`;
   }
-  const item=(icon,label,val,sub)=>`<div class="recap-item"><div class="recap-ic">${icon}</div>
+  const recapMedia=(icon, player, badge)=>{
+    if(player){
+      return `<div class="recap-media">${faceImg(player,"recap-face")}${badge?`<span class="recap-media-badge">${badge}</span>`:""}</div>`;
+    }
+    return `<div class="recap-ic">${icon}</div>`;
+  };
+  const item=(opts,label,val,sub)=>`<div class="recap-item">${recapMedia(opts.icon, opts.player, opts.badge)}
     <div><div class="recap-v">${val}</div><div class="recap-k">${label}${sub?` · ${sub}`:""}</div></div></div>`;
   $("recap").innerHTML=`<div class="recap-grid">
-    ${item("PTS", "GW points", thisGw.points, thisGw.points_on_bench!=null?`${thisGw.points_on_bench} on bench`:"")}
-    ${item("RANK", "Overall rank", short(thisGw.overall_rank)+" "+rankMove, "")}
-    ${item("©", "Captain", capEl?esc(capEl.web_name):"—", capEl?`${capPts} pts`:"")}
-    ${item("TOP", "Top performer", best?esc(best.e.web_name):"—", best?`${best.e.event_points} pts`:"")}
-    ${item("LOW", "Quietest starter", worst?esc(worst.e.web_name):"—", worst?`${worst.e.event_points} pts`:"")}
-    ${item("MOVES", "Transfers", thisGw.event_transfers??0, thisGw.event_transfers_cost?`-${thisGw.event_transfers_cost} pt hit`:"no hit")}
+    ${item({icon:"PTS"}, "GW points", thisGw.points, thisGw.points_on_bench!=null?`${thisGw.points_on_bench} on bench`:"")}
+    ${item({icon:"RANK"}, "Overall rank", short(thisGw.overall_rank)+" "+rankMove, "")}
+    ${item({player:capEl,badge:"C"}, "Captain", capEl?esc(capEl.web_name):"—", capEl?`${capPts} pts`:"")}
+    ${item({player:best?.e,badge:"TOP"}, "Top performer", best?esc(best.e.web_name):"—", best?`${best.e.event_points} pts`:"")}
+    ${item({player:worst?.e,badge:"LOW"}, "Quietest starter", worst?esc(worst.e.web_name):"—", worst?`${worst.e.event_points} pts`:"")}
+    ${item({icon:"MOVES"}, "Transfers", thisGw.event_transfers??0, thisGw.event_transfers_cost?`-${thisGw.event_transfers_cost} pt hit`:"no hit")}
   </div>`;
 }
 

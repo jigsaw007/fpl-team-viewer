@@ -3,6 +3,7 @@ const BUDGET=1000; // £100.0m in FPL tenths
 const SQUAD={1:2,2:5,3:5,4:3}; // GKP,DEF,MID,FWD
 const MAX_PER_CLUB=3;
 let _bldPicks=[], _bldN=5, _bldPos=0, _bldQuery="", _bldFdr=null, _bldFixtures=null, _bldPredCache=null, _bldGwPredCache=null, _bldByIdCache=null, _bldPoolCache=null, _bldChip="none";
+let _bldCaptain=0, _bldVice=0;
 let _bldMaxPrice=150, _bldMaxOwn=100, _bldTeam=0, _bldSort="suggested", _bldSortDir=-1, _bldRenderN=80;
 let _bldPriceFloor=38, _bldPriceCeil=150;
 let _bldOptimizeBusy=false, _bldOptimizeToken=0;
@@ -25,7 +26,7 @@ async function initBuilder(){
     _bldStartGw=startGw;
   }
   // restore saved draft
-  try{ const s=JSON.parse(localStorage.getItem("fpl_draft")||"null"); if(s&&Array.isArray(s.picks)){ _bldPicks=[...new Set(s.picks.map(Number).filter(Boolean))].slice(0,15); _bldN=s.n||5; _bldChip=s.chip||"none"; } }catch{}
+  try{ const s=JSON.parse(localStorage.getItem("fpl_draft")||"null"); if(s&&Array.isArray(s.picks)){ _bldPicks=[...new Set(s.picks.map(Number).filter(Boolean))].slice(0,15); _bldN=s.n||5; _bldChip=s.chip||"none"; _bldCaptain=Number(s.captain)||0; _bldVice=Number(s.vice)||0; } }catch{}
   // dynamic price slider bounds from actual data (prices drift through the season)
   const prices=boot.elements.map(e=>e.now_cost);
   const minCost=Math.min(...prices), maxCost=Math.max(...prices);
@@ -87,7 +88,7 @@ async function initBuilder(){
   });
   $("bldAutoPick")?.addEventListener("click",bldAutoPick);
   $("bldOptimize")?.addEventListener("click",bldOptimize);
-  $("bldClear").addEventListener("click",()=>{_bldOptimizeToken++;_bldPicks=[];_optCache=null;bldCancelOptimalJob();saveDraft();renderBuilder();});
+  $("bldClear").addEventListener("click",()=>{_bldOptimizeToken++;_bldPicks=[];_bldCaptain=0;_bldVice=0;_optCache=null;bldCancelOptimalJob();saveDraft();renderBuilder();});
   renderBuilder();
 }
 let _bldStartGw=1;
@@ -175,15 +176,24 @@ function bldLineupFromPicks(picks,metric){
 function bldFormationText(shape){return `${shape?.[2]||0}-${shape?.[3]||0}-${shape?.[4]||0}`}
 function bldDisplayLineup(ids){
   const byId=bldById(),picks=ids.map(id=>byId[id]).filter(Boolean);
-  const capMetric=_bldChip==="triple_captain"?(e=>predictGwPoints(e,_bldStartGw)):(e=>bldPred(e.id));
+  // Captaincy is a single-Gameweek decision: always rank captain and vice by the
+  // first Gameweek in the Builder window, even when the squad is optimized over 3/5 GWs.
+  const capMetric=e=>predictGwPoints(e,_bldStartGw);
   const lineup=bldLineupFromPicks(picks,e=>bldPred(e.id));
-  lineup.captain=lineup.xi.slice().sort((a,b)=>capMetric(b)-capMetric(a))[0]||null;
+  const xiIds=new Set(lineup.xi.map(e=>e.id));
+  const ranked=lineup.xi.slice().sort((a,b)=>capMetric(b)-capMetric(a));
+  const manualCap=xiIds.has(+_bldCaptain)?byId[_bldCaptain]:null;
+  const manualVice=xiIds.has(+_bldVice)&&+_bldVice!==+(manualCap?.id||0)?byId[_bldVice]:null;
+  lineup.captain=manualCap||ranked[0]||null;
+  lineup.vice=manualVice||ranked.find(e=>e.id!==lineup.captain?.id)||null;
   return lineup;
 }
 function bldGameweekPlan(ids,g){
   const byId=bldById(),picks=ids.map(id=>byId[id]).filter(Boolean);
   const metric=e=>predictGwPoints(e,g),lineup=bldLineupFromPicks(picks,metric);
-  const captain=lineup.xi.slice().sort((a,b)=>metric(b)-metric(a))[0]||null;
+  const xiIds=new Set(lineup.xi.map(e=>e.id));
+  const manual=(g===_bldStartGw&&xiIds.has(+_bldCaptain))?byId[_bldCaptain]:null;
+  const captain=manual||lineup.xi.slice().sort((a,b)=>metric(b)-metric(a))[0]||null;
   return {...lineup,captain};
 }
 function scoreSquad(ids,chip=_bldChip){
@@ -200,6 +210,82 @@ function scoreSquad(ids,chip=_bldChip){
   return total;
 }
 function bldChipLabel(){return ({none:"No chip",triple_captain:"Triple Captain",bench_boost:"Bench Boost",wildcard:"Wildcard",free_hit:"Free Hit"})[_bldChip]||"No chip"}
+
+/* --- believable squad rating: quality, not just closeness to our own benchmark --- */
+function bldAvgFixtureScore(players){
+  if(!players.length)return 0;
+  let total=0,count=0;
+  const map={1:100,2:85,3:65,4:40,5:20};
+  for(const e of players){
+    for(const g of bldWindowGws()){
+      const fdrs=(_bldFdr?.[e.team]?.[g])||[];
+      if(!fdrs.length){total+=10;count++;continue}
+      fdrs.forEach(f=>{total+=map[f]??60;count++});
+    }
+  }
+  return count?total/count:0;
+}
+function bldBudgetScore(cost){
+  const bank=Math.max(0,(BUDGET-cost)/10);
+  if(bank<=2)return 100;
+  if(bank<=5)return 100-(bank-2)*(25/3);
+  if(bank<=10)return 75-(bank-5)*6;
+  return Math.max(5,45-(bank-10)*3.2);
+}
+function bldMinutesScore(players){
+  if(!players.length)return 0;
+  return players.reduce((sum,e)=>{
+    const avail=bldAvailability(e)*100;
+    const starts=Number(e.starts)||0,mins=Number(e.minutes)||0;
+    const role=starts?Math.min(100,(mins/Math.max(1,starts*90))*100):55;
+    return sum+(avail*.72+role*.28);
+  },0)/players.length;
+}
+function bldRatingBreakdown(ids,opt){
+  const byId=bldById(),picks=ids.map(id=>byId[id]).filter(Boolean),cost=picks.reduce((n,e)=>n+e.now_cost,0);
+  if(picks.length!==15)return {rating:0,reasons:[]};
+  const display=bldDisplayLineup(ids),projected=scoreSquad(ids),projRatio=opt?Math.min(1.05,projected/Math.max(1,opt)):0.75;
+  const projectedScore=Math.max(0,Math.min(100,projRatio*100));
+  const pool=bldCandidatePool();
+  const bestCap=Math.max(1,...pool.map(e=>predictGwPoints(e,_bldStartGw)));
+  const cap=display.captain?predictGwPoints(display.captain,_bldStartGw):0;
+  const captainScore=Math.max(0,Math.min(100,(cap/bestCap)*100));
+  const fixtureScore=bldAvgFixtureScore(display.xi);
+  const minutesScore=bldMinutesScore(display.xi);
+  const budgetScore=bldBudgetScore(cost);
+  const xiAvg=display.xi.length?display.xi.reduce((n,e)=>n+bldPred(e.id),0)/display.xi.length:0;
+  const benchAvg=display.bench.length?display.bench.reduce((n,e)=>n+bldPred(e.id),0)/display.bench.length:0;
+  const benchScore=xiAvg?Math.min(100,(benchAvg/(xiAvg*.52))*100):0;
+  const clubCounts={};picks.forEach(e=>clubCounts[e.team]=(clubCounts[e.team]||0)+1);
+  const spread=Object.keys(clubCounts).length;
+  const balanceScore=Math.max(55,Math.min(100,65+(spread-6)*5));
+  let rating=Math.round(
+    projectedScore*.35 + captainScore*.15 + fixtureScore*.15 + minutesScore*.10 +
+    budgetScore*.10 + benchScore*.05 + balanceScore*.10
+  );
+  const bank=(BUDGET-cost)/10,reasons=[];
+  // A squad leaving a huge budget unused cannot be an elite build even if the same model
+  // also produced the benchmark. This is the failure mode the old 99/99 score allowed.
+  if(bank>15)rating=Math.min(rating,72);
+  else if(bank>10)rating=Math.min(rating,78);
+  else if(bank>7)rating=Math.min(rating,84);
+  else if(bank>5)rating=Math.min(rating,88);
+  if(bank>7)reasons.push(`£${bank.toFixed(1)}m is unused`); else if(bank>3)reasons.push(`£${bank.toFixed(1)}m remains in the bank`);
+  if(captainScore<62)reasons.push("captaincy can be stronger");
+  if(minutesScore<75)reasons.push("some starters have minutes risk");
+  if(fixtureScore<58)reasons.push("upcoming fixtures are difficult");
+  if(projectedScore<82)reasons.push("starting XI projection trails the best builds");
+  if(!reasons.length)reasons.push("strong projected XI with good squad balance");
+  return {rating:Math.max(0,Math.min(100,rating)),reasons,components:{projectedScore,captainScore,fixtureScore,minutesScore,budgetScore,benchScore,balanceScore}};
+}
+function bldAutoObjective(ids){
+  const byId=bldById(),players=ids.map(id=>byId[id]).filter(Boolean);
+  if(players.length!==15)return -1e9;
+  const projected=scoreSquad(ids),cost=players.reduce((n,e)=>n+e.now_cost,0),bank=Math.max(0,(BUDGET-cost)/10);
+  // Leaving a little money is fine; leaving a huge bank while starting weak cheap players is not.
+  const unusedPenalty=Math.max(0,bank-2)*0.8*Math.max(1,_bldN);
+  return projected-unusedPenalty;
+}
 
 /* --- stronger benchmark: multi-start legal build + repeated same-position swaps --- */
 function bldCandidatePool(){
@@ -317,24 +403,27 @@ function bldAutoPickSeed(pool,fixed,mode){
   return bldCanUseSquad(chosen)?chosen:[];
 }
 async function bldImproveAutoPick(seed,pool,fixedIds,rankedByPos=bldRankedPoolByPos(pool),scoreCache=new Map()){
-  const locked=new Set(fixedIds);let current=seed.slice(),best=bldScoreCached(current.map(e=>e.id),scoreCache);
-  for(let pass=0;pass<4;pass++){
-    let changed=false;
+  const locked=new Set(fixedIds);let current=seed.slice();
+  let bestProjected=bldScoreCached(current.map(e=>e.id),scoreCache),bestObjective=bldAutoObjective(current.map(e=>e.id));
+  // Choose the best legal upgrade in each pass instead of the first tiny improvement.
+  for(let pass=0;pass<8;pass++){
+    let bestSwap=null,checks=0;
     for(let i=0;i<current.length;i++){
       const old=current[i];if(locked.has(old.id))continue;
       const used=new Set(current.map(x=>x.id));
-      const cands=(rankedByPos[old.element_type]||[]).filter(e=>!used.has(e.id)).slice(0,45);
+      const cands=(rankedByPos[old.element_type]||[]).filter(e=>!used.has(e.id)).slice(0,55);
       for(const e of cands){
         const trial=current.slice();trial[i]=e;if(!bldCanUseSquad(trial))continue;
-        const sc=bldScoreCached(trial.map(x=>x.id),scoreCache);
-        if(sc>best+.001){current=trial;best=sc;changed=true;break}
+        const ids=trial.map(x=>x.id),objective=bldAutoObjective(ids),projected=bldScoreCached(ids,scoreCache);
+        if(objective>bestObjective+.01 && (!bestSwap||objective>bestSwap.objective+.01))bestSwap={trial,objective,projected};
+        if(++checks%100===0)await bldYield();
       }
-      if(i%3===2)await bldYield();
     }
-    if(!changed)break;
+    if(!bestSwap)break;
+    current=bestSwap.trial;bestObjective=bestSwap.objective;bestProjected=bestSwap.projected;
     await bldYield();
   }
-  return {squad:current,score:best};
+  return {squad:current,score:bestProjected,objective:bestObjective};
 }
 async function bldAutoPickBuild(fixedIds=[]){
   const byId=bldById(),fixed=[...new Set(fixedIds)].map(id=>byId[+id]).filter(Boolean);
@@ -343,7 +432,7 @@ async function bldAutoPickBuild(fixedIds=[]){
   for(let mode=0;mode<5;mode++){
     const seed=bldAutoPickSeed(pool,fixed,mode);if(!seed.length)continue;
     const result=await bldImproveAutoPick(seed,pool,fixed.map(e=>e.id),rankedByPos,scoreCache);
-    if(!best||result.score>best.score)best=result;
+    if(!best||result.objective>best.objective)best=result;
     await bldYield();
   }
   return best;
@@ -373,7 +462,7 @@ async function bldAutoPick(){
     // Partial AutoPick keeps user choices locked; its rating benchmark is calculated after the UI repaints.
     _optCache=fixed.length?null:{key,v:result.score};
     saveDraft();renderBuilder();
-    const kept=fixed.length;toast(kept?`AutoPick kept ${kept} pick${kept===1?"":"s"} and completed the squad`:`AutoPick built a balanced 15-player squad`);
+    const kept=fixed.length;toast(kept?`AutoPick kept ${kept} pick${kept===1?"":"s"} and completed the squad`:`AutoPick built a stronger 15-player squad with useful budget allocation`);
   }finally{
     bldSetAutoPickBusy(false);
     const st=bldState(),btn=$("bldAutoPick");if(btn){const count=st.picks.length;btn.textContent=count===0?"✨ AutoPick squad":count<15?`✨ AutoPick ${15-count} remaining`:"✨ Rebuild with AutoPick"}
@@ -412,7 +501,7 @@ function bldUpdateOptimizeLoader(stage,detail,progress){
   if(st)st.textContent=stage;if(dt)dt.textContent=detail;if(bar)bar.style.width=`${Math.max(4,Math.min(100,progress))}%`;
 }
 function bldHideOptimizeLayer(){const root=document.getElementById("bldOptimizeLayer");if(root){root.hidden=true;root.innerHTML=""}}
-function bldOptimizationGrade(score,opt){const rating=calibratedScore(score,Math.max(opt||score,score));return {rating,...gradeForScore(rating)}}
+function bldOptimizationGrade(score,opt,ids=_bldPicks){const rating=bldRatingBreakdown(ids,Math.max(opt||score,score)).rating;return {rating,...gradeForScore(rating)}}
 async function bldOptimizeCurrentSquad(ids,token){
   const byId=bldById(),pool=bldCandidatePool(),rankedByPos=bldRankedPoolByPos(pool),scoreCache=new Map();
   let current=ids.map(id=>byId[+id]).filter(Boolean);if(!bldCanUseSquad(current))return null;
@@ -439,7 +528,7 @@ async function bldOptimizeCurrentSquad(ids,token){
 }
 function bldShowOptimizeReview(result,benchmark,currentScore){
   return new Promise(resolve=>{
-    const root=bldEnsureOptimizeLayer(),before=bldOptimizationGrade(currentScore,benchmark),after=bldOptimizationGrade(result.score,benchmark),n=result.changes.length;
+    const root=bldEnsureOptimizeLayer(),before=bldOptimizationGrade(currentScore,benchmark,_bldPicks),after=bldOptimizationGrade(result.score,benchmark,result.ids||_bldPicks),n=result.changes.length;
     const rows=result.changes.map((ch,i)=>{
       const ot=boot.teams.find(t=>t.id===ch.out.team)||{},it=boot.teams.find(t=>t.id===ch.inn.team)||{};
       return `<div class="bld-opt-change"><span class="bld-opt-change-num">${i+1}</span><div class="bld-opt-player">${teamKitImg(ot,"bld-opt-kit",`${ch.out.web_name} kit`)}<span><small>OUT</small><b>${esc(ch.out.web_name)}</b><em>${money(ch.out.now_cost)}</em></span></div><span class="bld-opt-arrow">→</span><div class="bld-opt-player">${teamKitImg(it,"bld-opt-kit",`${ch.inn.web_name} kit`)}<span><small>IN</small><b>${esc(ch.inn.web_name)}</b><em>${money(ch.inn.now_cost)}</em></span></div><strong>+${ch.gain.toFixed(1)}</strong></div>`;
@@ -448,7 +537,7 @@ function bldShowOptimizeReview(result,benchmark,currentScore){
       <div class="bld-opt-brand"><span class="bld-opt-brandmark">⚡</span><span>FPL Peek Optimizer</span></div>
       <h3 id="bldOptReviewTitle">${n?"Optimization found":"Your squad is already efficient"}</h3>
       <p class="bld-opt-review-copy">${n?`Found ${n} meaningful legal change${n===1?"":"s"} for the current ${_bldN}-GW window. Nothing changes until you apply them.`:`No meaningful same-position upgrade cleared the minimum gain threshold. AutoPick can still do a full rebuild if you want a different squad structure.`}</p>
-      <div class="bld-opt-scorecompare"><div><small>Current</small><b style="color:${before.c}">${before.g} <span>${before.rating}/99</span></b><em>${currentScore.toFixed(1)} projected</em></div><span>→</span><div><small>Optimized</small><b style="color:${after.c}">${after.g} <span>${after.rating}/99</span></b><em>${result.score.toFixed(1)} projected</em></div><div class="bld-opt-gain"><small>Projected gain</small><b>+${result.gain.toFixed(1)}</b></div></div>
+      <div class="bld-opt-scorecompare"><div><small>Current</small><b style="color:${before.c}">${before.g} <span>${before.rating}/100</span></b><em>${currentScore.toFixed(1)} projected</em></div><span>→</span><div><small>Optimized</small><b style="color:${after.c}">${after.g} <span>${after.rating}/100</span></b><em>${result.score.toFixed(1)} projected</em></div><div class="bld-opt-gain"><small>Projected gain</small><b>+${result.gain.toFixed(1)}</b></div></div>
       ${n?`<div class="bld-opt-changes">${rows}</div>`:`<div class="bld-opt-none"><b>No forced changes</b><span>The quick optimizer deliberately ignores tiny sideways moves.</span></div>`}
       <p class="bld-opt-footnote">Optimize keeps your squad structure intact and only suggests meaningful legal swaps. It recalculates the suggested XI, bench and captain after the changes.</p>
       <div class="bld-opt-actions"><button class="secondary-action" type="button" data-bld-opt-keep>${n?"Keep current squad":"Done"}</button>${n?`<button class="primary-action" type="button" data-bld-opt-apply>Apply ${n} change${n===1?"":"s"}</button>`:""}</div>
@@ -516,18 +605,18 @@ function calibratedScore(mine,opt){
   return Math.max(0,Math.min(99,Math.round(99-gap*4.1)));
 }
 function gradeForScore(score){
-  if(score>=96)return {g:"S",c:"#00e57a"};
-  if(score>=90)return {g:"A",c:"#4ade80"};
-  if(score>=82)return {g:"B",c:"#12d8e3"};
-  if(score>=72)return {g:"C",c:"#f59e0b"};
-  if(score>=60)return {g:"D",c:"#fb923c"};
-  if(score>=45)return {g:"E",c:"#ff8098"};
-  return {g:"F",c:"#f43f5e"};
+  if(score>=92)return {g:"S",c:"#00a66f"};
+  if(score>=84)return {g:"A",c:"#22a06b"};
+  if(score>=76)return {g:"B",c:"#0f8fa6"};
+  if(score>=66)return {g:"C",c:"#d38b00"};
+  if(score>=56)return {g:"D",c:"#e57a24"};
+  if(score>=45)return {g:"E",c:"#dd5b72"};
+  return {g:"F",c:"#d64545"};
 }
 /* --- add/remove --- */
 function bldToggle(id){
   id=+id;
-  if(_bldPicks.includes(id)){ _bldPicks=_bldPicks.filter(x=>x!==id); }
+  if(_bldPicks.includes(id)){ _bldPicks=_bldPicks.filter(x=>x!==id); if(_bldCaptain===id)_bldCaptain=0; if(_bldVice===id)_bldVice=0; }
   else{
     const e=boot.elements.find(x=>x.id===id); if(!e) return;
     const st=bldState();
@@ -538,7 +627,41 @@ function bldToggle(id){
   }
   _optCache=null;bldCancelOptimalJob(); saveDraft(); renderBuilder();
 }
-function saveDraft(){ try{localStorage.setItem("fpl_draft",JSON.stringify({picks:_bldPicks,n:_bldN,chip:_bldChip}))}catch{} }
+function saveDraft(){ try{localStorage.setItem("fpl_draft",JSON.stringify({picks:_bldPicks,n:_bldN,chip:_bldChip,captain:_bldCaptain,vice:_bldVice}))}catch{} }
+
+function bldClosePlayerActions(){ document.getElementById("bldPlayerActions")?.remove(); }
+function bldSetRole(id,role){
+  id=+id; const display=bldDisplayLineup(_bldPicks),xiIds=new Set(display.xi.map(e=>e.id));
+  if(!xiIds.has(id)){ toast("Captain and vice-captain must be in the suggested starting XI"); return; }
+  if(role==="captain"){
+    if(_bldVice===id)_bldVice=_bldCaptain||0;
+    _bldCaptain=id;
+  }else{
+    if(_bldCaptain===id){ toast("Captain and vice-captain must be different players"); return; }
+    _bldVice=id;
+  }
+  saveDraft(); bldClosePlayerActions(); renderBuilder();
+}
+function bldPlayerActions(id){
+  id=+id; const e=bldById()[id]; if(!e)return;
+  bldClosePlayerActions();
+  const st=bldState(),display=bldDisplayLineup(_bldPicks),xiIds=new Set(display.xi.map(x=>x.id)),isXi=st.complete&&xiIds.has(id);
+  const t=(boot.teams||[]).find(x=>x.id===e.team)||{};
+  const wrap=document.createElement("div"); wrap.id="bldPlayerActions"; wrap.className="bld-action-layer";
+  wrap.innerHTML=`<div class="bld-action-backdrop" data-bld-close></div><div class="bld-action-sheet" role="dialog" aria-modal="true" aria-label="${esc(e.web_name)} options">
+    <div class="bld-action-head">${teamKitImg(t,"bld-action-kit",`${e.web_name} kit`)}<div><b>${esc(e.web_name)}</b><small>${esc(t.name||"")} · ${POS[e.element_type]} · ${money(e.now_cost)}</small></div><button type="button" data-bld-close aria-label="Close">×</button></div>
+    <div class="bld-action-buttons">
+      <button type="button" data-bld-role="captain" ${!isXi?'disabled':''}><span class="bld-role-dot">C</span><span><b>Make captain</b><small>${isXi?'Use as captain for the first Builder Gameweek':'Only starting XI players can be captain'}</small></span></button>
+      <button type="button" data-bld-role="vice" ${!isXi?'disabled':''}><span class="bld-role-dot vice">V</span><span><b>Make vice-captain</b><small>${isXi?'Use as vice-captain':'Only starting XI players can be vice-captain'}</small></span></button>
+      <button type="button" class="danger" data-bld-remove-action><span class="bld-role-dot remove">−</span><span><b>Remove player</b><small>Remove from the 15-player squad</small></span></button>
+    </div>
+  </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelectorAll('[data-bld-close]').forEach(x=>x.onclick=bldClosePlayerActions);
+  wrap.querySelector('[data-bld-role="captain"]')?.addEventListener('click',()=>bldSetRole(id,'captain'));
+  wrap.querySelector('[data-bld-role="vice"]')?.addEventListener('click',()=>bldSetRole(id,'vice'));
+  wrap.querySelector('[data-bld-remove-action]')?.addEventListener('click',()=>{bldClosePlayerActions();bldToggle(id)});
+}
 
 /* --- rendering --- */
 function renderBuilder(){
@@ -551,11 +674,11 @@ function renderBuilder(){
   const count=st.picks.length,avg=(fn)=>count?st.picks.reduce((sum,e)=>sum+fn(e),0)/count:null;
   const autoBtn=$("bldAutoPick");if(autoBtn){autoBtn.textContent=count===0?"✨ AutoPick squad":count<15?`✨ AutoPick ${15-count} remaining`:"✨ Rebuild with AutoPick";autoBtn.title=count<15?"Keep your current picks where possible and complete a legal squad":"Replace this squad with an optimized AutoPick squad";}
   const optimizeBtn=$("bldOptimize");if(optimizeBtn){optimizeBtn.disabled=_bldOptimizeBusy||!st.valid;optimizeBtn.textContent=_bldOptimizeBusy?"⚡ Optimizing…":"⚡ Optimize squad";optimizeBtn.title=st.valid?"Improve this squad with a small set of meaningful legal swaps":"Complete a valid 15-player squad to optimize";}
-  const display=bldDisplayLineup(_bldPicks),formation=display.xi.length?bldFormationText(display.shape):"—",projectedScore=st.valid?scoreSquad(_bldPicks):0;
+  const display=bldDisplayLineup(_bldPicks),formation=st.complete?bldFormationText(display.shape):"—",projectedScore=st.valid?scoreSquad(_bldPicks):0;
   $("bldSquadProj").textContent=st.valid?projectedScore.toFixed(1):"—";
   $("bldXiProj").textContent=formation;
   $("bldAvgOwn").textContent=count?`${avg(e=>parseFloat(e.selected_by_percent)||0).toFixed(1)}%`:"—";
-  $("bldAvgForm").textContent=display.captain?display.captain.web_name:"—";
+  $("bldAvgForm").textContent=st.complete&&display.captain?display.captain.web_name:"—";
   $("bldAvgPpg").textContent=count?avg(e=>parseFloat(e.points_per_game)||0).toFixed(1):"—";
   $("bldClubSpread").textContent=String(Object.keys(st.clubCount).length);
   if($("bldChipState")) $("bldChipState").textContent=bldChipLabel();
@@ -568,22 +691,22 @@ function renderBuilder(){
   if(st.valid){
     const key=bldOptimalKey(),opt=_optCache?.key===key?_optCache.v:null;
     if(opt){
-      const score=calibratedScore(projectedScore,opt),gr=gradeForScore(score);
+      const ratingData=bldRatingBreakdown(_bldPicks,opt),score=ratingData.rating,gr=gradeForScore(score);
       $("bldGrade").textContent=gr.g;$("bldGrade").style.color=gr.c;
-      $("bldNum").innerHTML=`${score}<span>/99</span>`;
+      $("bldNum").innerHTML=`${score}<span>/100</span>`;
       $("bldGauge").style.borderColor=gr.c;$("bldGauge").style.background="var(--panel)";
-      const chipTxt=_bldChip!=="none"?` · ${bldChipLabel()} applied in GW${_bldStartGw}`:"";
-      const gap=Math.max(0,opt-projectedScore);
-      $("bldScoreTxt").innerHTML=`Grade <b style="color:${gr.c}">${gr.g}</b> · ${score}/99 against a stronger optimized benchmark over ${_bldN} GW${_bldN>1?"s":""}${chipTxt}${gap>.05?` · <b>${gap.toFixed(1)}</b> projected pts behind benchmark`:" · near the current benchmark"}.`;
+      const chipTxt=_bldChip!=="none"?` · ${bldChipLabel()} planned for GW${_bldStartGw}`:"";
+      const reason=ratingData.reasons.slice(0,2).join("; ");
+      $("bldScoreTxt").innerHTML=`Squad Rating <b style="color:${gr.c}">${score}/100 · ${gr.g}</b>${chipTxt} · ${esc(reason)}.`;
     }else{
       $("bldGrade").textContent="…";$("bldGrade").style.color="var(--dim)";
-      $("bldNum").innerHTML=`…<span>/99</span>`;$("bldGauge").style.borderColor="var(--line2)";$("bldGauge").style.background="var(--panel)";
+      $("bldNum").innerHTML=`…<span>/100</span>`;$("bldGauge").style.borderColor="var(--line2)";$("bldGauge").style.background="var(--panel)";
       $("bldScoreTxt").textContent="Squad ready · calculating the optimized rating benchmark…";
       bldScheduleOptimal();
     }
   }else{
     $("bldGrade").textContent="–";$("bldGrade").style.color="var(--dim)";
-    $("bldNum").innerHTML=`0<span>/99</span>`;$("bldGauge").style.borderColor="var(--line2)";$("bldGauge").style.background="var(--panel)";
+    $("bldNum").innerHTML=`0<span>/100</span>`;$("bldGauge").style.borderColor="var(--line2)";$("bldGauge").style.background="var(--panel)";
     $("bldScoreTxt").textContent=st.picks.length<15?`Pick ${15-st.picks.length} more player${15-st.picks.length>1?"s":""} to see your score.`:"Fix the warnings above to score your squad.";
   }
   drawBldPitch(st);drawBldList();
@@ -607,16 +730,52 @@ function bldPitchFixtureRun(e){
   return `<div class="bld-fx-run" style="--bld-fx-count:${Math.max(1,_bldN)}">${chips.join("")}</div>`;
 }
 function drawBldPitch(st){
-  const b=boot,display=bldDisplayLineup(_bldPicks),shape=display.shape||{1:1,2:3,3:4,4:3},captainId=display.captain?.id||0;
+  const b=boot,display=bldDisplayLineup(_bldPicks),shape=display.shape||{1:1,2:3,3:4,4:3},captainId=display.captain?.id||0,viceId=display.vice?.id||0;
+  const label=document.querySelector(".bld-xi-label");
+
+  // Until all 15 positions are complete, do not pretend the Builder has chosen a formation.
+  // Show squad-building progress and the actual selected players instead.
+  if(!st.complete){
+    if(label) label.innerHTML=`<span>Build your squad</span><small>Add players manually or use AutoPick. A suggested XI appears once all 15 positions are complete.</small>`;
+    const posMeta={1:["GK",SQUAD[1]],2:["DEF",SQUAD[2]],3:["MID",SQUAD[3]],4:["FWD",SQUAD[4]]};
+    const progress=[1,2,3,4].map(pos=>{
+      const [name,need]=posMeta[pos],have=st.posCount[pos]||0,done=have===need;
+      return `<button type="button" class="bld-build-progress ${done?'complete':''}" data-build-pos="${pos}"><span>${name}</span><b>${have}/${need}</b></button>`;
+    }).join("");
+    const selected=st.picks.map(e=>{
+      const t=b.teams.find(z=>z.id===e.team)||{};
+      return `<div class="bld-build-player" data-player="${e.id}" title="Open ${esc(e.web_name)} options">
+        <div class="bld-build-kit">${teamKitImg(t,"bld-kit",`${e.web_name} ${t.name||'club'} kit`)}</div>
+        <div class="bld-build-copy"><b>${esc(e.web_name)}</b><small>${POS[e.element_type]} · ${money(e.now_cost)}</small></div>
+        <button type="button" class="bld-build-remove" data-bld-remove="${e.id}" aria-label="Remove ${esc(e.web_name)}">×</button>
+      </div>`;
+    }).join("");
+    $("bldPitch").innerHTML=`<div class="bld-build-state">
+      <div class="bld-build-intro"><span>Squad progress</span><h3>${st.picks.length?`${st.picks.length} of 15 players selected`:'Build your 15-player squad'}</h3><p>${st.picks.length?'Keep filling the required positions. The Builder will choose the strongest legal XI only after the squad is complete.':'Add players from the list on the right or let AutoPick build a legal £100m squad.'}</p></div>
+      <div class="bld-build-progress-grid">${progress}</div>
+      ${selected?`<div class="bld-build-selected"><div class="bld-build-selected-head"><b>Selected players</b><small>${st.picks.length}/15</small></div><div class="bld-build-player-grid">${selected}</div></div>`:`<div class="bld-build-empty"><b>Nothing selected yet</b><span>Choose a player or press AutoPick squad.</span></div>`}
+    </div>`;
+    if($('bldBench')){$('bldBench').innerHTML='';$('bldBench').style.display='none';}
+    $("bldPitch").querySelectorAll('[data-build-pos]').forEach(btn=>btn.onclick=()=>{
+      const pos=+btn.dataset.buildPos;_bldPos=pos;$("bldPos").querySelectorAll("button").forEach(y=>y.classList.toggle("active",+y.dataset.p===pos));drawBldList();$("bldList").scrollTop=0;
+    });
+    $("bldPitch").querySelectorAll('.bld-build-player[data-player]').forEach(card=>card.onclick=e=>{if(e.target.closest('[data-bld-remove]'))return;bldPlayerActions(card.dataset.player)});
+    $("bldPitch").querySelectorAll('[data-bld-remove]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();bldToggle(btn.dataset.bldRemove)});
+    return;
+  }
+
+  if(label) label.innerHTML=`<span>Suggested starting XI</span><small>Automatically optimized from your complete 15-player squad · ${bldFormationText(shape)}</small>`;
+  if($('bldBench')) $('bldBench').style.display='block';
   const xiByPos={1:[],2:[],3:[],4:[]},benchByPos={1:[],2:[],3:[],4:[]};
   display.xi.forEach(e=>xiByPos[e.element_type].push(e));display.bench.forEach(e=>benchByPos[e.element_type].push(e));
   const slot=(e,pos,{bench=false}={})=>{
     if(!e)return `<div class="bld-slot empty ${bench?'bench-empty':''}" data-slotpos="${pos}" title="Add a ${POS[pos]}">+<div class="bld-slot-lbl">${bench?`BENCH ${POS[pos]}`:POS[pos]}</div></div>`;
-    const t=b.teams.find(z=>z.id===e.team)||{},cap=e.id===captainId&&!bench;
-    return `<div class="bld-slot ${bench?'on-bench':''}" data-rm="${e.id}" title="Remove ${esc(e.web_name)}">
+    const t=b.teams.find(z=>z.id===e.team)||{},cap=e.id===captainId&&!bench,vice=e.id===viceId&&!bench;
+    return `<div class="bld-slot ${bench?'on-bench':''}" data-player="${e.id}" title="Open ${esc(e.web_name)} options">
+      <div class="bld-price-badge">${money(e.now_cost)}</div>
       <div class="bld-kit-wrap">${teamKitImg(t,"bld-kit",`${e.web_name} ${t.name||"club"} kit`)}</div>
-      <div class="bld-pl-nm">${esc(e.web_name)}${cap?'<span class="bld-cap">C</span>':''}</div>
-      <div class="bld-pl-price">${money(e.now_cost)}</div>${bldPitchFixtureRun(e)}<div class="bld-rm">✕</div>
+      <div class="bld-pl-nm">${esc(e.web_name)}${cap?'<span class="bld-cap">C</span>':vice?'<span class="bld-cap vice">V</span>':''}</div>
+      ${bldPitchFixtureRun(e)}<button class="bld-rm" type="button" data-bld-remove="${e.id}" title="Remove ${esc(e.web_name)}" aria-label="Remove ${esc(e.web_name)}">✕</button>
     </div>`;
   };
   const line=pos=>{
@@ -627,12 +786,10 @@ function drawBldPitch(st){
   $("bldPitch").innerHTML=line(1)+line(2)+line(3)+line(4);
   const benchNeeds={1:SQUAD[1]-(shape[1]||0),2:SQUAD[2]-(shape[2]||0),3:SQUAD[3]-(shape[3]||0),4:SQUAD[4]-(shape[4]||0)},benchCells=[];
   for(const pos of [1,2,3,4])for(let i=0;i<benchNeeds[pos];i++)benchCells.push(slot((benchByPos[pos]||[])[i],pos,{bench:true}));
-  if($("bldBench")) $("bldBench").innerHTML=`<div class="bld-bench-head"><span>Substitutes</span><small>${st.complete?`Suggested bench · ${bldChipLabel()}`:"Complete the 15-player squad"}</small></div><div class="bld-bench-row">${benchCells.join("")}</div>`;
+  if($("bldBench")) $("bldBench").innerHTML=`<div class="bld-bench-head"><span>Substitutes</span><small>Suggested bench · ${bldChipLabel()}</small></div><div class="bld-bench-row">${benchCells.join("")}</div>`;
   const wire=root=>{
-    root?.querySelectorAll(".bld-slot[data-rm]").forEach(s=>s.onclick=()=>bldToggle(s.dataset.rm));
-    root?.querySelectorAll(".bld-slot.empty[data-slotpos]").forEach(s=>s.onclick=()=>{
-      const pos=+s.dataset.slotpos;_bldPos=pos;$("bldPos").querySelectorAll("button").forEach(y=>y.classList.toggle("active",+y.dataset.p===pos));drawBldList();$("bldList").scrollTop=0;const picker=document.querySelector(".bld-picker");if(picker&&window.innerWidth<=860)picker.scrollIntoView({behavior:"smooth",block:"start"});
-    });
+    root?.querySelectorAll(".bld-slot[data-player]").forEach(s=>s.onclick=e=>{if(e.target.closest("[data-bld-remove]"))return;bldPlayerActions(s.dataset.player)});
+    root?.querySelectorAll("[data-bld-remove]").forEach(btn=>btn.onclick=e=>{e.stopPropagation();bldToggle(btn.dataset.bldRemove)});
   };
   wire($("bldPitch"));wire($("bldBench"));
 }
