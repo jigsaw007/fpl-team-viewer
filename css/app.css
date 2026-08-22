@@ -3329,3 +3329,77 @@ html[data-theme="dark"] .transfer-face{background:var(--panel2)!important;border
 .transfer-player-head h3,.transfer-player-head p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:760px){.transfer-player-head{grid-template-columns:42px minmax(0,1fr) auto!important;column-gap:8px}}
 >>>>>>> d249f57fa9201bf5c992e919439a7f7481de76a9
+
+/* V69 Team Builder incomplete state: keep the football pitch for a complete XI only. */
+.bld-pitch.is-building{
+  min-height:0!important;
+  padding:22px!important;
+  background:var(--panel)!important;
+  border:1px solid var(--line)!important;
+  border-radius:14px;
+  box-shadow:none!important;
+}
+.bld-pitch.is-building::before,
+.bld-pitch.is-building::after{display:none!important}
+.bld-pitch.is-building .bld-build-state{
+  min-height:0;
+  padding:10px 4px 4px;
+  gap:16px;
+}
+.bld-pitch.is-building .bld-build-intro>span{color:var(--accent)}
+.bld-pitch.is-building .bld-build-intro h3{color:var(--ink);font-size:22px}
+.bld-pitch.is-building .bld-build-intro p{color:var(--sub);font-size:12px}
+.bld-pitch.is-building .bld-build-progress-grid{max-width:760px}
+.bld-pitch.is-building .bld-build-progress{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--ink);
+  min-height:46px;
+}
+.bld-pitch.is-building .bld-build-progress:hover{background:#edf7f2;border-color:#9fd7bf}
+.bld-pitch.is-building .bld-build-progress.complete{
+  background:#e7f7ef;
+  border-color:#91cfb3;
+  color:#116846;
+}
+.bld-pitch.is-building .bld-build-selected{
+  max-width:none;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  padding:14px;
+}
+.bld-pitch.is-building .bld-build-selected-head{color:var(--ink)}
+.bld-pitch.is-building .bld-build-player-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.bld-pitch.is-building .bld-build-player{
+  min-height:58px;
+  padding:8px 10px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  box-shadow:0 1px 2px rgba(16,24,40,.03);
+}
+.bld-pitch.is-building .bld-build-player:hover{border-color:#a5d7c1;background:#f8fcfa}
+.bld-pitch.is-building .bld-build-empty{
+  max-width:680px;
+  background:var(--panel2);
+  border:1px dashed var(--line2);
+  color:var(--sub);
+}
+html[data-theme="dark"] .bld-pitch.is-building{
+  background:var(--panel)!important;
+  border-color:var(--line)!important;
+}
+html[data-theme="dark"] .bld-pitch.is-building .bld-build-progress{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+html[data-theme="dark"] .bld-pitch.is-building .bld-build-progress:hover{background:#17251f;border-color:#285943}
+html[data-theme="dark"] .bld-pitch.is-building .bld-build-progress.complete{background:#153326;border-color:#286d4d;color:#a8e8ca}
+html[data-theme="dark"] .bld-pitch.is-building .bld-build-selected{background:var(--panel2);border-color:var(--line)}
+html[data-theme="dark"] .bld-pitch.is-building .bld-build-player{background:var(--panel);border-color:var(--line)}
+html[data-theme="dark"] .bld-pitch.is-building .bld-build-player:hover{background:#17251f;border-color:#285943}
+@media(max-width:1150px){.bld-pitch.is-building .bld-build-player-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:820px){
+  .bld-pitch.is-building{padding:16px!important}
+  .bld-pitch.is-building .bld-build-player-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .bld-pitch.is-building .bld-build-progress-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bld-pitch.is-building .bld-build-player-grid{grid-template-columns:1fr}
+}
