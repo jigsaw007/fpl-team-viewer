@@ -1,0 +1,6 @@
+Delete these old files from the project if they still exist:
+
+css/price-predictor.css
+netlify/functions/price-predictor.js
+
+They are no longer referenced by FPL Peek.

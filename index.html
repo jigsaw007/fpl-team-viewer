@@ -91,7 +91,6 @@
 })();
 </script>
 <link rel="stylesheet" href="/css/app.css">
-<link rel="stylesheet" href="/css/price-predictor.css">
 </head>
 <body>
 <div class="wrap">
@@ -1045,7 +1044,7 @@
   <section class="tabpanel" id="tab-prices">
     <div class="thead">
       <h2>Price watch</h2>
-      <p>Official FPL price changes, the new official Price Change Predictor, and live transfer activity.</p>
+      <p>Official FPL price changes and live transfer activity.</p>
     </div>
     <div class="ctl">
       <div class="seg" id="prMode">
@@ -1054,13 +1053,6 @@
       </div>
     </div>
     <div id="prStatus" class="price-status" aria-live="polite"></div>
-    <section class="price-predictor" id="prPredictor">
-      <div class="price-predictor-head">
-        <div><span>Official FPL data</span><h3>Price Change Predictor</h3><p>Progress towards the next FPL price rise or fall. FPL says this updates roughly every 15 minutes and is an indication, not a guarantee.</p></div>
-        <div class="price-official-badge">FPL predictor</div>
-      </div>
-      <div id="prPredictorBody" class="price-predictor-state"><b>Loading official predictor…</b><span>Checking FPL's current predictor feed.</span></div>
-    </section>
     <div class="two-col">
       <div><div class="col-h up">▲ Official risers</div><div id="prUp"></div></div>
       <div><div class="col-h down">▼ Official fallers</div><div id="prDown"></div></div>

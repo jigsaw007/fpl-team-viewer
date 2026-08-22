@@ -733,34 +733,54 @@ function drawBldPitch(st){
   const b=boot,display=bldDisplayLineup(_bldPicks),shape=display.shape||{1:1,2:3,3:4,4:3},captainId=display.captain?.id||0,viceId=display.vice?.id||0;
   const label=document.querySelector(".bld-xi-label");
 
-  // Until all 15 positions are complete, do not pretend the Builder has chosen a formation.
-  // Show squad-building progress and the actual selected players instead.
+  // While the squad is incomplete, keep a stable 4-3-3 pitch template.
+  // This avoids the Builder switching between a progress panel and a football pitch.
   if(!st.complete){
-    if(label) label.innerHTML=`<span>Build your squad</span><small>Add players manually or use AutoPick. A suggested XI appears once all 15 positions are complete.</small>`;
-    const posMeta={1:["GK",SQUAD[1]],2:["DEF",SQUAD[2]],3:["MID",SQUAD[3]],4:["FWD",SQUAD[4]]};
-    const progress=[1,2,3,4].map(pos=>{
-      const [name,need]=posMeta[pos],have=st.posCount[pos]||0,done=have===need;
-      return `<button type="button" class="bld-build-progress ${done?'complete':''}" data-build-pos="${pos}"><span>${name}</span><b>${have}/${need}</b></button>`;
-    }).join("");
-    const selected=st.picks.map(e=>{
-      const t=b.teams.find(z=>z.id===e.team)||{};
-      return `<div class="bld-build-player" data-player="${e.id}" title="Open ${esc(e.web_name)} options">
-        <div class="bld-build-kit">${teamKitImg(t,"bld-kit",`${e.web_name} ${t.name||'club'} kit`)}</div>
-        <div class="bld-build-copy"><b>${esc(e.web_name)}</b><small>${POS[e.element_type]} · ${money(e.now_cost)}</small></div>
-        <button type="button" class="bld-build-remove" data-bld-remove="${e.id}" aria-label="Remove ${esc(e.web_name)}">×</button>
-      </div>`;
-    }).join("");
-    $("bldPitch").innerHTML=`<div class="bld-build-state">
-      <div class="bld-build-intro"><span>Squad progress</span><h3>${st.picks.length?`${st.picks.length} of 15 players selected`:'Build your 15-player squad'}</h3><p>${st.picks.length?'Keep filling the required positions. The Builder will choose the strongest legal XI only after the squad is complete.':'Add players from the list on the right or let AutoPick build a legal £100m squad.'}</p></div>
-      <div class="bld-build-progress-grid">${progress}</div>
-      ${selected?`<div class="bld-build-selected"><div class="bld-build-selected-head"><b>Selected players</b><small>${st.picks.length}/15</small></div><div class="bld-build-player-grid">${selected}</div></div>`:`<div class="bld-build-empty"><b>Nothing selected yet</b><span>Choose a player or press AutoPick squad.</span></div>`}
-    </div>`;
-    if($('bldBench')){$('bldBench').innerHTML='';$('bldBench').style.display='none';}
-    $("bldPitch").querySelectorAll('[data-build-pos]').forEach(btn=>btn.onclick=()=>{
-      const pos=+btn.dataset.buildPos;_bldPos=pos;$("bldPos").querySelectorAll("button").forEach(y=>y.classList.toggle("active",+y.dataset.p===pos));drawBldList();$("bldList").scrollTop=0;
+    const template={1:1,2:4,3:3,4:3};
+    if(label) label.innerHTML=`<span>Build your squad</span><small>4-3-3 starting template · your final suggested XI is chosen when all 15 players are selected.</small>`;
+
+    const pickedByPos={1:[],2:[],3:[],4:[]};
+    st.picks.forEach(e=>(pickedByPos[e.element_type]||=[]).push(e));
+    const starterByPos={1:[],2:[],3:[],4:[]},bench=[];
+    [1,2,3,4].forEach(pos=>{
+      const list=pickedByPos[pos]||[],take=template[pos];
+      starterByPos[pos]=list.slice(0,take);
+      bench.push(...list.slice(take));
     });
-    $("bldPitch").querySelectorAll('.bld-build-player[data-player]').forEach(card=>card.onclick=e=>{if(e.target.closest('[data-bld-remove]'))return;bldPlayerActions(card.dataset.player)});
-    $("bldPitch").querySelectorAll('[data-bld-remove]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();bldToggle(btn.dataset.bldRemove)});
+
+    const previewSlot=(e,pos,{benchSlot=false}={})=>{
+      if(!e)return `<div class="bld-slot empty ${benchSlot?'bench-empty':''}" data-slotpos="${pos}" title="Add a ${POS[pos]}"><span class="bld-empty-plus">+</span><div class="bld-slot-lbl">${benchSlot?`BENCH ${POS[pos]}`:POS[pos]}</div></div>`;
+      const t=b.teams.find(z=>z.id===e.team)||{};
+      return `<div class="bld-slot ${benchSlot?'on-bench':''}" data-player="${e.id}" title="Open ${esc(e.web_name)} options">
+        <div class="bld-price-badge">${money(e.now_cost)}</div>
+        <div class="bld-kit-wrap">${teamKitImg(t,"bld-kit",`${e.web_name} ${t.name||'club'} kit`)}</div>
+        <div class="bld-pl-nm">${esc(e.web_name)}</div>
+        ${bldPitchFixtureRun(e)}<button class="bld-rm" type="button" data-bld-remove="${e.id}" title="Remove ${esc(e.web_name)}" aria-label="Remove ${esc(e.web_name)}">✕</button>
+      </div>`;
+    };
+
+    const pitchRows=[1,2,3,4].map(pos=>{
+      const row=[];for(let i=0;i<template[pos];i++)row.push(previewSlot(starterByPos[pos][i]||null,pos));
+      return `<div class="bld-prow bld-prow-${pos}">${row.join("")}</div>`;
+    }).join("");
+    $("bldPitch").innerHTML=pitchRows;
+
+    const expectedBench=[1,2,2,3]; // second GK + spare DEF + spare DEF/MID + spare MID/FWD visual slots
+    const benchPlayers=bench.slice(0,4);
+    const benchHtml=expectedBench.map((pos,i)=>previewSlot(benchPlayers[i]||null,benchPlayers[i]?.element_type||pos,{benchSlot:true})).join("");
+    if($("bldBench")){
+      $("bldBench").style.display="block";
+      $("bldBench").innerHTML=`<div class="bld-bench-head"><span>Substitutes</span><small>${st.picks.length}/15 selected</small></div><div class="bld-bench-row">${benchHtml}</div>`;
+    }
+
+    const wire=root=>{
+      root?.querySelectorAll('.bld-slot[data-player]').forEach(card=>card.onclick=e=>{if(e.target.closest('[data-bld-remove]'))return;bldPlayerActions(card.dataset.player)});
+      root?.querySelectorAll('[data-bld-remove]').forEach(btn=>btn.onclick=e=>{e.stopPropagation();bldToggle(btn.dataset.bldRemove)});
+      root?.querySelectorAll('.bld-slot.empty[data-slotpos]').forEach(slot=>slot.onclick=()=>{
+        const pos=+slot.dataset.slotpos;_bldPos=pos;$('bldPos').querySelectorAll('button').forEach(y=>y.classList.toggle('active',+y.dataset.p===pos));drawBldList();$('bldList').scrollTop=0;
+      });
+    };
+    wire($("bldPitch"));wire($("bldBench"));
     return;
   }
 
