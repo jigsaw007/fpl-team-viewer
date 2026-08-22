@@ -68,16 +68,6 @@
 }
 </script>
 
-<head>
-  ...
-
-  <!-- Google AdSense -->
-  <script async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6697752785156392"
-    crossorigin="anonymous"></script>
-
-</head>
-
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HRG9QW2NGC"></script>
 <script>
@@ -101,6 +91,7 @@
 })();
 </script>
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/price-predictor.css">
 </head>
 <body>
 <div class="wrap">
@@ -123,8 +114,8 @@
 
     <div class="tab-label">Planning</div>
     <button class="tab" data-tab="insights">Insights</button>
-    <button class="tab hot-tab" data-tab="builder">Team Builder <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab hot-tab" data-tab="planner">Gameweek Planner <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
+    <button class="tab hot-tab" data-tab="builder">Team Builder <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="scout">Scout</button>
     <button class="tab hot-tab" data-tab="transfer">Player Compare <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="fixtures">Fixtures &amp; Results</button>
@@ -1054,7 +1045,7 @@
   <section class="tabpanel" id="tab-prices">
     <div class="thead">
       <h2>Price watch</h2>
-      <p>Who's rising and falling. Season change is since launch; live shows this gameweek's movement.</p>
+      <p>Official FPL price changes, the new official Price Change Predictor, and live transfer activity.</p>
     </div>
     <div class="ctl">
       <div class="seg" id="prMode">
@@ -1062,10 +1053,25 @@
         <button data-m="event">This gameweek</button>
       </div>
     </div>
+    <div id="prStatus" class="price-status" aria-live="polite"></div>
+    <section class="price-predictor" id="prPredictor">
+      <div class="price-predictor-head">
+        <div><span>Official FPL data</span><h3>Price Change Predictor</h3><p>Progress towards the next FPL price rise or fall. FPL says this updates roughly every 15 minutes and is an indication, not a guarantee.</p></div>
+        <div class="price-official-badge">FPL predictor</div>
+      </div>
+      <div id="prPredictorBody" class="price-predictor-state"><b>Loading official predictor…</b><span>Checking FPL's current predictor feed.</span></div>
+    </section>
     <div class="two-col">
-      <div><div class="col-h up">▲ Risers</div><div id="prUp"></div></div>
-      <div><div class="col-h down">▼ Fallers</div><div id="prDown"></div></div>
+      <div><div class="col-h up">▲ Official risers</div><div id="prUp"></div></div>
+      <div><div class="col-h down">▼ Official fallers</div><div id="prDown"></div></div>
     </div>
+    <section class="price-market" id="prMarket">
+      <div class="price-market-head"><div><span>Transfer market</span><h3>Most transferred this Gameweek</h3></div><p>Transfer activity is official FPL data and can move before a price change is applied.</p></div>
+      <div class="two-col">
+        <div><div class="col-h up">Most transferred in</div><div id="prIn"></div></div>
+        <div><div class="col-h down">Most transferred out</div><div id="prOut"></div></div>
+      </div>
+    </section>
   </section>
 
   <!-- ============ LIVE TAB ============ -->
