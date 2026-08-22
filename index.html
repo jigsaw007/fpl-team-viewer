@@ -127,6 +127,7 @@
     <button class="tab" data-tab="setpieces">Set Pieces</button>
     <button class="tab" data-tab="defcon">DEFCON Tracker</button>
     <button class="tab" data-tab="prices">Price Watch</button>
+    <button class="tab" data-tab="pricepredict">Price Change Prediction</button>
 
     <div class="tab-label">Analysis</div>
     <button class="tab hot-tab" data-tab="analyzer">Team Rating <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
@@ -1066,6 +1067,35 @@
     </section>
   </section>
 
+  <!-- ============ PRICE CHANGE PREDICTION TAB ============ -->
+  <section class="tabpanel" id="tab-pricepredict">
+    <div class="thead">
+      <h2>Price Change Prediction</h2>
+      <p>FPL Peek estimates price pressure from official transfer activity, ownership, player status and current Gameweek market conditions.</p>
+    </div>
+    <div class="price-pressure-note">
+      <b>Estimated pressure — not an official FPL probability.</b>
+      <span>The exact FPL price-change formula is private. A higher score means stronger current transfer pressure, not a guaranteed rise or fall.</span>
+    </div>
+    <div class="pressure-summary" id="ppSummary"></div>
+    <div class="pressure-grid">
+      <section class="pressure-column rise">
+        <div class="pressure-column-head"><div><span class="pressure-arrow">↑</span><div><b>Rise pressure</b><small>Strongest buying pressure</small></div></div><span id="ppRiseCount"></span></div>
+        <div id="ppRisers" class="pressure-list"></div>
+        <button class="lm-more pressure-more" id="ppMoreRise" type="button">Show 20 more</button>
+      </section>
+      <section class="pressure-column fall">
+        <div class="pressure-column-head"><div><span class="pressure-arrow">↓</span><div><b>Fall pressure</b><small>Strongest selling pressure</small></div></div><span id="ppFallCount"></span></div>
+        <div id="ppFallers" class="pressure-list"></div>
+        <button class="lm-more pressure-more" id="ppMoreFall" type="button">Show 20 more</button>
+      </section>
+    </div>
+    <div class="price-pressure-method">
+      <b>How the score works</b>
+      <p>FPL Peek gives the most weight to absolute net transfers, then considers transfer activity relative to ownership, transfer direction, overall volume, player availability and whether the player has already moved this Gameweek. Very small transfer volumes are capped so low-owned players cannot receive an unrealistic pressure score. A likely next individual price movement is shown as +£0.1m or −£0.1m.</p>
+    </div>
+  </section>
+
   <!-- ============ LIVE TAB ============ -->
   <section class="tabpanel" id="tab-live">
     <div class="thead">
@@ -1116,6 +1146,7 @@
     <button data-mobile-tab="setpieces">Set Pieces</button>
     <button data-mobile-tab="defcon">DEFCON Tracker</button>
     <button data-mobile-tab="prices">Price Watch</button>
+    <button data-mobile-tab="pricepredict">Price Change Prediction</button>
     <button data-mobile-tab="preseason">Pre-season</button>
     <button data-mobile-tab="peekteam">FPL Peek Team</button>
     <button data-mobile-tab="live">Live Center</button>
