@@ -131,11 +131,32 @@ function fixturePlayerName(id){
   return p?p.web_name:`Player ${id}`;
 }
 
+function fixtureDetailIcon(identifier){
+  const icons={
+    goals_scored:'<i class="fa-solid fa-futbol" aria-hidden="true"></i>',
+    assists:'<i class="fa-solid fa-handshake-angle" aria-hidden="true"></i>',
+    own_goals:'<i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>',
+    penalties_saved:'<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>',
+    penalties_missed:'<i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>',
+    yellow_cards:'<i class="fa-solid fa-square fx-card-icon yellow" aria-hidden="true"></i>',
+    red_cards:'<i class="fa-solid fa-square fx-card-icon red" aria-hidden="true"></i>',
+    saves:'<i class="fa-solid fa-hand" aria-hidden="true"></i>',
+    bonus:'<i class="fa-solid fa-star" aria-hidden="true"></i>',
+    bps:'<i class="fa-solid fa-chart-simple" aria-hidden="true"></i>'
+  };
+  return icons[identifier]||'<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
+}
+
 function fixtureDetailGroup(f, identifier, label, opts={}){
   let rows=fixtureStatRows(f,identifier).filter(x=>x.value>0);
   if(opts.top) rows=rows.sort((a,b)=>b.value-a.value).slice(0,opts.top);
   if(!rows.length) return '';
-  return `<div class="fx-event-group"><span>${esc(label)}</span><div>${rows.map(x=>`<b>${esc(fixturePlayerName(x.element))}${x.value>1?` ×${x.value}`:''}${opts.showValue?` <em>${x.value}</em>`:''}</b>`).join('')}</div></div>`;
+  const chips=rows.map(x=>{
+    const name=esc(fixturePlayerName(x.element));
+    if(opts.showValue) return `<b>${name}<em>${x.value}</em></b>`;
+    return `<b>${name}${x.value>1?` <em>×${x.value}</em>`:''}</b>`;
+  }).join('');
+  return `<div class="fx-event-group fx-event-${identifier}"><span>${fixtureDetailIcon(identifier)}<strong>${esc(label)}</strong></span><div>${chips}</div></div>`;
 }
 
 function fixtureDetailsHtml(f){

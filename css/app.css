@@ -3792,3 +3792,27 @@ button.lm-chip-card.compact{grid-template-columns:30px minmax(0,1fr) 8px;align-i
 @media(max-width:700px){.home-live-match{min-width:220px}.fx-match-details{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:460px){.fx-match-details{grid-template-columns:1fr;padding:9px}.home-live-head small{display:none}}
 html[data-theme="dark"] .home-live-wrap{background:#10241c;border-color:#285c49}html[data-theme="dark"] .home-live-head{border-color:#285c49}html[data-theme="dark"] .home-live-match{border-color:#285c49;color:var(--ink)}html[data-theme="dark"] .home-live-match:hover{background:#173126}html[data-theme="dark"] .fx-match-details{background:#111b17;border-color:#26322c}html[data-theme="dark"] .fx-event-group{background:var(--panel);border-color:var(--line)}html[data-theme="dark"] .fx-event-group b{background:#19251f}
+
+
+/* Fixture match-centre polish: page nav + event icons */
+.fixtures-head{display:grid;grid-template-columns:minmax(0,1fr);gap:15px;align-items:start}
+.fixtures-head>div:first-child{min-width:0}
+.fixtures-view-tabs{justify-self:center;margin:2px auto 0;padding:5px;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 5px 16px rgba(16,34,46,.05)}
+.fixtures-view-tabs button{min-width:116px;padding:10px 15px;font-weight:800}
+.fixtures-view-tabs button.active{box-shadow:0 2px 8px rgba(8,122,85,.10)}
+.fx-event-group>span{display:flex;align-items:center;gap:6px}
+.fx-event-group>span>i{width:15px;text-align:center;font-size:11px;color:#087a55}
+.fx-event-group>span>strong{font:inherit;color:inherit}
+.fx-event-group b{display:inline-flex;align-items:center;gap:4px}
+.fx-event-group b em{font-style:normal;color:#087a55;font-weight:900}
+.fx-card-icon.yellow{color:#f4c430!important}
+.fx-card-icon.red{color:#e53935!important}
+.fx-event-saves>span>i{color:#1d6fc0}
+.fx-event-goals_scored>span>i{color:#087a55}
+.fx-event-bonus>span>i{color:#d69e00}
+.fx-event-bps>span>i{color:#5865a8}
+@media(max-width:700px){
+  .fixtures-view-tabs{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-self:stretch}
+  .fixtures-view-tabs button{min-width:0;width:100%}
+}
+html[data-theme="dark"] .fixtures-view-tabs{background:var(--panel)!important;border-color:var(--line)!important;box-shadow:none}
