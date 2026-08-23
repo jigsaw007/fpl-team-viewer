@@ -4161,3 +4161,29 @@ h1,h2,h3,h4,h5,h6,
 /* Keep dense UI and numeric/data surfaces on Inter for readability. */
 .fxg,.dt,.la-table,.market-terminal,.live-widget,.home-live-widget,
 input,select,button,textarea{font-family:var(--font-body)}
+
+/* LIVE NOW: keep scorer surnames readable without increasing card height */
+@media (min-width: 701px){
+  .home-live-teammeta{max-width:180px}
+  .home-live-scorers{
+    max-width:168px;
+    font-size:6.7px;
+    letter-spacing:-.08px;
+    gap:3px;
+  }
+  .home-live-scorers span{
+    max-width:156px;
+    overflow:hidden;
+    text-overflow:clip;
+    white-space:nowrap;
+  }
+  .home-live-side-away .home-live-teammeta{align-items:flex-end}
+}
+@media (min-width: 981px){
+  .home-live-tape:not(.is-carousel) .home-live-scorers{max-width:190px}
+  .home-live-tape:not(.is-carousel) .home-live-scorers span{max-width:178px}
+}
+@media (max-width:700px){
+  .home-live-scorers{font-size:6.4px;max-width:104px}
+  .home-live-scorers span{max-width:92px}
+}
