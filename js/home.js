@@ -1,5 +1,5 @@
 /* ============ home dashboard ============ */
-let _homeReady=false, _homeLiveTimer=null, _homeLiveRefreshBusy=false;
+let _homeReady=false, _homeLiveTimer=null;
 
 async function initHome(){
   bindHomeActions();
@@ -198,14 +198,21 @@ function renderHomeLiveMatches(b, fixtures){
   const live=(fixtures||[]).filter(f=>f.started && !f.finished && !f.finished_provisional);
   if(!live.length){el.hidden=true;el.innerHTML='';return;}
   el.hidden=false;
-  el.innerHTML=`<div class="home-live-head"><span class="home-live-dot"></span><b>LIVE NOW</b><small>${live.length} match${live.length===1?'':'es'} in progress</small></div>
-    <div class="home-live-tape">${live.map(f=>{const h=teams[f.team_h]||{},a=teams[f.team_a]||{};return `<button class="home-live-match" data-live-gw="${f.event||1}">
-      <span class="home-live-minute">${esc(homeLiveStatus(f))}</span>
-      <span class="home-live-team">${esc(h.short_name||h.name||'HOME')}</span>
-      <strong>${f.team_h_score??0}–${f.team_a_score??0}</strong>
-      <span class="home-live-team">${esc(a.short_name||a.name||'AWAY')}</span>
-      <span class="home-live-open">Match details →</span>
-    </button>`}).join('')}</div>`;
+  el.innerHTML=`<div class="home-live-head">
+      <div class="home-live-title"><span class="home-live-dot" aria-hidden="true"></span><b>LIVE NOW</b><span class="home-live-headline">Premier League matchday</span></div>
+      <small>${live.length} match${live.length===1?'':'es'} in progress</small>
+    </div>
+    <div class="home-live-tape">${live.map(f=>{
+      const h=teams[f.team_h]||{},a=teams[f.team_a]||{};
+      return `<button class="home-live-match" data-live-gw="${f.event||1}">
+        <div class="home-live-match-top"><span class="home-live-minute"><i class="fa-solid fa-circle"></i>${esc(homeLiveStatus(f))}</span><span class="home-live-details">Match centre <i class="fa-solid fa-arrow-right"></i></span></div>
+        <div class="home-live-scoreboard">
+          <div class="home-live-side home-live-side-home">${teamKitImg(h,'home-live-kit',`${h.name||'Home'} kit`)}<span>${esc(h.short_name||h.name||'HOME')}</span></div>
+          <div class="home-live-score"><strong>${f.team_h_score??0}</strong><span>–</span><strong>${f.team_a_score??0}</strong></div>
+          <div class="home-live-side home-live-side-away">${teamKitImg(a,'home-live-kit',`${a.name||'Away'} kit`)}<span>${esc(a.short_name||a.name||'AWAY')}</span></div>
+        </div>
+      </button>`
+    }).join('')}</div>`;
   el.querySelectorAll('[data-live-gw]').forEach(btn=>btn.onclick=()=>{
     const gw=Number(btn.dataset.liveGw)||1;
     switchTab('fixtures');
@@ -214,30 +221,15 @@ function renderHomeLiveMatches(b, fixtures){
 }
 
 async function refreshHomeLiveMatches(){
-  const el=$("homeLiveMatches");
-  if(document.hidden || !el || _homeLiveRefreshBusy) return;
-  _homeLiveRefreshBusy=true;
+  if(document.hidden || !$("homeLiveMatches")) return;
   try{
     const b=await loadBoot();
-    // The cache-buster is intentionally on the proxy URL (not the FPL API path),
-    // so only this live strip bypasses browser/CDN caching.
-    const url=PROXY_BASE+encodeURIComponent('/fixtures/')+'&live_refresh='+Date.now();
-    const r=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const fixtures=await r.json();
+    const fixtures=await get('/fixtures/');
     renderHomeLiveMatches(b,fixtures);
-  }catch(_){
-    // Keep the last good live state on screen if one poll fails.
-  }finally{
-    _homeLiveRefreshBusy=false;
-  }
+  }catch(_){ }
 }
 
 function startHomeLivePolling(){
   if(_homeLiveTimer) return;
-  // Fixture minutes/scores can move during a match, so keep only this strip fresh.
-  _homeLiveTimer=setInterval(refreshHomeLiveMatches,15000);
-  document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden) refreshHomeLiveMatches();
-  });
+  _homeLiveTimer=setInterval(refreshHomeLiveMatches,45000);
 }
