@@ -8,24 +8,27 @@
 .pressure-grid{grid-template-columns:1fr!important;gap:22px!important}
 
 /* Make each prediction row read like the official FPL columns: Player / Status / Progress / Trend / Price */
-.pressure-row.official-style{display:grid!important;grid-template-columns:minmax(180px,1.55fr) minmax(145px,1fr) minmax(112px,.72fr) minmax(86px,.58fr) minmax(86px,.58fr)!important;align-items:center;gap:14px;padding:14px 16px!important}
+.pressure-row.official-style{display:grid!important;grid-template-columns:minmax(210px,1.65fr) minmax(155px,1fr) minmax(150px,.9fr) minmax(90px,.58fr)!important;align-items:center;gap:14px;padding:14px 16px!important}
 .pressure-row.official-style .pressure-player{min-width:0}
 .pressure-row.official-style .pressure-player b{font-size:13px}
 .pressure-row.official-style .pressure-player small{display:block;margin-top:2px;font-size:9.5px;color:var(--dim)}
 
 .pp-status-cell{min-width:0}
-.pp-status-badge{display:inline-flex;align-items:center;min-height:26px;padding:5px 8px;border-radius:5px;background:#eef0f2;border:1px solid #e0e3e7;color:#25232a;font:700 10px/1.15 'Inter',sans-serif;white-space:nowrap}
-.pp-status-badge.very-likely-to-rise{background:#dff6eb;border-color:#bcebd5;color:#08774d}
-.pp-status-badge.likely-to-rise{background:#ecf8f2;border-color:#d6efe3;color:#0a7f56}
-.pp-status-badge.unlikely-to-change{background:#eef0f2;border-color:#e0e3e7;color:#3d3a43}
-.pp-status-badge.likely-to-drop{background:#fff0f3;border-color:#f7d8df;color:#b73d52}
-.pp-status-badge.very-likely-to-drop{background:#fde3e8;border-color:#f5c4ce;color:#a92f45}
+.pp-status-badge{display:inline-flex;align-items:center;gap:7px;min-height:29px;padding:6px 10px;border-radius:999px;border:1px solid transparent;font:800 10px/1.15 'Inter',sans-serif;white-space:nowrap;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.pp-status-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px rgba(255,255,255,.58);flex:none}
+.pp-status-badge.very-likely-to-rise{background:#d9f7e9;border-color:#8eddbb;color:#04764b}
+.pp-status-badge.likely-to-rise{background:#edf9f3;border-color:#bee9d3;color:#17845b}
+.pp-status-badge.unlikely-to-change{background:#f1f3f5;border-color:#d7dce1;color:#555d66}
+.pp-status-badge.likely-to-drop{background:#fff0f2;border-color:#f4c0c9;color:#c13950}
+.pp-status-badge.very-likely-to-drop{background:#ffe0e5;border-color:#ed9cab;color:#a91f39}
 
 .pp-progress-cell{min-width:0}
-.pp-progress-number{display:inline-block;padding:3px 5px;border-radius:4px;background:#eef0f2;color:var(--ink);font:800 11px 'Inter',sans-serif}
-.pressure-row.rise .pp-progress-number{color:#08774d;background:#e8f7f1}
-.pressure-row.fall .pp-progress-number{color:#ba4054;background:#fff0f3}
-.pp-progress-cell>small{display:block;margin-top:4px;font-size:8.5px;color:var(--dim);white-space:nowrap}
+.pp-progress-number{display:block;padding:0;background:none;color:var(--ink);font:800 11px 'Inter',sans-serif}
+.pressure-row.rise .pp-progress-number{color:#08774d;background:none}
+.pressure-row.fall .pp-progress-number{color:#ba4054;background:none}
+.pp-progress-track{width:100%;max-width:130px;height:8px;margin-top:7px;border-radius:999px;background:#e3e8ee;overflow:hidden}
+.pp-progress-track span{display:block;height:100%;border-radius:inherit;background:#16b77d}
+.pressure-row.fall .pp-progress-track span{background:#ea536b}
 
 .pp-trend-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .pp-trend-cell span{font-size:15px;font-weight:800}
@@ -44,9 +47,14 @@
 .pp-pagination span{min-width:92px;text-align:center;font:600 10.5px 'Inter',sans-serif;color:var(--dim)}
 
 html[data-theme="dark"] .pp-clock{background:rgba(45,185,131,.14);color:#78ddb5}
-html[data-theme="dark"] .pp-status-badge.unlikely-to-change,html[data-theme="dark"] .pp-progress-number{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.1);color:#f4f4f5}
+html[data-theme="dark"] .pp-status-badge.very-likely-to-rise{background:rgba(16,185,129,.22);border-color:rgba(52,211,153,.38);color:#7ee2b8}
+html[data-theme="dark"] .pp-status-badge.likely-to-rise{background:rgba(16,185,129,.12);border-color:rgba(52,211,153,.24);color:#8ddfbd}
+html[data-theme="dark"] .pp-status-badge.unlikely-to-change{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:#e5e7eb}
+html[data-theme="dark"] .pp-status-badge.likely-to-drop{background:rgba(244,63,94,.13);border-color:rgba(251,113,133,.25);color:#ff9aaa}
+html[data-theme="dark"] .pp-status-badge.very-likely-to-drop{background:rgba(244,63,94,.23);border-color:rgba(251,113,133,.4);color:#ff8aa0}
+html[data-theme="dark"] .pp-progress-track{background:rgba(255,255,255,.12)}
 html[data-theme="dark"] .pp-pagination button{background:rgba(255,255,255,.035)}
 
-@media(max-width:1150px){.pressure-row.official-style{grid-template-columns:minmax(165px,1.4fr) minmax(135px,1fr) 105px 78px 82px!important;gap:10px}}
-@media(max-width:820px){.pressure-summary{grid-template-columns:1fr 1fr!important}.pressure-row.official-style{grid-template-columns:minmax(0,1fr) auto!important;gap:10px}.pp-status-cell{grid-column:2;grid-row:1}.pp-progress-cell{grid-column:1}.pp-trend-cell{grid-column:2}.pp-price-cell{grid-column:1/-1;text-align:left;display:flex;gap:8px;align-items:center}.pp-countdown-card{justify-content:flex-start}.pp-countdown-card strong{font-size:18px}}
+@media(max-width:1150px){.pressure-row.official-style{grid-template-columns:minmax(180px,1.45fr) minmax(135px,1fr) 135px 80px!important;gap:10px}}
+@media(max-width:820px){.pressure-summary{grid-template-columns:1fr 1fr!important}.pressure-row.official-style{grid-template-columns:minmax(0,1fr) auto!important;gap:10px}.pp-status-cell{grid-column:2;grid-row:1}.pp-progress-cell{grid-column:1}.pp-trend-cell{grid-column:2}.pp-countdown-card{justify-content:flex-start}.pp-countdown-card strong{font-size:18px}}
 @media(max-width:520px){.pp-status-badge{white-space:normal}.pp-pagination{gap:7px}.pp-pagination button{min-width:72px;padding:0 9px}.pp-pagination span{min-width:78px}}

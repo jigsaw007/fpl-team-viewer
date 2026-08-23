@@ -3378,3 +3378,240 @@ html[data-theme="dark"] .pressure-row.rise .pressure-score-arrow{background:rgba
 html[data-theme="dark"] .pressure-row.fall .pressure-score-arrow{background:rgba(186,64,84,.22);color:#ff9bad}
 html[data-theme="dark"] .pressure-row.rise .pressure-score b{color:#86d9b7}
 html[data-theme="dark"] .pressure-row.fall .pressure-score b{color:#ff9bad}
+
+/* V49 — My Team mobile cleanup: readable pitch + scrollable career history */
+@media(max-width:560px){
+  /* Keep every formation line on one row without crushing the player labels. */
+  #pitch{padding:20px 6px 14px}
+  #pitch .prow{flex-wrap:nowrap;gap:4px;margin-bottom:14px;padding:0 2px}
+  #pitch .pl{width:auto;flex:1 1 0;min-width:0;max-width:78px}
+  #pitch .pl .shirt{height:51px;margin-bottom:1px}
+  #pitch .pl .kit{height:48px;max-width:52px}
+  #pitch .pl .nm{font-size:9px;line-height:1.15;padding:3px 2px;margin-top:2px}
+  #pitch .pl .meta{font-size:8.5px;line-height:1.15;padding:3px 3px;gap:2px}
+  #pitch .arm{top:-5px;right:2px;width:18px;height:18px;font-size:10px}
+
+  /* Show the next three fixtures on phones while keeping the row compact. */
+  #pitch .fx{justify-content:center;margin-top:2px;min-height:15px}
+  #pitch .fx span{display:none;flex:0 0 auto;min-width:22px;padding:2px 3px;font-size:6.8px;letter-spacing:-.1px}
+  #pitch .fx span:nth-child(-n+3){display:block}
+
+  /* Bench uses the same compact treatment and always stays in a single row. */
+  #bench{padding:12px 6px}
+  #bench .prow{flex-wrap:nowrap;gap:4px;margin:0;padding:0 2px}
+  #bench .pl{width:auto;flex:1 1 0;min-width:0;max-width:78px}
+  #bench .pl .shirt{height:48px}
+  #bench .pl .kit{height:45px;max-width:49px}
+  #bench .pl .nm{font-size:8.8px;padding:3px 2px}
+  #bench .pl .meta{font-size:8.3px;padding:3px}
+  #bench .fx{justify-content:center;min-height:15px}
+  #bench .fx span{display:none;flex:0 0 auto;min-width:22px;padding:2px 3px;font-size:6.8px;letter-spacing:-.1px}
+  #bench .fx span:nth-child(-n+3){display:block}
+
+  /* Past seasons: preserve bar width and scroll instead of squeezing 10+ seasons together. */
+  #history{overflow-x:auto;overflow-y:hidden;padding:14px 10px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  #history .bars{width:max-content;min-width:100%;height:190px;gap:10px;padding:6px 4px 0}
+  #history .bar{flex:0 0 46px;width:46px;min-width:46px}
+  #history .bar .val{font-size:10px;white-space:nowrap;margin-bottom:5px}
+  #history .bar .col{max-width:28px;border-radius:6px 6px 0 0}
+  #history .bar .lbl{font-size:9px;line-height:1.1;margin-top:6px;white-space:nowrap}
+  #history .bar .rk{font-size:8.5px;white-space:nowrap}
+  #history>div:last-child{position:sticky;left:0;width:calc(100vw - 52px);font-size:9.5px!important;margin-top:8px!important}
+}
+
+@media(max-width:380px){
+  #pitch .prow,#bench .prow{gap:2px}
+  #pitch .pl,#bench .pl{max-width:66px}
+  #pitch .pl .nm,#bench .pl .nm{font-size:8.2px}
+  #pitch .pl .meta,#bench .pl .meta{font-size:7.8px}
+  #pitch .pl .shirt{height:47px}
+  #pitch .pl .kit{height:44px;max-width:48px}
+}
+
+/* League whole-league analysis */
+.league-analysis-loading{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;text-align:left}
+.league-analysis-loading b{display:block;color:var(--ink);margin-bottom:3px}
+.league-analysis-loading small{display:block;color:var(--sub)}
+.lm-analysis-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 16px}
+.lm-analysis-summary>div{border:1px solid var(--line2);background:var(--panel2);border-radius:10px;padding:11px 12px}
+.lm-analysis-summary b{display:block;font-size:18px;color:var(--ink)}
+.lm-analysis-summary span{display:block;margin-top:2px;font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.45px}
+.lm-chip-pills{display:flex;gap:7px;flex-wrap:wrap}
+.lm-chip-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:7px 10px;font-size:11px;color:var(--sub)}
+.lm-chip-pill b{color:var(--ink)}
+.lm-chip-none{font-size:12px;color:var(--sub)}
+.lm-chip-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lm-chip-card{border:1px solid var(--line2);background:var(--panel2);border-radius:10px;padding:11px 12px;min-width:0}
+.lm-chip-name{font-size:11px;font-weight:700;color:var(--ink)}
+.lm-chip-val{font-size:20px;font-weight:800;color:var(--mint);margin-top:4px}
+.lm-chip-meta,.lm-chip-avail{font-size:10px;color:var(--sub);margin-top:1px}
+.lm-chip-avail{margin-top:5px}
+.lm-chip-note{font-size:10.5px;color:var(--dim);line-height:1.45;margin-top:9px}
+@media(max-width:600px){
+  .lm-analysis-summary{grid-template-columns:1fr 1fr}
+  .lm-analysis-summary>div:first-child{grid-column:1/-1}
+  .lm-chip-grid{grid-template-columns:1fr 1fr}
+}
+
+/* League analysis clarity + chip drilldown */
+.league-analysis-loading{min-height:220px;display:flex;align-items:center;justify-content:center;gap:14px;text-align:left}
+.league-load-copy{min-width:min(340px,75vw)}
+.league-load-copy small{display:block;margin-top:4px;color:var(--sub)}
+.league-load-copy em{display:block;text-align:right;margin-top:4px;font-size:10px;color:var(--dim);font-style:normal}
+.league-load-track{height:6px;border-radius:999px;background:var(--panel2);overflow:hidden;margin-top:10px}
+.league-load-track i{display:block;height:100%;background:var(--mint);border-radius:inherit;transition:width .2s ease}
+.lm-analysis-summary.simple{grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 0 18px}
+.lm-analysis-summary.simple>div{padding:13px 14px}
+.lm-analysis-summary.simple b{font-size:22px}
+.lm-analysis-summary.simple span{display:block;margin-top:3px}
+.lm-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:17px}
+.lm-section-head small{font-size:10px;text-transform:none;letter-spacing:0;color:var(--dim);font-weight:500}
+.lm-chip-pills{margin-bottom:4px}
+button.lm-chip-pill{font:inherit;cursor:pointer;transition:border-color .15s ease,transform .15s ease}
+button.lm-chip-pill:hover{border-color:var(--mint);transform:translateY(-1px)}
+.lm-chip-pill>i{color:var(--mint);width:14px;text-align:center}
+.lm-chip-pill>span{font-weight:800;color:var(--mint)}
+.lm-chip-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+button.lm-chip-card{position:relative;width:100%;text-align:left;font:inherit;display:grid;grid-template-columns:34px minmax(0,1fr) auto 10px;align-items:center;gap:10px;cursor:pointer;color:var(--ink);transition:border-color .15s ease,transform .15s ease,box-shadow .15s ease;padding:12px}
+button.lm-chip-card:hover{border-color:var(--mint);transform:translateY(-1px);box-shadow:0 5px 14px rgba(20,42,58,.06)}
+.lm-chip-icon{width:34px;height:34px;border-radius:9px;background:var(--mint-soft);color:var(--mint);display:grid;place-items:center;flex:0 0 auto;font-size:14px}
+.lm-chip-card-copy{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.lm-chip-card-copy .lm-chip-name{font-size:12px;font-weight:800;color:var(--ink);line-height:1.2}
+.lm-chip-card-copy small{font-size:10px;color:var(--sub);line-height:1.25}
+.lm-chip-card-copy em{font-size:10px;color:var(--dim);font-style:normal;line-height:1.25}
+.lm-chip-card-side{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;min-width:58px}
+.lm-chip-card-side strong{font-size:20px;line-height:1;color:var(--mint)}
+.lm-chip-active{position:static;background:var(--mint-soft);color:var(--mint);border-radius:999px;padding:3px 6px;font-size:9px;font-weight:800;white-space:nowrap;line-height:1}
+.lm-chip-chevron{font-size:9px;color:var(--dim);margin-left:0}
+.lm-chip-note{margin-bottom:10px}
+.lm-chip-manager-panel{margin:12px 0 18px;border:1px solid var(--line2);border-radius:12px;background:var(--panel);overflow:hidden}
+.lm-chip-manager-panel[hidden]{display:none}
+.lm-chip-manager-head{display:flex;align-items:center;justify-content:space-between;padding:12px 13px;border-bottom:1px solid var(--line2);background:var(--panel2)}
+.lm-chip-manager-head span{display:block;font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.lm-chip-manager-head b{display:block;margin-top:2px;font-size:12px}
+.lm-chip-manager-head button{width:28px;height:28px;border:1px solid var(--line2);background:var(--panel);border-radius:8px;color:var(--sub);cursor:pointer;font-size:18px}
+.lm-chip-manager-list{max-height:250px;overflow:auto}
+.lm-chip-manager-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border-bottom:1px solid var(--line2)}
+.lm-chip-manager-link{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;flex:1;color:inherit;text-decoration:none;border-radius:7px;padding:2px 3px;margin:-2px -3px}
+.lm-chip-manager-link:hover{background:var(--panel2);color:var(--mint)}
+.lm-chip-manager-link>span{min-width:0}
+.lm-chip-manager-link i{font-size:10px;color:var(--dim);flex:0 0 auto}
+.lm-chip-manager-link:hover i{color:var(--mint)}
+.lm-chip-manager-row:last-child{border-bottom:0}
+.lm-chip-manager-row b{display:block;font-size:12px}
+.lm-chip-manager-row small{display:block;color:var(--dim);font-size:10px;margin-top:1px}
+.lm-chip-gw{background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:3px 7px;font-size:9px;font-weight:800;color:var(--sub);white-space:nowrap}
+.lm-chip-empty{padding:16px;text-align:center;color:var(--dim);font-size:11px}
+.lm-player-stat .lm-stat-player{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.lm-stat-kit{width:28px;height:36px;object-fit:contain;flex:0 0 auto}
+.lm-player-stat .pc span.mt{display:block;font-size:10px;text-align:right;margin-top:1px}
+html[data-theme="dark"] .lm-chip-icon{background:rgba(42,187,132,.12)}
+
+@media(max-width:640px){
+  .lm-analysis-summary.simple{grid-template-columns:1fr 1fr}
+  .lm-chip-grid{grid-template-columns:1fr}
+  .lm-section-head{align-items:flex-end}
+  .lm-chip-card{grid-template-columns:32px minmax(0,1fr) auto 8px;gap:8px;padding:11px 10px}
+  .lm-chip-icon{width:32px;height:32px}
+  .lm-chip-card-side{min-width:54px}
+  .lm-stat-kit{width:25px;height:33px}
+}
+
+/* V50 - League Insights dashboard */
+.lm-analysis-hero{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 15px;border:1px solid var(--line2);background:linear-gradient(135deg,var(--panel2),var(--panel));border-radius:14px;margin-bottom:14px}
+.lm-analysis-hero>div:first-child span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mint)}
+.lm-analysis-hero>div:first-child b{display:block;font-size:16px;margin-top:3px;color:var(--ink)}
+.lm-analysis-hero>div:first-child small{display:block;font-size:10px;color:var(--dim);margin-top:2px}
+.lm-analysis-hero-stat{min-width:108px;text-align:right}
+.lm-analysis-hero-stat b{display:block;font-size:24px;line-height:1;color:var(--ink)}
+.lm-analysis-hero-stat span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);margin-top:4px}
+.lm-insight-section{border:1px solid var(--line2);background:var(--panel);border-radius:14px;padding:13px;margin:0 0 12px;overflow:hidden}
+.lm-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.lm-section-title b{display:block;font-size:13px;color:var(--ink)}
+.lm-section-title span{display:block;font-size:10px;color:var(--dim);margin-top:2px;line-height:1.35}
+.lm-chip-section .lm-chip-pills{margin-bottom:10px}
+.lm-chip-grid.compact-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+button.lm-chip-card.compact{grid-template-columns:30px minmax(0,1fr) 8px;gap:7px;padding:9px 10px;border-radius:10px;min-height:58px}
+.lm-chip-card.compact .lm-chip-icon{width:30px;height:30px;border-radius:8px;font-size:13px}
+.lm-chip-card.compact .lm-chip-name{font-size:11px}
+.lm-chip-card.compact .lm-chip-card-copy small{font-size:9px;white-space:normal}
+.lm-insight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.lm-insight-grid .lm-insight-section{margin-bottom:0}
+.lm-insight-section .pr-row{padding:9px 2px;border-bottom:1px solid var(--line2)}
+.lm-insight-section .pr-row:last-child{border-bottom:0}
+.lm-insight-section .pc{font-size:13px;font-weight:800;color:var(--ink)}
+.lm-insight-section .pc .mt{font-weight:500;color:var(--dim)}
+.lm-formation-list{display:flex;flex-direction:column;gap:10px}
+.lm-formation-row{display:grid;grid-template-columns:82px minmax(0,1fr) 38px;align-items:center;gap:10px}
+.lm-formation-row>div:first-child b{display:block;font-size:12px;color:var(--ink)}
+.lm-formation-row>div:first-child span{display:block;font-size:9px;color:var(--dim);margin-top:1px}
+.lm-formation-row strong{font-size:11px;text-align:right;color:var(--ink)}
+.lm-formation-track{height:7px;background:var(--panel2);border-radius:999px;overflow:hidden}
+.lm-formation-track i{display:block;height:100%;background:var(--mint);border-radius:inherit}
+.lm-impact-list{display:flex;flex-direction:column;gap:8px}
+.lm-impact-card{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}
+.lm-impact-card:last-child{border-bottom:0}
+.lm-impact-card .lm-chip-icon{width:32px;height:32px}
+.lm-impact-card>div b{display:block;font-size:11px;color:var(--ink)}
+.lm-impact-card>div small{display:block;font-size:9px;color:var(--dim);margin-top:2px}
+.lm-impact-card>strong{font-size:13px;text-align:right;color:var(--ink)}
+.lm-impact-card>strong.up{color:var(--mint)}
+.lm-impact-card>strong.down{color:var(--red)}
+.lm-impact-card>strong small{display:block;font-size:8px;font-weight:600;color:var(--dim);margin-top:2px}
+.lm-baseline{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line2);font-size:10px;color:var(--dim)}
+.lm-baseline b{color:var(--ink)}
+.lm-empty-state{padding:18px 8px;text-align:center;font-size:10px;color:var(--dim)}
+html[data-theme="dark"] .lm-analysis-hero{background:linear-gradient(135deg,var(--panel2),var(--panel))}
+
+@media(max-width:760px){
+  .lm-chip-grid.compact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lm-insight-grid{grid-template-columns:1fr}
+  .lm-insight-grid .lm-insight-section{margin-bottom:0}
+}
+@media(max-width:520px){
+  .lm-analysis-hero{padding:12px;align-items:flex-start}
+  .lm-analysis-hero>div:first-child b{font-size:14px}
+  .lm-analysis-hero-stat{min-width:82px}
+  .lm-analysis-hero-stat b{font-size:20px}
+  .lm-analysis-hero-stat span{font-size:8px}
+  .lm-insight-section{padding:11px;border-radius:12px}
+  .lm-chip-pills{gap:5px}
+  .lm-chip-pill{padding:6px 8px;font-size:10px}
+  button.lm-chip-card.compact{padding:8px;min-height:54px}
+  .lm-stat-kit{width:23px;height:31px}
+  .lm-insight-section .pr-row{gap:6px}
+  .lm-insight-section .pc{font-size:12px;min-width:72px}
+}
+
+/* V51 - League insights clarity + bench points */
+.lm-chip-section .lm-chip-grid.compact-grid{margin-top:2px}
+button.lm-chip-card.compact{grid-template-columns:30px minmax(0,1fr) 8px;align-items:center}
+.lm-chip-card.compact .lm-chip-card-copy small{display:block;line-height:1.35;color:var(--sub)}
+.lm-chip-card.compact .lm-chip-card-copy small b{color:var(--mint);font-weight:800}
+.lm-insight-section .lm-stat-player .l{min-width:0}
+.lm-insight-section .lm-stat-player .nm{white-space:normal;overflow:visible;text-overflow:clip;word-break:normal;overflow-wrap:anywhere;line-height:1.2}
+.lm-insight-section .lm-player-stat{align-items:center}
+.lm-insight-section .lm-player-stat .pc{flex:0 0 auto;min-width:84px}
+
+.lm-bench-manager-list{display:flex;flex-direction:column}
+.lm-bench-manager-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line2)}
+.lm-bench-manager-row:last-child{border-bottom:0}
+.lm-bench-rank{width:24px;height:24px;display:grid;place-items:center;border-radius:7px;background:var(--panel2);color:var(--sub);font-size:10px;font-weight:800}
+.lm-bench-manager-link{min-width:0;color:inherit;text-decoration:none;border-radius:7px;padding:3px 4px;margin:-3px -4px}
+.lm-bench-manager-link:hover{background:var(--panel2);color:var(--mint)}
+.lm-bench-manager-link b{display:block;font-size:11px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+.lm-bench-manager-link small{display:block;font-size:9px;color:var(--dim);margin-top:2px;white-space:normal;overflow-wrap:anywhere}
+.lm-bench-manager-row>strong{font-size:16px;color:var(--ink);white-space:nowrap;text-align:right}
+.lm-bench-manager-row>strong small{font-size:9px;color:var(--dim);font-weight:600}
+.lm-bench-pager{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;margin-top:2px}
+.lm-bench-pager button{border:1px solid var(--line2);background:var(--panel2);color:var(--ink);border-radius:8px;padding:7px 10px;font:inherit;font-size:10px;font-weight:700;cursor:pointer}
+.lm-bench-pager button:disabled{opacity:.4;cursor:default}
+.lm-bench-pager span{font-size:10px;color:var(--dim);font-weight:700}
+
+@media(max-width:520px){
+  .lm-chip-grid.compact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  button.lm-chip-card.compact{min-height:62px;padding:8px 9px}
+  .lm-chip-card.compact .lm-chip-card-copy small{font-size:9px}
+  .lm-insight-section .lm-player-stat .pc{min-width:76px}
+  .lm-bench-manager-row{grid-template-columns:25px minmax(0,1fr) auto;gap:7px}
+}

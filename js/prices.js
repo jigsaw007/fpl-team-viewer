@@ -180,16 +180,14 @@ function ppPlayerRow(x){
   const progress=Math.abs(rawProgress);
   const signedProgress=(rise?"+":"−")+progress.toFixed(1)+"%";
   const label=ppProgressLabel(progress,x.direction);
-  const source=official?"Official FPL progress":"FPL Peek estimate";
   const trend=rise?"Up":"Down";
   const trendArrow=rise?"↗":"↘";
   const statusClass=label.toLowerCase().replace(/\s+/g,"-");
   return `<article class="pressure-row official-style ${x.direction}">
-    <div class="pressure-player">${teamKitImg(t,"pressure-kit",`${t.name||"Club"} kit`)}<div><b>${esc(e.web_name)}</b><small>${esc(t.short_name||"")} · ${POS[e.element_type]}</small></div></div>
+    <div class="pressure-player">${teamKitImg(t,"pressure-kit",`${t.name||"Club"} kit`)}<div><b>${esc(e.web_name)}</b><small>${POS[e.element_type]} ${money(e.now_cost)}</small></div></div>
     <div class="pp-status-cell"><span class="pp-status-badge ${statusClass}">${esc(label)}</span></div>
-    <div class="pp-progress-cell"><b class="pp-progress-number">${signedProgress}</b><small>${source}</small></div>
+    <div class="pp-progress-cell"><b class="pp-progress-number">${signedProgress}</b><div class="pp-progress-track"><span style="width:${Math.min(progress,100).toFixed(1)}%"></span></div></div>
     <div class="pp-trend-cell ${x.direction}"><span>${trendArrow}</span><b>${trend}</b></div>
-    <div class="pp-price-cell"><b>${money(e.now_cost)}</b><small>${x.ownPct.toFixed(1)}% owned</small></div>
   </article>`;
 }
 
