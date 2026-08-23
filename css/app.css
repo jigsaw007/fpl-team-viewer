@@ -3931,41 +3931,128 @@ html[data-theme="dark"] .home-live-scorers{color:#9eb0a8}
 .home-live-side-away .home-live-discipline{justify-content:flex-end;margin-left:auto}
 .home-live-card{display:inline-flex;align-items:center;gap:3px;min-width:0;font-size:6.5px;font-weight:800;line-height:1;color:#6d7772;white-space:nowrap;overflow:hidden}
 .home-live-card i{width:6px;height:9px;border-radius:1px;flex:0 0 auto;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
-.home-live-card b{font:inherit;min-width:0;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-live-card b{font:inherit;min-width:0;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .home-live-card-yellow i{background:#f5c542}.home-live-card-red i{background:#e51f35}
 .home-live-card-red{color:#bb2636}.home-live-card-yellow{color:#8d7218}
-@media(max-width:620px){.home-live-scorers{max-width:68px}.home-live-discipline{max-width:104px;gap:3px}.home-live-card b{max-width:82px;font-size:6px}}
+@media(max-width:620px){.home-live-scorers{max-width:72px}.home-live-discipline{max-width:82px;gap:3px}.home-live-card b{max-width:38px}}
 html[data-theme="dark"] .home-live-card{color:#aab8b1}html[data-theme="dark"] .home-live-card-red{color:#ff8c99}html[data-theme="dark"] .home-live-card-yellow{color:#e7cb72}
 
-/* FPL Peek global football loader — shared animated SVG */
+/* FPL Peek global football loader */
 .spinner,.la-spinner{
-  width:34px!important;height:34px!important;border:0!important;border-radius:0!important;
+  width:30px!important;height:30px!important;border:0!important;border-radius:0!important;
   background:none!important;display:inline-grid!important;place-items:center!important;
   animation:none!important;flex:0 0 auto;
 }
 .spinner::before,.la-spinner::before,
-.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before,
-.market-loading>div::before{
-  content:""!important;
-  display:inline-block!important;
-  width:30px;height:30px;
-  background:url("../assets/fpl-soccer-loader.svg") center/contain no-repeat!important;
-  border:0!important;border-radius:0!important;
-  animation:none!important;
-  vertical-align:middle;
-  flex:0 0 auto;
+.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before{
+  content:"\f1e3"!important;
+  font-family:"Font Awesome 6 Free"!important;
+  font-weight:900!important;
+  display:inline-block;
+  color:var(--accent,#079b62)!important;
+  animation:fplSoccerSpin .9s linear infinite!important;
+  transform-origin:50% 50%;
 }
-.spinner::before,.la-spinner::before{width:32px;height:32px}
-.tool-loading::before{width:22px!important;height:22px!important;margin-right:8px!important;vertical-align:-6px!important}
-.captain-loading::before,.rank-loading::before,.insights-loading::before{width:30px;height:30px;margin-right:9px;vertical-align:-9px}
+.spinner::before,.la-spinner::before{font-size:24px;line-height:1}
+.tool-loading::before{width:auto!important;height:auto!important;border:0!important;border-radius:0!important;margin-right:8px!important;font-size:15px!important;vertical-align:-1px!important}
+.captain-loading::before,.rank-loading::before,.insights-loading::before{font-size:22px;margin-right:9px;vertical-align:-3px}
 .market-loading i.fa-circle-notch{display:none!important}
-.market-loading>div::before{width:30px;height:30px;margin-right:9px;vertical-align:-9px}
-/* The supplied SVG already contains its own football/field motion, so no extra CSS spin is applied. */
-@media(max-width:620px){
-  .spinner,.la-spinner{width:30px!important;height:30px!important}
-  .spinner::before,.la-spinner::before{width:28px;height:28px}
-}
-@media(prefers-reduced-motion:reduce){
-  /* No additional CSS animation is added; the loader remains legible as a static visual if SVG animation is unsupported. */
-}
+.market-loading>div::before{content:"\f1e3";font-family:"Font Awesome 6 Free";font-weight:900;display:inline-block;color:#18e29b;margin-right:8px;animation:fplSoccerSpin .9s linear infinite}
+@keyframes fplSoccerSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spinner::before,.la-spinner::before,.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before,.market-loading>div::before{animation:none!important}}
 
+/* V55 — official-style expandable fixture match centre */
+.fx-match-details{
+  display:block;
+  padding:14px 16px 18px;
+  background:#fbfcfc;
+  border-top:1px solid #edf1ef;
+}
+.fx-match-details[hidden]{display:none}
+.fx-detail-tabs{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  margin:0 auto 10px;
+}
+.fx-detail-tabs button{
+  appearance:none;
+  border:0;
+  border-bottom:2px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  padding:5px 2px 6px;
+  font-size:10px;
+  font-weight:750;
+  cursor:pointer;
+}
+.fx-detail-tabs button.active{
+  color:var(--ink);
+  border-bottom-color:#4b0d57;
+}
+.fx-detail-panel{
+  width:min(100%,460px);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.fx-detail-panel[hidden]{display:none}
+.fx-detail-section{
+  border:1px solid #e9e7eb;
+  border-radius:7px;
+  overflow:hidden;
+  background:#fff;
+}
+.fx-detail-section-title{
+  min-height:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:5px 10px;
+  background:#f3f0f4;
+  color:#38003c;
+  font-size:9px;
+  font-weight:800;
+}
+.fx-detail-section-title i{width:12px;text-align:center;font-size:9px;color:#087a55}
+.fx-detail-section-title .fx-card-icon.yellow{color:#f4c430!important}
+.fx-detail-section-title .fx-card-icon.red{color:#e53935!important}
+.fx-event-saves .fx-detail-section-title i{color:#1d6fc0}
+.fx-event-bonus .fx-detail-section-title i{color:#d69e00}
+.fx-event-bps .fx-detail-section-title i{color:#5865a8}
+.fx-detail-player-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:2px 16px;
+  padding:7px 14px 9px;
+  text-align:center;
+}
+.fx-detail-player{
+  min-width:0;
+  color:#38003c;
+  font-size:9.5px;
+  line-height:1.5;
+  white-space:normal;
+}
+.fx-detail-player em{font-style:normal;color:#6c5270}
+.fx-detail-empty{
+  padding:18px;
+  text-align:center;
+  color:var(--muted);
+  font-size:10px;
+}
+@media(max-width:520px){
+  .fx-match-details{padding:12px 9px 15px}
+  .fx-detail-panel{width:100%}
+  .fx-detail-player-list{gap:2px 8px;padding:7px 9px 9px}
+  .fx-detail-player{font-size:9px}
+}
+html[data-theme="dark"] .fx-match-details{background:#111713;border-color:#26322c}
+html[data-theme="dark"] .fx-detail-tabs button.active{color:#fff;border-bottom-color:#20d69a}
+html[data-theme="dark"] .fx-detail-section{background:var(--panel);border-color:var(--line)}
+html[data-theme="dark"] .fx-detail-section-title{background:#1b211d;color:#e7f2ec}
+html[data-theme="dark"] .fx-detail-player{color:#edf7f2}
+html[data-theme="dark"] .fx-detail-player em{color:#a8bab1}

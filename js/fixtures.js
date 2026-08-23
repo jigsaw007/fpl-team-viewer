@@ -28,6 +28,18 @@ async function initFixtures(){
     const row=e.target.closest(".fx-match-row[data-fixture-id]"); if(!row) return;
     toggleFixtureDetails(row.dataset.fixtureId);
   });
+  $("fxMatches").addEventListener("click",e=>{
+    const tab=e.target.closest("[data-fx-detail-tab]"); if(!tab) return;
+    e.stopPropagation();
+    const details=tab.closest(".fx-match-details"); if(!details) return;
+    const key=tab.dataset.fxDetailTab;
+    details.querySelectorAll("[data-fx-detail-tab]").forEach(btn=>{
+      const active=btn===tab; btn.classList.toggle("active",active); btn.setAttribute("aria-selected",String(active));
+    });
+    details.querySelectorAll("[data-fx-detail-panel]").forEach(panel=>{
+      const active=panel.dataset.fxDetailPanel===key; panel.classList.toggle("active",active); panel.hidden=!active;
+    });
+  });
   $("fxMatches").addEventListener("keydown",e=>{
     if(e.key!=="Enter"&&e.key!==" ") return;
     const row=e.target.closest(".fx-match-row[data-fixture-id]"); if(!row) return;
@@ -149,33 +161,55 @@ function fixtureDetailIcon(identifier){
 
 function fixtureDetailGroup(f, identifier, label, opts={}){
   let rows=fixtureStatRows(f,identifier).filter(x=>x.value>0);
-  if(opts.top) rows=rows.sort((a,b)=>b.value-a.value).slice(0,opts.top);
+  if(opts.sort!==false) rows=rows.sort((a,b)=>b.value-a.value || fixturePlayerName(a.element).localeCompare(fixturePlayerName(b.element)));
+  if(opts.top) rows=rows.slice(0,opts.top);
   if(!rows.length) return '';
-  const chips=rows.map(x=>{
+  const items=rows.map(x=>{
     const name=esc(fixturePlayerName(x.element));
-    if(opts.showValue) return `<b>${name}<em>${x.value}</em></b>`;
-    return `<b>${name}${x.value>1?` <em>×${x.value}</em>`:''}</b>`;
+    const value=opts.showValue?` <em>(${x.value})</em>`:(x.value>1?` <em>(${x.value})</em>`:'');
+    return `<span class="fx-detail-player">${name}${value}</span>`;
   }).join('');
-  return `<div class="fx-event-group fx-event-${identifier}"><span>${fixtureDetailIcon(identifier)}<strong>${esc(label)}</strong></span><div>${chips}</div></div>`;
+  return `<section class="fx-detail-section fx-event-${identifier}">
+    <div class="fx-detail-section-title">${fixtureDetailIcon(identifier)}<strong>${esc(label)}</strong></div>
+    <div class="fx-detail-player-list">${items}</div>
+  </section>`;
+}
+
+function fixtureDefconGroup(f){
+  const identifiers=['defensive_contribution','defensive_contributions','defcon'];
+  for(const identifier of identifiers){
+    const html=fixtureDetailGroup(f,identifier,'Defensive Contribution',{showValue:true});
+    if(html) return html;
+  }
+  return '';
 }
 
 function fixtureDetailsHtml(f){
   if(!(f.started||f.finished||f.finished_provisional)) return '';
-  const groups=[
-    fixtureDetailGroup(f,'goals_scored','Goals'),
+  const matchGroups=[
+    fixtureDetailGroup(f,'goals_scored','Goals scored'),
     fixtureDetailGroup(f,'assists','Assists'),
     fixtureDetailGroup(f,'own_goals','Own goals'),
-    fixtureDetailGroup(f,'penalties_saved','Penalty saves'),
-    fixtureDetailGroup(f,'penalties_missed','Penalties missed'),
     fixtureDetailGroup(f,'yellow_cards','Yellow cards'),
     fixtureDetailGroup(f,'red_cards','Red cards'),
     fixtureDetailGroup(f,'saves','Saves'),
-    fixtureDetailGroup(f,'bonus','Bonus',{showValue:true,top:6}),
-    fixtureDetailGroup(f,'bps','BPS',{showValue:true,top:6})
+    fixtureDetailGroup(f,'penalties_saved','Penalty saves'),
+    fixtureDetailGroup(f,'penalties_missed','Penalties missed'),
+    fixtureDetailGroup(f,'bonus','Bonus',{showValue:true})
   ].filter(Boolean).join('');
-  return `<div class="fx-match-details" id="fxDetails-${f.id}" hidden>${groups||'<div class="fx-detail-empty">No FPL player events are available yet.</div>'}<div class="fx-detail-note">FPL provides event totals and live BPS, but not exact goal/assist timestamps.</div></div>`;
+  const playerGroups=[
+    fixtureDetailGroup(f,'bps','Bonus Points System',{showValue:true}),
+    fixtureDefconGroup(f)
+  ].filter(Boolean).join('');
+  return `<div class="fx-match-details" id="fxDetails-${f.id}" hidden>
+    <div class="fx-detail-tabs" role="tablist" aria-label="Fixture details">
+      <button type="button" class="active" data-fx-detail-tab="match" role="tab" aria-selected="true">Match details</button>
+      <button type="button" data-fx-detail-tab="players" role="tab" aria-selected="false">Player stats</button>
+    </div>
+    <div class="fx-detail-panel active" data-fx-detail-panel="match">${matchGroups||'<div class="fx-detail-empty">No FPL match events are available yet.</div>'}</div>
+    <div class="fx-detail-panel" data-fx-detail-panel="players" hidden>${playerGroups||'<div class="fx-detail-empty">No player-stat data are available yet.</div>'}</div>
+  </div>`;
 }
-
 function toggleFixtureDetails(id){
   const details=document.getElementById(`fxDetails-${id}`);
   const row=document.querySelector(`.fx-match-row[data-fixture-id="${id}"]`);
