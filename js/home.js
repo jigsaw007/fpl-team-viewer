@@ -196,29 +196,43 @@ function homeFixtureStat(f, identifier){
   return ((f&&f.stats)||[]).find(s=>s.identifier===identifier)||{h:[],a:[]};
 }
 
-function homeLiveSideInfo(f, side, playerMap){
-  const goals=homeFixtureStat(f,'goals_scored')[side]||[];
-  const reds=homeFixtureStat(f,'red_cards')[side]||[];
-  const scorerNames=goals.map(row=>{
+function homeLiveEventNames(rows, playerMap){
+  return (rows||[]).map(row=>{
     const player=playerMap[row.element];
     if(!player) return '';
     const qty=Number(row.value||0);
     return `${player.web_name}${qty>1?` ×${qty}`:''}`;
   }).filter(Boolean);
-  const redCount=reds.reduce((sum,row)=>sum+Number(row.value||0),0);
-  return {scorerNames,redCount};
+}
+
+function homeLiveSideInfo(f, side, playerMap){
+  const goals=homeFixtureStat(f,'goals_scored')[side]||[];
+  const reds=homeFixtureStat(f,'red_cards')[side]||[];
+  const yellows=homeFixtureStat(f,'yellow_cards')[side]||[];
+  return {
+    scorerNames:homeLiveEventNames(goals,playerMap),
+    redNames:homeLiveEventNames(reds,playerMap),
+    yellowNames:homeLiveEventNames(yellows,playerMap)
+  };
+}
+
+function homeLiveCompactNames(names,max=1){
+  if(!names.length) return '';
+  const visible=names.slice(0,max);
+  const more=names.length-visible.length;
+  return `${visible.join(', ')}${more?` +${more}`:''}`;
 }
 
 function homeLiveScorers(names){
   if(!names.length) return '';
-  const visible=names.slice(0,2);
-  const more=names.length-visible.length;
-  return `<small class="home-live-scorers" title="${esc(names.join(', '))}"><i class="fa-solid fa-futbol"></i>${esc(visible.join(', '))}${more?` +${more}`:''}</small>`;
+  const label=homeLiveCompactNames(names,2);
+  return `<small class="home-live-scorers" title="${esc(names.join(', '))}"><i class="fa-solid fa-futbol"></i><span>${esc(label)}</span></small>`;
 }
 
-function homeLiveRedCard(count){
-  if(!count) return '';
-  return `<small class="home-live-red" title="${count} red card${count===1?'':'s'}"><span aria-hidden="true"></span>${count>1?`×${count}`:''}</small>`;
+function homeLiveDiscipline(yellows,reds){
+  if(!yellows.length&&!reds.length) return '';
+  const y=homeLiveCompactNames(yellows,1),r=homeLiveCompactNames(reds,1);
+  return `<small class="home-live-discipline">${yellows.length?`<span class="home-live-card home-live-card-yellow" title="Yellow: ${esc(yellows.join(', '))}"><i aria-hidden="true"></i><b>${esc(y)}</b></span>`:''}${reds.length?`<span class="home-live-card home-live-card-red" title="Red: ${esc(reds.join(', '))}"><i aria-hidden="true"></i><b>${esc(r)}</b></span>`:''}</small>`;
 }
 
 function setupHomeLiveCarousel(el, count){
@@ -270,9 +284,9 @@ function renderHomeLiveMatches(b, fixtures){
       return `<button class="home-live-match" data-live-gw="${f.event||1}">
         <div class="home-live-match-top"><span class="home-live-minute"><i class="fa-solid fa-circle"></i>${esc(homeLiveStatus(f))}</span><span class="home-live-details">Match centre <i class="fa-solid fa-arrow-right"></i></span></div>
         <div class="home-live-scoreboard">
-          <div class="home-live-side home-live-side-home">${teamKitImg(h,'home-live-kit',`${h.name||'Home'} kit`)}<span class="home-live-teammeta"><b>${esc(h.short_name||h.name||'HOME')}</b>${homeLiveScorers(hs.scorerNames)}${homeLiveRedCard(hs.redCount)}</span></div>
+          <div class="home-live-side home-live-side-home">${teamKitImg(h,'home-live-kit',`${h.name||'Home'} kit`)}<span class="home-live-teammeta"><b>${esc(h.short_name||h.name||'HOME')}</b>${homeLiveScorers(hs.scorerNames)}${homeLiveDiscipline(hs.yellowNames,hs.redNames)}</span></div>
           <div class="home-live-score"><strong>${f.team_h_score??0}</strong><span>–</span><strong>${f.team_a_score??0}</strong></div>
-          <div class="home-live-side home-live-side-away"><span class="home-live-teammeta"><b>${esc(a.short_name||a.name||'AWAY')}</b>${homeLiveScorers(as.scorerNames)}${homeLiveRedCard(as.redCount)}</span>${teamKitImg(a,'home-live-kit',`${a.name||'Away'} kit`)}</div>
+          <div class="home-live-side home-live-side-away"><span class="home-live-teammeta"><b>${esc(a.short_name||a.name||'AWAY')}</b>${homeLiveScorers(as.scorerNames)}${homeLiveDiscipline(as.yellowNames,as.redNames)}</span>${teamKitImg(a,'home-live-kit',`${a.name||'Away'} kit`)}</div>
         </div>
       </button>`
     }).join('')}</div>`;
