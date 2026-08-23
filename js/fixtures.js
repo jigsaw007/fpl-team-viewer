@@ -159,33 +159,66 @@ function fixtureDetailIcon(identifier){
   return icons[identifier]||'<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
 }
 
-function fixtureDetailGroup(f, identifier, label, opts={}){
-  let rows=fixtureStatRows(f,identifier).filter(x=>x.value>0);
-  if(opts.sort!==false) rows=rows.sort((a,b)=>b.value-a.value || fixturePlayerName(a.element).localeCompare(fixturePlayerName(b.element)));
-  if(opts.top) rows=rows.slice(0,opts.top);
-  if(!rows.length) return '';
-  const items=rows.map(x=>{
+function fixtureTeamForSide(f,side){
+  const teamId=side==='h'?f.team_h:f.team_a;
+  return (boot.teams||[]).find(t=>Number(t.id)===Number(teamId))||{};
+}
+
+function fixtureDetailTeamColumn(f,side,rows,opts={}){
+  const team=fixtureTeamForSide(f,side);
+  const sideRows=rows.filter(x=>x.side===side);
+  const items=sideRows.map(x=>{
     const name=esc(fixturePlayerName(x.element));
     const value=opts.showValue?` <em>(${x.value})</em>`:(x.value>1?` <em>(${x.value})</em>`:'');
     return `<span class="fx-detail-player">${name}${value}</span>`;
   }).join('');
+  return `<div class="fx-detail-team-col ${side==='h'?'home':'away'}">
+    <div class="fx-detail-team-name">${teamKitImg(team,'fx-detail-team-kit',`${team.name||''} kit`)}<b>${esc(team.name||team.short_name||'')}</b></div>
+    <div class="fx-detail-team-players">${items||'<span class="fx-detail-none">—</span>'}</div>
+  </div>`;
+}
+
+function fixtureDetailGroup(f, identifier, label, opts={}){
+  let rows=fixtureStatRows(f,identifier).filter(x=>opts.includeZero?x.value>=0:x.value>0);
+  if(opts.sort!==false) rows=rows.sort((a,b)=>b.value-a.value || fixturePlayerName(a.element).localeCompare(fixturePlayerName(b.element)));
+  if(opts.topPerSide){
+    rows=['h','a'].flatMap(side=>rows.filter(x=>x.side===side).slice(0,opts.topPerSide));
+  } else if(opts.top) rows=rows.slice(0,opts.top);
+  if(!rows.length) return '';
   return `<section class="fx-detail-section fx-event-${identifier}">
     <div class="fx-detail-section-title">${fixtureDetailIcon(identifier)}<strong>${esc(label)}</strong></div>
-    <div class="fx-detail-player-list">${items}</div>
+    <div class="fx-detail-team-grid">
+      ${fixtureDetailTeamColumn(f,'h',rows,opts)}
+      ${fixtureDetailTeamColumn(f,'a',rows,opts)}
+    </div>
   </section>`;
 }
 
 function fixtureDefconGroup(f){
+  // 2025/26+ FPL fixture payload uses defensive_contribution. Keep aliases
+  // so older cached/proxied payloads do not silently hide the stat.
   const identifiers=['defensive_contribution','defensive_contributions','defcon'];
-  for(const identifier of identifiers){
-    const html=fixtureDetailGroup(f,identifier,'Defensive Contribution',{showValue:true});
-    if(html) return html;
-  }
-  return '';
+  const available=(f.stats||[]).map(x=>String(x.identifier||''));
+  const exact=identifiers.find(id=>available.includes(id));
+  if(exact) return fixtureDetailGroup(f,exact,'Defensive Contribution',{showValue:true});
+  const fuzzy=available.find(id=>id.toLowerCase().includes('defensive')&&id.toLowerCase().includes('contribution'));
+  return fuzzy?fixtureDetailGroup(f,fuzzy,'Defensive Contribution',{showValue:true}):'';
+}
+
+function fixturePlayerStatsHtml(f){
+  // Keep this tab useful without duplicating the match-event view. It lists
+  // the core FPL ranking metrics by club when they are available.
+  const groups=[
+    fixtureDetailGroup(f,'bps','Bonus Points System',{showValue:true}),
+    fixtureDefconGroup(f)
+  ].filter(Boolean).join('');
+  return groups||'<div class="fx-detail-empty">No additional player-stat data are available yet.</div>';
 }
 
 function fixtureDetailsHtml(f){
   if(!(f.started||f.finished||f.finished_provisional)) return '';
+  // Match details mirrors the official FPL expansion: all event categories,
+  // followed by BPS and Defensive Contribution, grouped by home/away club.
   const matchGroups=[
     fixtureDetailGroup(f,'goals_scored','Goals scored'),
     fixtureDetailGroup(f,'assists','Assists'),
@@ -195,19 +228,18 @@ function fixtureDetailsHtml(f){
     fixtureDetailGroup(f,'saves','Saves'),
     fixtureDetailGroup(f,'penalties_saved','Penalty saves'),
     fixtureDetailGroup(f,'penalties_missed','Penalties missed'),
-    fixtureDetailGroup(f,'bonus','Bonus',{showValue:true})
-  ].filter(Boolean).join('');
-  const playerGroups=[
+    fixtureDetailGroup(f,'bonus','Bonus',{showValue:true}),
     fixtureDetailGroup(f,'bps','Bonus Points System',{showValue:true}),
     fixtureDefconGroup(f)
   ].filter(Boolean).join('');
+  const playerGroups=fixturePlayerStatsHtml(f);
   return `<div class="fx-match-details" id="fxDetails-${f.id}" hidden>
     <div class="fx-detail-tabs" role="tablist" aria-label="Fixture details">
       <button type="button" class="active" data-fx-detail-tab="match" role="tab" aria-selected="true">Match details</button>
       <button type="button" data-fx-detail-tab="players" role="tab" aria-selected="false">Player stats</button>
     </div>
     <div class="fx-detail-panel active" data-fx-detail-panel="match">${matchGroups||'<div class="fx-detail-empty">No FPL match events are available yet.</div>'}</div>
-    <div class="fx-detail-panel" data-fx-detail-panel="players" hidden>${playerGroups||'<div class="fx-detail-empty">No player-stat data are available yet.</div>'}</div>
+    <div class="fx-detail-panel" data-fx-detail-panel="players" hidden>${playerGroups}</div>
   </div>`;
 }
 function toggleFixtureDetails(id){

@@ -4056,3 +4056,30 @@ html[data-theme="dark"] .fx-detail-section{background:var(--panel);border-color:
 html[data-theme="dark"] .fx-detail-section-title{background:#1b211d;color:#e7f2ec}
 html[data-theme="dark"] .fx-detail-player{color:#edf7f2}
 html[data-theme="dark"] .fx-detail-player em{color:#a8bab1}
+
+/* Fixture detail: official-FPL-inspired home/away columns */
+.fx-detail-team-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-width:0}
+.fx-detail-team-col{min-width:0;padding:9px 12px 11px;text-align:center}
+.fx-detail-team-col+ .fx-detail-team-col{border-left:1px solid var(--line,#e5e7eb)}
+.fx-detail-team-name{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;margin-bottom:6px;color:var(--muted);font-size:9px;font-weight:800}
+.fx-detail-team-name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fx-detail-team-kit{width:18px;height:22px;object-fit:contain;flex:0 0 auto}
+.fx-detail-team-players{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.fx-detail-player{display:block;max-width:100%;font-size:10px;font-weight:650;line-height:1.25;overflow-wrap:anywhere}
+.fx-detail-player em{font-style:normal;color:var(--muted);font-weight:700}
+.fx-detail-none{color:var(--muted);font-size:10px}
+.fx-detail-section-title{display:flex;align-items:center;justify-content:center;gap:6px}
+.fx-detail-section-title i{font-size:10px}
+@media(max-width:520px){
+  .fx-detail-team-col{padding:8px 7px 10px}
+  .fx-detail-team-name{font-size:8px;gap:4px}
+  .fx-detail-team-kit{width:15px;height:19px}
+  .fx-detail-player{font-size:9px}
+}
+html[data-theme="dark"] .fx-detail-team-col+ .fx-detail-team-col{border-color:var(--line)}
+
+/* Keep the user's SVG loader when app.css is replaced by this update. */
+.spinner,.la-spinner{border:0!important;background:none!important;animation:none!important;position:relative!important;display:inline-grid!important;place-items:center!important}
+.spinner::before,.la-spinner::before,.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before,.market-loading>div::before{
+  content:""!important;display:block!important;width:32px;height:32px;background:url("../assets/fpl-soccer-loader.svg") center/contain no-repeat!important;border:0!important;border-radius:0!important;animation:none!important
+}
