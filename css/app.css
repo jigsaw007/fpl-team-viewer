@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap");
+
   :root{
     --bg:#f5f7f9; --bg2:#eef2f5;
     --panel:#ffffff; --panel2:#f3f6f8; --line:#e2e7ec; --line2:#d4dce3;
@@ -4137,3 +4139,25 @@ html[data-theme="dark"] .fx-detail-team-col+ .fx-detail-team-col{border-color:va
   .fx-detail-player{font-size:11.5px;line-height:1.35}
   .fx-detail-section-title{font-size:11px}
 }
+
+
+/* ---------- FPL Peek typography system ---------- */
+:root{
+  --font-body:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-heading:'Manrope','Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body,button,input,select,textarea,table{font-family:var(--font-body)}
+h1,h2,h3,h4,h5,h6,
+.brand h1,
+.page-title,.section-title,.card-title,.modal-title,.legend-title,.tool-guide-title,
+.lm-section-title,.otw-fixtures-title,.peek-bench-title,.planner-bench-title,
+.home-live-title,.home-live-headline,.home-section-head h2,.home-section-head h3,
+.analysis-panel-head h2,.analysis-panel-head h3,.captain-head h2,.captain-head h3,
+.fixtures-head h1,.fixtures-head h2,.fx-gw-heading,.fx-detail-section-title,
+.la-table-head h2,.la-table-head h3,.planner-focus-title,.planner-section-head h2,.planner-section-head h3,
+.insights-section-head h2,.insights-section-head h3,.mhead h1,.mhead h2{
+  font-family:var(--font-heading);
+}
+/* Keep dense UI and numeric/data surfaces on Inter for readability. */
+.fxg,.dt,.la-table,.market-terminal,.live-widget,.home-live-widget,
+input,select,button,textarea{font-family:var(--font-body)}

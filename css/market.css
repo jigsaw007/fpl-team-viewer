@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&display=swap");
 /* FPL Market - full-screen dark terminal surface */
 body.market-mode{background:#050809!important;padding:0!important;overflow-x:hidden}
 body.market-mode .wrap{max-width:none!important;width:100%!important;padding:0!important;margin:0!important}
@@ -48,3 +49,10 @@ body.market-mode #tab-market{display:block!important}
 .market-fixture-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.market-fixture-card{padding:9px 8px;border-radius:7px;border:1px solid #1b2a2f;background:#10191c;text-align:center}.market-fixture-card span{display:block;font-size:7px;color:#63777e}.market-fixture-card b{display:block;margin-top:3px;color:#eef7f4;font-size:10px}.market-fixture-card small{display:block;margin-top:3px;font-size:7px;color:#82969c}.market-fixture-card.fdr-2{background:#0a2a20;border-color:#15533e}.market-fixture-card.fdr-4{background:#2d151a;border-color:#5a2732}.market-fixture-card.fdr-5{background:#3a1018;border-color:#7b2433}
 @media(max-width:1200px){.market-snapshot-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:720px){.market-snapshot-banner{display:block}.market-snapshot-banner p{margin-top:8px;text-align:left}.market-snapshot-grid{grid-template-columns:repeat(2,1fr)}.market-snapshot-charts{grid-template-columns:1fr}.market-compare-row{grid-template-columns:1fr}.market-fixture-cards{grid-template-columns:repeat(5,minmax(74px,1fr));overflow:auto}.market-fixture-strip{overflow:hidden}}
+
+/* FPL Market typography: data stays Inter, headings use Manrope. */
+.market-terminal{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.market-terminal h1,.market-terminal h2,.market-terminal h3,
+.market-panel-title,.market-snapshot-title,.market-chart-name{
+  font-family:'Manrope','Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
