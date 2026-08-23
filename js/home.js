@@ -231,8 +231,8 @@ function homeLiveScorers(names){
 
 function homeLiveDiscipline(yellows,reds){
   if(!yellows.length&&!reds.length) return '';
-  const y=homeLiveCompactNames(yellows,1),r=homeLiveCompactNames(reds,1);
-  return `<small class="home-live-discipline">${yellows.length?`<span class="home-live-card home-live-card-yellow" title="Yellow: ${esc(yellows.join(', '))}"><i aria-hidden="true"></i><b>${esc(y)}</b></span>`:''}${reds.length?`<span class="home-live-card home-live-card-red" title="Red: ${esc(reds.join(', '))}"><i aria-hidden="true"></i><b>${esc(r)}</b></span>`:''}</small>`;
+  const y=yellows.join(', '),r=reds.join(', ');
+  return `<small class="home-live-discipline">${yellows.length?`<span class="home-live-card home-live-card-yellow" title="Yellow: ${esc(y)}"><i aria-hidden="true"></i><b>${esc(y)}</b></span>`:''}${reds.length?`<span class="home-live-card home-live-card-red" title="Red: ${esc(r)}"><i aria-hidden="true"></i><b>${esc(r)}</b></span>`:''}</small>`;
 }
 
 function setupHomeLiveCarousel(el, count){

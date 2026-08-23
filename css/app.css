@@ -3931,10 +3931,10 @@ html[data-theme="dark"] .home-live-scorers{color:#9eb0a8}
 .home-live-side-away .home-live-discipline{justify-content:flex-end;margin-left:auto}
 .home-live-card{display:inline-flex;align-items:center;gap:3px;min-width:0;font-size:6.5px;font-weight:800;line-height:1;color:#6d7772;white-space:nowrap;overflow:hidden}
 .home-live-card i{width:6px;height:9px;border-radius:1px;flex:0 0 auto;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
-.home-live-card b{font:inherit;min-width:0;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-live-card b{font:inherit;min-width:0;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .home-live-card-yellow i{background:#f5c542}.home-live-card-red i{background:#e51f35}
 .home-live-card-red{color:#bb2636}.home-live-card-yellow{color:#8d7218}
-@media(max-width:620px){.home-live-scorers{max-width:72px}.home-live-discipline{max-width:82px;gap:3px}.home-live-card b{max-width:38px}}
+@media(max-width:620px){.home-live-scorers{max-width:68px}.home-live-discipline{max-width:104px;gap:3px}.home-live-card b{max-width:82px;font-size:6px}}
 html[data-theme="dark"] .home-live-card{color:#aab8b1}html[data-theme="dark"] .home-live-card-red{color:#ff8c99}html[data-theme="dark"] .home-live-card-yellow{color:#e7cb72}
 
 /* FPL Peek global football loader */
@@ -3945,9 +3945,9 @@ html[data-theme="dark"] .home-live-card{color:#aab8b1}html[data-theme="dark"] .h
 }
 .spinner::before,.la-spinner::before,
 .tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before{
-  content:"\f1e3"!important;
-  font-family:"Font Awesome 6 Free"!important;
-  font-weight:900!important;
+  content:"⚽"!important;
+  font-family:Arial,"Segoe UI Emoji","Apple Color Emoji",sans-serif!important;
+  font-weight:400!important;
   display:inline-block;
   color:var(--accent,#079b62)!important;
   animation:fplSoccerSpin .9s linear infinite!important;
@@ -3957,6 +3957,6 @@ html[data-theme="dark"] .home-live-card{color:#aab8b1}html[data-theme="dark"] .h
 .tool-loading::before{width:auto!important;height:auto!important;border:0!important;border-radius:0!important;margin-right:8px!important;font-size:15px!important;vertical-align:-1px!important}
 .captain-loading::before,.rank-loading::before,.insights-loading::before{font-size:22px;margin-right:9px;vertical-align:-3px}
 .market-loading i.fa-circle-notch{display:none!important}
-.market-loading>div::before{content:"\f1e3";font-family:"Font Awesome 6 Free";font-weight:900;display:inline-block;color:#18e29b;margin-right:8px;animation:fplSoccerSpin .9s linear infinite}
+.market-loading>div::before{content:"⚽";font-family:Arial,"Segoe UI Emoji","Apple Color Emoji",sans-serif;font-weight:400;display:inline-block;color:inherit;margin-right:8px;animation:fplSoccerSpin .9s linear infinite}
 @keyframes fplSoccerSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.spinner::before,.la-spinner::before,.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before,.market-loading>div::before{animation:none!important}}
