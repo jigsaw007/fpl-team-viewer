@@ -4,7 +4,7 @@ const FPL_ORIGIN = "https://fantasy.premierleague.com/api";
 
 const ALLOWED = [
   /^\/bootstrap-static\/$/,
-  /^\/fixtures\/$/,
+  /^\/fixtures\/(?:\?event=\d+)?$/,
   /^\/element-summary\/\d+\/$/,
   /^\/entry\/\d+\/$/,
   /^\/entry\/\d+\/history\/$/,

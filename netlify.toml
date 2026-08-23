@@ -212,3 +212,14 @@
   from = "/card-creator"
   to = "/index.html"
   status = 200
+
+[[redirects]]
+  from = "/league-analyzer"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/one-to-watch"
+  to = "/index.html"
+  status = 200

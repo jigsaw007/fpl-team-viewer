@@ -29,11 +29,13 @@ async function lazyLoadTab(name){
     else if(name==="peekteam") await initPeekTeam();
     else if(name==="captains") await initCaptains();
     else if(name==="analyzer") await initAnalyzer();
+    else if(name==="leagueanalyzer") await initLeagueAnalyzer();
     else if(name==="transfer") await initTransferAnalyzer();
     else if(name==="compare") await initManagerCompare();
     else if(name==="cards") await initCardCreator();
     else if(name==="builder") await initBuilder();
     else if(name==="planner") await initPlanner();
+    else if(name==="onetowatch") await initOneToWatch();
     else if(name==="preseason") await initPreseason();
     else if(name==="fixtures") await initFixtures();
     else if(name==="players") await initPlayers();

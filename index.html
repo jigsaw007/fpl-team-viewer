@@ -115,6 +115,7 @@
 
     <div class="tab-label">Planning</div>
     <button class="tab" data-tab="insights">Insights</button>
+    <button class="tab" data-tab="onetowatch">One To Watch</button>
     <button class="tab hot-tab" data-tab="planner">Gameweek Planner <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab hot-tab" data-tab="builder">Team Builder <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="scout">Scout</button>
@@ -133,6 +134,7 @@
 
     <div class="tab-label">Analysis</div>
     <button class="tab hot-tab" data-tab="analyzer">Team Rating <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
+    <button class="tab" data-tab="leagueanalyzer">League Analyzer</button>
     <button class="tab" data-tab="compare">Manager Compare</button>
     <button class="tab" data-tab="cards">Card Creator</button>
 
@@ -355,6 +357,19 @@
 
 
 
+  <!-- ============ LEAGUE ANALYZER TAB ============ -->
+  <section class="tabpanel" id="tab-leagueanalyzer">
+    <div class="thead">
+      <h2>League Analyzer</h2>
+      <p>Enter any public FPL Classic League ID to explore the Gameweek table, captains, chips and league-wide performance.</p>
+    </div>
+    <div class="tool-form la-form">
+      <div class="field tool-field"><input id="laLeagueId" type="number" inputmode="numeric" placeholder="Classic League ID" aria-label="FPL Classic League ID"></div>
+      <button class="primary-action" id="laRun">Analyze league</button>
+    </div>
+    <div id="leagueAnalyzerBody" class="tool-output"><div class="tool-empty">Enter a Classic League ID to build a league dashboard.</div></div>
+  </section>
+
   <!-- ============ TEAM ANALYZER TAB ============ -->
   <section class="tabpanel" id="tab-analyzer">
     <div class="thead">
@@ -524,6 +539,16 @@
     </div>
     <div class="tool-guide compact" aria-label="How Captaincy Matrix works"><div class="tool-guide-title"><span>How to read it</span><h3>Safer profile vs upside profile</h3><p>The safer side favours dependable captain profiles, while upside gives more weight to ceiling and fixture opportunity. Before GW1, current-season form and minutes do not exist, so the matrix intentionally uses a more cautious pre-season shortlist.</p></div><div class="tool-guide-grid"><article><b>Safer</b><p>Balances ownership, fixture, projected return and playing-time confidence.</p></article><article><b>Upside</b><p>Allows lower ownership and favourable fixtures to carry more weight.</p></article><article><b>Top-manager sample</b><p>After the deadline, compare the model shortlist with captains actually used by leading managers.</p></article></div></div>
     <div id="captainBody"></div>
+  </section>
+
+  <!-- ============ ONE TO WATCH TAB ============ -->
+  <section class="tabpanel" id="tab-onetowatch">
+    <div class="thead">
+      <h2>One To Watch</h2>
+      <p>Six current-Gameweek standouts to consider for the weeks ahead, ranked with current-season form, value and the next five fixture difficulties.</p>
+    </div>
+    <div class="otw-note"><i class="fa-solid fa-eye"></i><div><b>Watchlist, not a transfer command</b><span>Cards are selected from current public FPL data and refresh with form, availability and fixtures.</span></div></div>
+    <div id="oneToWatchBody"><div class="tool-empty">Loading players to watch…</div></div>
   </section>
 
   <!-- ============ GAMEWEEK PLANNER TAB ============ -->
@@ -1140,8 +1165,10 @@
   <div class="mobile-more-head"><div><b>More from FPL Peek</b><span>Tools, gameweek pages and account options</span></div><button id="mobileMoreClose" aria-label="Close more options">Done</button></div>
   <div class="mobile-more-grid">
     <button data-mobile-tab="insights">Insights</button>
+    <button data-mobile-tab="onetowatch">One To Watch</button>
     <button class="hot-mobile" data-mobile-tab="planner">Gameweek Planner <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button class="hot-mobile" data-mobile-tab="analyzer">Team Rating <span class="tab-hot" aria-hidden="true">🔥</span></button>
+    <button data-mobile-tab="leagueanalyzer">League Analyzer</button>
     <button class="hot-mobile" data-mobile-tab="transfer">Player Compare <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button data-mobile-tab="compare">Manager Compare</button>
     <button data-mobile-tab="cards">Card Creator</button>
@@ -1241,12 +1268,14 @@
 <script defer src="/js/peek-team.js"></script>
 <script defer src="/js/captains.js"></script>
 <script defer src="/js/analyzer.js"></script>
+<script defer src="/js/league-analyzer.js"></script>
 <script defer src="/js/transfer-analyzer.js"></script>
 <script defer src="/js/compare.js"></script>
 <script defer src="/js/card-creator.js"></script>
 <script defer src="/js/preseason.js"></script>
 <script defer src="/js/builder.js"></script>
 <script defer src="/js/planner.js"></script>
+<script defer src="/js/one-to-watch.js"></script>
 <script defer src="/js/fixtures.js"></script>
 <script defer src="/js/players.js"></script>
 <script defer src="/js/injuries.js"></script>
