@@ -1,6 +1,7 @@
-/* ============ PRICE WATCH + PRICE PRESSURE ============ */
+/* ============ PRICE WATCH + PRICE CHANGE ESTIMATE ============ */
 let _prMode="season";
-let _ppRiseVisible=20,_ppFallVisible=20,_ppRows=null;
+let _ppRisePage=1,_ppFallPage=1,_ppRows=null,_ppTimer=null;
+const PP_PAGE_SIZE=10;
 
 async function initPrices(){
   await loadBoot();
@@ -56,108 +57,212 @@ function drawPrices(){
   $("prOut").innerHTML=outgoing.length?outgoing.map(e=>pricePlayerRow(e,"down",`−${Number(e.transfers_out_event||0).toLocaleString()}`,`net ${net(e)>=0?"+":""}${net(e).toLocaleString()}`)).join(""):`<div class="price-empty"><b>No transfer-out data yet.</b></div>`;
 }
 
-function ppClamp(v,min=0,max=100){return Math.max(min,Math.min(max,v));}
+/*
+ * FPL Peek estimated price-change progress.
+ * This is deliberately a transparent heuristic, not an official FPL probability.
+ * Rise: valid positive net transfers vs a season-adjusted absolute threshold.
+ * Fall: valid negative net transfers vs an ownership-based threshold, adjusted by availability.
+ */
+function ppClamp(v,min=0,max=Infinity){return Math.max(min,Math.min(max,v));}
 function ppCurrentEvent(){
   const evs=boot.events||[];
   return evs.find(e=>e.is_current)||evs.find(e=>e.is_next)||evs.find(e=>e.id===1)||{};
 }
-function ppAvailability(e,direction){
+function ppEstimatedValidFactor(e){
+  // We cannot see which public transfers came from Wildcard/Free Hit teams.
+  // Use a conservative deduction rather than pretending all transfers count.
+  const gw=Number(ppCurrentEvent().id)||1;
   const status=String(e.status||"a");
-  if(direction==="rise"){
-    if(status==="a") return 100;
-    if(status==="d") return 70;
-    if(status==="i"||status==="s") return 35;
-    return 45;
-  }
-  if(status==="a") return 68;
-  if(status==="d") return 88;
-  if(status==="i"||status==="s"||status==="u") return 100;
-  return 78;
+  let factor=gw<=3?.92:gw<=8?.88:gw<=20?.84:.80;
+  if(status==="i"||status==="s"||status==="u") factor-=.03;
+  return ppClamp(factor,.72,.94);
 }
-function ppVolumeCap(absNet){
-  if(absNet<250) return 15;
-  if(absNet<1000) return 30;
-  if(absNet<3000) return 45;
-  if(absNet<7500) return 60;
-  if(absNet<15000) return 75;
-  return 100;
+function ppRiseThreshold(){
+  const total=Math.max(1,Number(boot.total_players)||1);
+  const gw=Math.max(1,Number(ppCurrentEvent().id)||1);
+  // Around 1.85% of active managers early in the season, gradually lower later.
+  const seasonDecay=Math.max(.66,1-(gw-1)*.0105);
+  return Math.max(50000,total*.0185*seasonDecay);
 }
-function ppPressure(e,direction){
-  const tin=Number(e.transfers_in_event)||0,tout=Number(e.transfers_out_event)||0;
-  const net=tin-tout,absNet=Math.abs(net),turnover=tin+tout;
+function ppFallThreshold(e){
   const total=Math.max(1,Number(boot.total_players)||1);
   const ownPct=Math.max(.1,Number(e.selected_by_percent)||0);
-  const owners=Math.max(5000,total*(ownPct/100));
-  const relative=absNet/owners;
-  // Absolute movement carries the most weight. Ownership-relative movement helps,
-  // but is capped so tiny ownership values cannot create absurdly high scores.
-  const absoluteScore=ppClamp(Math.sqrt(absNet/40000)*100);
-  const relativeScore=ppClamp(Math.sqrt(Math.min(relative,.04)/.025)*100);
-  const purityScore=turnover?ppClamp(absNet/turnover*100):0;
-  const mainVolume=direction==="rise"?tin:tout;
-  const volumeScore=ppClamp(Math.sqrt(mainVolume/40000)*100);
-  const availability=ppAvailability(e,direction);
+  const owners=Math.max(3500,total*(ownPct/100));
+  const status=String(e.status||"a");
+  // Calibrated against the official 2026/27 FPL Price Change Predictor.
+  // The earlier fallback made fall pressure roughly 7-8x too strong (for example
+  // Pedro Porro appeared near -100% while official FPL showed roughly -14%).
+  // Falling thresholds are therefore much wider than rising thresholds.
+  let pct=.75;
+  if(status==="d") pct=.64;
+  else if(status==="i"||status==="s"||status==="u") pct=.45;
+  return Math.max(9000,owners*pct);
+}
+function ppProgress(e,direction){
+  const tin=Number(e.transfers_in_event)||0,tout=Number(e.transfers_out_event)||0;
+  const net=tin-tout;
+  const validFactor=ppEstimatedValidFactor(e);
+  const validNet=Math.abs(net)*validFactor;
+  let threshold=direction==="rise"?ppRiseThreshold():ppFallThreshold(e);
+  let progress=threshold>0?(validNet/threshold)*100:0;
+
+  // A previous same-direction move this GW normally means the next move is harder.
   const moved=Number(e.cost_change_event)||0;
   const sameMove=(direction==="rise"&&moved>0)||(direction==="fall"&&moved<0);
-  const repeatMoveScore=sameMove?35:75;
-  let score=absoluteScore*.50+relativeScore*.15+purityScore*.15+volumeScore*.10+availability*.05+repeatMoveScore*.05;
-  if(direction==="rise"&&net<=0) score=0;
-  if(direction==="fall"&&net>=0) score=0;
-  score=Math.min(score,ppVolumeCap(absNet));
-  return {score:Math.round(ppClamp(score)),tin,tout,net,ownPct,relative,moved,volumeCap:ppVolumeCap(absNet)};
+  if(sameMove) progress*=.72;
+
+  if(direction==="rise"&&net<=0) progress=0;
+  if(direction==="fall"&&net>=0) progress=0;
+  progress=ppClamp(progress,0,250);
+  return {progress,tin,tout,net,validNet,threshold,validFactor,ownPct:Math.max(.1,Number(e.selected_by_percent)||0),moved,direction};
 }
-function ppLabel(score){
-  if(score>=85)return "Very high";
-  if(score>=70)return "High";
-  if(score>=55)return "Moderate";
-  if(score>=40)return "Watch";
-  return "Low";
+function ppProgressLabel(progress,direction){
+  const rise=direction==="rise";
+  if(progress>=100)return rise?"Very Likely to Rise":"Very Likely to Drop";
+  if(progress>=70)return rise?"Likely to Rise":"Likely to Drop";
+  return "Unlikely to change";
+}
+
+/*
+ * FPL's 2026/27 site now exposes a Price Change Predictor. The exact API field
+ * is not part of the long-standing bootstrap schema, so prefer an official
+ * value whenever FPL adds one to the player payload and otherwise fall back to
+ * FPL Peek's transparent transfer/ownership estimate.
+ */
+function ppOfficialSignal(e){
+  const candidates=[
+    e.price_change_progress,
+    e.price_change_predicted_progress,
+    e.predicted_price_change_progress,
+    e.price_change_prediction_progress,
+    e.price_change_prediction
+  ];
+  for(const raw of candidates){
+    if(raw===null||raw===undefined||raw==="")continue;
+    if(typeof raw==="number"&&Number.isFinite(raw))return {progress:raw,official:true};
+    if(typeof raw==="string"&&raw.trim()!==""&&Number.isFinite(Number(raw)))return {progress:Number(raw),official:true};
+    if(typeof raw==="object"){
+      const val=raw.predicted_progress ?? raw.progress ?? raw.current_progress ?? raw.percentage;
+      if(Number.isFinite(Number(val)))return {progress:Number(val),official:true,status:raw.status||raw.label||""};
+    }
+  }
+  return null;
 }
 function ppBuildRows(){
-  const players=(boot.elements||[]).filter(e=>e&&e.id);
+  const players=(boot.elements||[]).filter(e=>e&&e.id&&e.status!=="u");
   const rises=[],falls=[];
   players.forEach(e=>{
-    const r=ppPressure(e,"rise"),f=ppPressure(e,"fall");
-    if(r.net>0&&r.tin>0) rises.push({e,...r,direction:"rise"});
-    if(f.net<0&&f.tout>0) falls.push({e,...f,direction:"fall"});
+    const r=ppProgress(e,"rise"),f=ppProgress(e,"fall");
+    const official=ppOfficialSignal(e);
+    if(official){
+      const raw=Number(official.progress)||0;
+      const status=String(official.status||"").toLowerCase();
+      const isFall=raw<0||/drop|fall/.test(status);
+      const isRise=raw>0||/rise/.test(status);
+      if(isFall)falls.push({e,...f,official,displayProgress:Math.abs(raw)});
+      else if(isRise)rises.push({e,...r,official,displayProgress:Math.abs(raw)});
+      else if(r.net>0)rises.push({e,...r,official,displayProgress:Math.abs(raw)});
+      else if(f.net<0)falls.push({e,...f,official,displayProgress:Math.abs(raw)});
+      return;
+    }
+    if(r.net>0&&r.tin>0) rises.push({e,...r,displayProgress:r.progress});
+    if(f.net<0&&f.tout>0) falls.push({e,...f,displayProgress:f.progress});
   });
-  rises.sort((a,b)=>b.score-a.score||b.net-a.net||b.tin-a.tin);
-  falls.sort((a,b)=>b.score-a.score||a.net-b.net||b.tout-a.tout);
+  rises.sort((a,b)=>b.displayProgress-a.displayProgress||b.net-a.net||b.tin-a.tin);
+  falls.sort((a,b)=>b.displayProgress-a.displayProgress||a.net-b.net||b.tout-a.tout);
   return {rises,falls};
 }
 function ppPlayerRow(x){
   const e=x.e,t=(boot.teams||[]).find(z=>z.id===e.team)||{};
-  const arrow=x.direction==="rise"?"↑":"↓",sign=x.net>=0?"+":"−";
-  const netAbs=Math.abs(x.net).toLocaleString();
-  const transferMain=x.direction==="rise"?`${x.tin.toLocaleString()} in`:`${x.tout.toLocaleString()} out`;
-  const changed=Number(e.cost_change_event||0);
-  const changedText=changed?` · ${changed>0?"+":""}£${(changed/10).toFixed(1)}m this GW`:"";
-  const nextMove=x.direction==="rise"?"+£0.1m":"−£0.1m";
-  return `<article class="pressure-row ${x.direction}">
-    <div class="pressure-player">${teamKitImg(t,"pressure-kit",`${t.name||"Club"} kit`)}<div><b>${esc(e.web_name)}</b><small>${esc(t.short_name||"")} · ${POS[e.element_type]} · ${money(e.now_cost)} · ${x.ownPct.toFixed(1)}% owned</small></div></div>
-    <div class="pressure-signals"><span><b>${transferMain}</b><small>Net ${sign}${netAbs}${changedText} · Potential next move ${nextMove}</small></span></div>
-    <div class="pressure-score"><span class="pressure-score-arrow">${arrow}</span><div><b>${x.score}<em>/100</em></b><small>${ppLabel(x.score)} pressure · ${nextMove}</small></div></div>
+  const rise=x.direction==="rise";
+  const official=x.official||ppOfficialSignal(e);
+  const rawProgress=official?Number(official.progress):Number(x.progress);
+  const progress=Math.abs(rawProgress);
+  const signedProgress=(rise?"+":"−")+progress.toFixed(1)+"%";
+  const label=ppProgressLabel(progress,x.direction);
+  const source=official?"Official FPL progress":"FPL Peek estimate";
+  const trend=rise?"Up":"Down";
+  const trendArrow=rise?"↗":"↘";
+  const statusClass=label.toLowerCase().replace(/\s+/g,"-");
+  return `<article class="pressure-row official-style ${x.direction}">
+    <div class="pressure-player">${teamKitImg(t,"pressure-kit",`${t.name||"Club"} kit`)}<div><b>${esc(e.web_name)}</b><small>${esc(t.short_name||"")} · ${POS[e.element_type]}</small></div></div>
+    <div class="pp-status-cell"><span class="pp-status-badge ${statusClass}">${esc(label)}</span></div>
+    <div class="pp-progress-cell"><b class="pp-progress-number">${signedProgress}</b><small>${source}</small></div>
+    <div class="pp-trend-cell ${x.direction}"><span>${trendArrow}</span><b>${trend}</b></div>
+    <div class="pp-price-cell"><b>${money(e.now_cost)}</b><small>${x.ownPct.toFixed(1)}% owned</small></div>
   </article>`;
+}
+
+function ppLondonParts(date=new Date()){
+  const f=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23",timeZoneName:"shortOffset"});
+  return Object.fromEntries(f.formatToParts(date).filter(p=>p.type!=="literal").map(p=>[p.type,p.value]));
+}
+function ppOffsetMinutes(parts){
+  const z=String(parts.timeZoneName||"GMT");
+  const m=z.match(/GMT(?:(\+|-)(\d{1,2})(?::?(\d{2}))?)?/);
+  if(!m||!m[1])return 0;
+  const n=(Number(m[2]||0)*60+Number(m[3]||0))*(m[1]==="-"?-1:1);
+  return n;
+}
+function ppNextLondonMidnight(now=new Date()){
+  const p=ppLondonParts(now);
+  const dayUTC=Date.UTC(Number(p.year),Number(p.month)-1,Number(p.day)+1,0,0,0);
+  const probe=new Date(dayUTC);
+  const off=ppOffsetMinutes(ppLondonParts(probe));
+  return new Date(dayUTC-off*60000);
+}
+function ppUpdateCountdown(){
+  const el=$("ppCountdown");if(!el)return;
+  const now=new Date(),target=ppNextLondonMidnight(now);
+  let s=Math.max(0,Math.floor((target-now)/1000));
+  const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60),sec=s%60;
+  el.textContent=`${h} hr ${m} min ${sec} sec`;
+}
+function ppStartCountdown(){
+  if(_ppTimer)clearInterval(_ppTimer);
+  ppUpdateCountdown();
+  _ppTimer=setInterval(ppUpdateCountdown,1000);
+}
+
+function ppPageSlice(rows,page){
+  const pages=Math.max(1,Math.ceil(rows.length/PP_PAGE_SIZE));
+  const safePage=Math.max(1,Math.min(page,pages));
+  const start=(safePage-1)*PP_PAGE_SIZE;
+  return {items:rows.slice(start,start+PP_PAGE_SIZE),page:safePage,pages,start};
+}
+function ppSetPager(prefix,rows,page){
+  const info=ppPageSlice(rows,page);
+  const count=$(prefix+"Count"),label=$(prefix+"Page"),prev=$(prefix+"Prev"),next=$(prefix+"Next");
+  if(count){
+    const from=rows.length?info.start+1:0,to=Math.min(info.start+PP_PAGE_SIZE,rows.length);
+    count.textContent=`${from}–${to} of ${rows.length}`;
+  }
+  if(label)label.textContent=`Page ${info.page} of ${info.pages}`;
+  if(prev)prev.disabled=info.page<=1;
+  if(next)next.disabled=info.page>=info.pages;
+  return info;
 }
 function ppRender(){
   if(!_ppRows) _ppRows=ppBuildRows();
   const {rises,falls}=_ppRows;
-  const riseShown=rises.slice(0,_ppRiseVisible),fallShown=falls.slice(0,_ppFallVisible);
-  $("ppRisers").innerHTML=riseShown.length?riseShown.map(ppPlayerRow).join(""):`<div class="price-empty"><b>No rise pressure yet.</b><span>Positive transfer activity will appear here once managers start making moves.</span></div>`;
-  $("ppFallers").innerHTML=fallShown.length?fallShown.map(ppPlayerRow).join(""):`<div class="price-empty"><b>No fall pressure yet.</b><span>Negative transfer activity will appear here once managers start making moves.</span></div>`;
-  $("ppRiseCount").textContent=`${Math.min(_ppRiseVisible,rises.length)} of ${rises.length}`;
-  $("ppFallCount").textContent=`${Math.min(_ppFallVisible,falls.length)} of ${falls.length}`;
-  const mr=$("ppMoreRise"),mf=$("ppMoreFall");
-  if(mr){mr.style.display=_ppRiseVisible<rises.length?"inline-flex":"none";mr.textContent=`Show 20 more (${Math.max(0,rises.length-_ppRiseVisible)} remaining)`;}
-  if(mf){mf.style.display=_ppFallVisible<falls.length?"inline-flex":"none";mf.textContent=`Show 20 more (${Math.max(0,falls.length-_ppFallVisible)} remaining)`;}
+  const riseInfo=ppSetPager("ppRise",rises,_ppRisePage);
+  const fallInfo=ppSetPager("ppFall",falls,_ppFallPage);
+  _ppRisePage=riseInfo.page;_ppFallPage=fallInfo.page;
+  $("ppRisers").innerHTML=riseInfo.items.length?riseInfo.items.map(ppPlayerRow).join(""):`<div class="price-empty"><b>No rise movement yet.</b><span>Positive transfer activity will appear here once managers start making moves.</span></div>`;
+  $("ppFallers").innerHTML=fallInfo.items.length?fallInfo.items.map(ppPlayerRow).join(""):`<div class="price-empty"><b>No fall movement yet.</b><span>Negative transfer activity will appear here once managers start making moves.</span></div>`;
   const ev=ppCurrentEvent();
-  $("ppSummary").innerHTML=`<div><b>GW${ev.id||"—"}</b><span>Market window</span></div><div><b>${Number(boot.total_players||0).toLocaleString()}</b><span>FPL managers</span></div><div><b>+£0.1m</b><span>Potential next rise</span></div><div><b>−£0.1m</b><span>Potential next fall</span></div>`;
+  $("ppSummary").innerHTML=`<div><b>GW${ev.id||"—"}</b><span>Current market</span></div><div><b>${Number(boot.total_players||0).toLocaleString()}</b><span>FPL managers</span></div><div><b>100%+</b><span>Very likely zone</span></div>`;
 }
 async function initPricePrediction(){
   await loadBoot();
-  _ppRiseVisible=20;_ppFallVisible=20;_ppRows=ppBuildRows();
-  const mr=$("ppMoreRise"),mf=$("ppMoreFall");
-  if(mr&&!mr.dataset.bound){mr.dataset.bound="1";mr.addEventListener("click",()=>{_ppRiseVisible+=20;ppRender();});}
-  if(mf&&!mf.dataset.bound){mf.dataset.bound="1";mf.addEventListener("click",()=>{_ppFallVisible+=20;ppRender();});}
+  _ppRisePage=1;_ppFallPage=1;_ppRows=ppBuildRows();
+  const bindings=[
+    ["ppRisePrev",()=>{if(_ppRisePage>1){_ppRisePage--;ppRender();$("ppRisers")?.scrollIntoView({behavior:"smooth",block:"nearest"});}}],
+    ["ppRiseNext",()=>{const max=Math.max(1,Math.ceil(_ppRows.rises.length/PP_PAGE_SIZE));if(_ppRisePage<max){_ppRisePage++;ppRender();$("ppRisers")?.scrollIntoView({behavior:"smooth",block:"nearest"});}}],
+    ["ppFallPrev",()=>{if(_ppFallPage>1){_ppFallPage--;ppRender();$("ppFallers")?.scrollIntoView({behavior:"smooth",block:"nearest"});}}],
+    ["ppFallNext",()=>{const max=Math.max(1,Math.ceil(_ppRows.falls.length/PP_PAGE_SIZE));if(_ppFallPage<max){_ppFallPage++;ppRender();$("ppFallers")?.scrollIntoView({behavior:"smooth",block:"nearest"});}}]
+  ];
+  bindings.forEach(([id,fn])=>{const el=$(id);if(el&&!el.dataset.bound){el.dataset.bound="1";el.addEventListener("click",fn);}});
   ppRender();
+  ppStartCountdown();
 }

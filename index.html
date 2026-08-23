@@ -38,7 +38,7 @@
 <meta name="twitter:image" content="https://fplpeek.com/android-chrome-512x512.png">
 <meta name="twitter:image:alt" content="FPL Peek logo">
 
-<script type="application/ld+json" id="seoStructuredData">
+<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
@@ -91,6 +91,7 @@
 })();
 </script>
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/price-progress.css">
 </head>
 <body>
 <div class="wrap">
@@ -1071,28 +1072,32 @@
   <section class="tabpanel" id="tab-pricepredict">
     <div class="thead">
       <h2>Price Change Prediction</h2>
-      <p>FPL Peek estimates price pressure from official transfer activity, ownership, player status and current Gameweek market conditions.</p>
+      <p>Track players moving towards a possible £0.1m rise or fall at the next FPL price-change deadline.</p>
+    </div>
+    <div class="pp-countdown-card">
+      <span class="pp-clock" aria-hidden="true">◷</span>
+      <div><b>Next price-change deadline in <strong id="ppCountdown">—</strong></b><small>FPL's 2026/27 predictor targets 00:00 UK time. Predictions are a guide, not a guarantee.</small></div>
     </div>
     <div class="price-pressure-note">
-      <b>Estimated pressure — not an official FPL probability.</b>
-      <span>The exact FPL price-change formula is private. A higher score means stronger current transfer pressure, not a guaranteed rise or fall.</span>
+      <b>Price-change signal</b>
+      <span>100%+ is the very-likely zone used by the official 2026/27 FPL predictor. FPL Peek uses an official progress value when it is present in the available FPL player feed; otherwise the row is clearly marked as an FPL Peek estimate.</span>
     </div>
     <div class="pressure-summary" id="ppSummary"></div>
     <div class="pressure-grid">
       <section class="pressure-column rise">
-        <div class="pressure-column-head"><div><span class="pressure-arrow">↑</span><div><b>Rise pressure</b><small>Strongest buying pressure</small></div></div><span id="ppRiseCount"></span></div>
+        <div class="pressure-column-head"><div><span class="pressure-arrow">↑</span><div><b>Estimated rises</b><small>Closest upward movers</small></div></div><span id="ppRiseCount"></span></div>
         <div id="ppRisers" class="pressure-list"></div>
-        <button class="lm-more pressure-more" id="ppMoreRise" type="button">Show 20 more</button>
+        <div class="pp-pagination" aria-label="Rise prediction pages"><button type="button" id="ppRisePrev">Previous</button><span id="ppRisePage">Page 1 of 1</span><button type="button" id="ppRiseNext">Next</button></div>
       </section>
       <section class="pressure-column fall">
-        <div class="pressure-column-head"><div><span class="pressure-arrow">↓</span><div><b>Fall pressure</b><small>Strongest selling pressure</small></div></div><span id="ppFallCount"></span></div>
+        <div class="pressure-column-head"><div><span class="pressure-arrow">↓</span><div><b>Estimated falls</b><small>Closest downward movers</small></div></div><span id="ppFallCount"></span></div>
         <div id="ppFallers" class="pressure-list"></div>
-        <button class="lm-more pressure-more" id="ppMoreFall" type="button">Show 20 more</button>
+        <div class="pp-pagination" aria-label="Fall prediction pages"><button type="button" id="ppFallPrev">Previous</button><span id="ppFallPage">Page 1 of 1</span><button type="button" id="ppFallNext">Next</button></div>
       </section>
     </div>
     <div class="price-pressure-method">
-      <b>How the score works</b>
-      <p>FPL Peek gives the most weight to absolute net transfers, then considers transfer activity relative to ownership, transfer direction, overall volume, player availability and whether the player has already moved this Gameweek. Very small transfer volumes are capped so low-owned players cannot receive an unrealistic pressure score. A likely next individual price movement is shown as +£0.1m or −£0.1m.</p>
+      <b>Understanding the signal</b>
+      <p>Progress shows movement towards the next possible price change. A value at or above 100% is treated as Very Likely, but it still does not guarantee a change because transfer activity can move before the 00:00 UK deadline. Where official predictor progress is not available in FPL Peek's data feed, the page falls back to a transparent estimate based on net transfers, ownership and player availability.</p>
     </div>
   </section>
 
@@ -1113,14 +1118,6 @@
   </section>
 
   <footer class="site-footer">
-    <nav class="site-footer-links" aria-label="Popular FPL tools">
-      <a href="/gameweek-planner">Gameweek Planner</a>
-      <a href="/team-builder">Team Builder</a>
-      <a href="/price-change-prediction">Price Change Prediction</a>
-      <a href="/player-compare">Player Compare</a>
-      <a href="/captain-picks">Captain Picks</a>
-      <a href="/team-rating">Team Rating</a>
-    </nav>
     <nav class="site-footer-links" aria-label="Footer">
       <a href="/about.html">About</a>
       <a href="/privacy.html">Privacy Policy</a>
