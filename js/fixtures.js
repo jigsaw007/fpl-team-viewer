@@ -1,5 +1,5 @@
 /* ============ FIXTURES / RESULTS / TABLE tab ============ */
-let _fxN=5, _fxSort="team", _allFixtures=null, _fxGw=1, _fxView="matches", _fxMatchFilter="all", _rotN=5;
+let _fxN=5, _fxSort="team", _allFixtures=null, _fxGw=1, _fxView="matches", _fxMatchFilter="all", _rotN=5, _fxLiveTimer=null;
 
 async function initFixtures(){
   $("fxMatches").innerHTML=`<div class="tab-status"><div class="spinner"></div>Loading fixtures…</div>`;
@@ -24,6 +24,15 @@ async function initFixtures(){
     $("fxMatchFilter").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===btn));
     drawMatchCentre();
   });
+  $("fxMatches").addEventListener("click",e=>{
+    const row=e.target.closest(".fx-match-row[data-fixture-id]"); if(!row) return;
+    toggleFixtureDetails(row.dataset.fixtureId);
+  });
+  $("fxMatches").addEventListener("keydown",e=>{
+    if(e.key!=="Enter"&&e.key!==" ") return;
+    const row=e.target.closest(".fx-match-row[data-fixture-id]"); if(!row) return;
+    e.preventDefault(); toggleFixtureDetails(row.dataset.fixtureId);
+  });
   $("fxRange").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;
     $("fxRange").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");
     _fxN=+x.dataset.n; drawFixtures();});
@@ -40,6 +49,7 @@ async function initFixtures(){
   setFixturesView("matches");
   drawFixtures();
   drawLeagueTable();
+  startFixtureLivePolling();
 }
 
 function setFixturesView(view){
@@ -68,7 +78,7 @@ function fixtureEventMeta(gw){
 
 function fixtureStatus(f){
   if(f.finished || f.finished_provisional) return {label:"FT",cls:"finished"};
-  if(f.started) return {label:"LIVE",cls:"live"};
+  if(f.started){ const m=Number(f.minutes||0); return {label:m>0?`LIVE ${m}'`:"LIVE",cls:"live"}; }
   if(!f.kickoff_time) return {label:"TBC",cls:"tbc"};
   const d=new Date(f.kickoff_time);
   return {label:d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}),cls:"scheduled"};
@@ -110,6 +120,51 @@ function drawMatchCentre(){
   </div>`).join("");
 }
 
+function fixtureStatRows(f, identifier){
+  const stat=(f.stats||[]).find(x=>x.identifier===identifier);
+  if(!stat) return [];
+  return ['h','a'].flatMap(side=>(stat[side]||[]).map(x=>({side,element:Number(x.element),value:Number(x.value)||0})));
+}
+
+function fixturePlayerName(id){
+  const p=(boot.elements||[]).find(x=>x.id===Number(id));
+  return p?p.web_name:`Player ${id}`;
+}
+
+function fixtureDetailGroup(f, identifier, label, opts={}){
+  let rows=fixtureStatRows(f,identifier).filter(x=>x.value>0);
+  if(opts.top) rows=rows.sort((a,b)=>b.value-a.value).slice(0,opts.top);
+  if(!rows.length) return '';
+  return `<div class="fx-event-group"><span>${esc(label)}</span><div>${rows.map(x=>`<b>${esc(fixturePlayerName(x.element))}${x.value>1?` ×${x.value}`:''}${opts.showValue?` <em>${x.value}</em>`:''}</b>`).join('')}</div></div>`;
+}
+
+function fixtureDetailsHtml(f){
+  if(!(f.started||f.finished||f.finished_provisional)) return '';
+  const groups=[
+    fixtureDetailGroup(f,'goals_scored','Goals'),
+    fixtureDetailGroup(f,'assists','Assists'),
+    fixtureDetailGroup(f,'own_goals','Own goals'),
+    fixtureDetailGroup(f,'penalties_saved','Penalty saves'),
+    fixtureDetailGroup(f,'penalties_missed','Penalties missed'),
+    fixtureDetailGroup(f,'yellow_cards','Yellow cards'),
+    fixtureDetailGroup(f,'red_cards','Red cards'),
+    fixtureDetailGroup(f,'saves','Saves'),
+    fixtureDetailGroup(f,'bonus','Bonus',{showValue:true,top:6}),
+    fixtureDetailGroup(f,'bps','BPS',{showValue:true,top:6})
+  ].filter(Boolean).join('');
+  return `<div class="fx-match-details" id="fxDetails-${f.id}" hidden>${groups||'<div class="fx-detail-empty">No FPL player events are available yet.</div>'}<div class="fx-detail-note">FPL provides event totals and live BPS, but not exact goal/assist timestamps.</div></div>`;
+}
+
+function toggleFixtureDetails(id){
+  const details=document.getElementById(`fxDetails-${id}`);
+  const row=document.querySelector(`.fx-match-row[data-fixture-id="${id}"]`);
+  if(!details||!row) return;
+  const open=details.hidden;
+  details.hidden=!open;
+  row.classList.toggle('open',open);
+  row.setAttribute('aria-expanded',String(open));
+}
+
 function matchRowHtml(f){
   const home=boot.teams.find(t=>t.id===f.team_h)||{};
   const away=boot.teams.find(t=>t.id===f.team_a)||{};
@@ -120,17 +175,18 @@ function matchRowHtml(f){
     : `<div class="fx-kickoff">${esc(st.label)}</div>`;
   const mobileHome=home.short_name||home.name||"";
   const mobileAway=away.short_name||away.name||"";
-  return `<article class="fx-match-row ${st.cls}">
+  const expandable=f.started||f.finished||f.finished_provisional;
+  return `<div class="fx-match-item"><article class="fx-match-row ${st.cls}${expandable?' expandable':''}" ${expandable?`data-fixture-id="${f.id}" role="button" tabindex="0" aria-expanded="false"`:''}>
     <div class="fx-match-team home">
       <div class="fx-match-team-copy"><b>${esc(home.name||"")}</b><small>${esc(mobileHome)}</small></div>
       ${teamKitImg(home,"fx-match-kit",`${home.name||"Home"} kit`)}
     </div>
-    <div class="fx-match-centre">${centre}<span class="fx-status ${st.cls}">${esc(st.label)}</span></div>
+    <div class="fx-match-centre">${centre}<span class="fx-status ${st.cls}">${esc(st.label)}</span>${expandable?'<span class="fx-expand-hint">Details <i>⌄</i></span>':''}</div>
     <div class="fx-match-team away">
       ${teamKitImg(away,"fx-match-kit",`${away.name||"Away"} kit`)}
       <div class="fx-match-team-copy"><b>${esc(away.name||"")}</b><small>${esc(mobileAway)}</small></div>
     </div>
-  </article>`;
+  </article>${fixtureDetailsHtml(f)}</div>`;
 }
 
 function drawFixtures(){
@@ -216,4 +272,20 @@ function drawLeagueTable(){
     <td class="club"><span class="fx-table-club">${teamKitImg(r.team,"fx-table-kit",`${r.team.name} kit`)}<span><b>${esc(r.team.name)}</b><small>${esc(r.team.short_name||"")}</small></span></span></td>
     <td>${r.p}</td><td class="optional">${r.w}</td><td class="optional">${r.d}</td><td class="optional">${r.l}</td><td class="optional-wide">${r.gf}</td><td class="optional-wide">${r.ga}</td><td>${r.gd>0?"+":""}${r.gd}</td><td class="pts"><b>${r.pts}</b></td>
   </tr>`).join("")}</tbody>`;
+}
+
+
+async function refreshFixtureLiveData(){
+  if(document.hidden || _fxView!=="matches") return;
+  try{
+    const fresh=await get('/fixtures/');
+    _allFixtures=fresh;
+    drawMatchCentre();
+    drawLeagueTable();
+  }catch(_){ }
+}
+
+function startFixtureLivePolling(){
+  if(_fxLiveTimer) return;
+  _fxLiveTimer=setInterval(refreshFixtureLiveData,30000);
 }

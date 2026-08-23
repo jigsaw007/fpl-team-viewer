@@ -1,5 +1,5 @@
 /* ============ home dashboard ============ */
-let _homeReady=false;
+let _homeReady=false, _homeLiveTimer=null;
 
 async function initHome(){
   bindHomeActions();
@@ -10,6 +10,8 @@ async function initHome(){
   try{
     const [b, fixtures]=await Promise.all([loadBoot(), get("/fixtures/")]);
     renderHomeGameweek(b);
+    renderHomeLiveMatches(b, fixtures);
+    startHomeLivePolling();
     renderHomeInsights(b);
     renderHomeBestFixtures(b, fixtures);
     await enrichHomeSavedTeam();
@@ -182,4 +184,45 @@ function renderHomeBestFixtures(b, fixtures){
       <div class="home-fixture-run">${fx.map(f=>{ const opp=(b.teams||[]).find(z=>z.id===f.opp)||{}; const code=f.home?(opp.short_name||""):(opp.short_name||"").toLowerCase(); return `<span class="fdr${f.fdr}" title="GW${f.gw} · ${esc(opp.name||"")}">${esc(code)}</span>`; }).join("")}</div>
       <div class="home-fixture-avg"><b>${avg.toFixed(2)}</b><small>avg FDR</small></div>
     </div>`).join("");
+}
+
+
+function homeLiveStatus(f){
+  const minute=Number(f.minutes||0);
+  return minute>0?`LIVE · ${minute}'`:'LIVE';
+}
+
+function renderHomeLiveMatches(b, fixtures){
+  const el=$("homeLiveMatches"); if(!el) return;
+  const teams=Object.fromEntries((b.teams||[]).map(t=>[t.id,t]));
+  const live=(fixtures||[]).filter(f=>f.started && !f.finished && !f.finished_provisional);
+  if(!live.length){el.hidden=true;el.innerHTML='';return;}
+  el.hidden=false;
+  el.innerHTML=`<div class="home-live-head"><span class="home-live-dot"></span><b>LIVE NOW</b><small>${live.length} match${live.length===1?'':'es'} in progress</small></div>
+    <div class="home-live-tape">${live.map(f=>{const h=teams[f.team_h]||{},a=teams[f.team_a]||{};return `<button class="home-live-match" data-live-gw="${f.event||1}">
+      <span class="home-live-minute">${esc(homeLiveStatus(f))}</span>
+      <span class="home-live-team">${esc(h.short_name||h.name||'HOME')}</span>
+      <strong>${f.team_h_score??0}–${f.team_a_score??0}</strong>
+      <span class="home-live-team">${esc(a.short_name||a.name||'AWAY')}</span>
+      <span class="home-live-open">Match details →</span>
+    </button>`}).join('')}</div>`;
+  el.querySelectorAll('[data-live-gw]').forEach(btn=>btn.onclick=()=>{
+    const gw=Number(btn.dataset.liveGw)||1;
+    switchTab('fixtures');
+    setTimeout(()=>{if(typeof setFixtureGw==='function') setFixtureGw(gw);},0);
+  });
+}
+
+async function refreshHomeLiveMatches(){
+  if(document.hidden || !$("homeLiveMatches")) return;
+  try{
+    const b=await loadBoot();
+    const fixtures=await get('/fixtures/');
+    renderHomeLiveMatches(b,fixtures);
+  }catch(_){ }
+}
+
+function startHomeLivePolling(){
+  if(_homeLiveTimer) return;
+  _homeLiveTimer=setInterval(refreshHomeLiveMatches,45000);
 }
