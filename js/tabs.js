@@ -9,6 +9,7 @@ function markActiveSidebarGroup(name){
   if(node) node.classList.add("active-group");
 }
 function switchTab(name,opts={}){
+  document.body.classList.toggle("market-mode",name==="market");
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
   markActiveSidebarGroup(name);
   document.querySelectorAll(".tabpanel").forEach(p=>p.classList.toggle("active",p.id==="tab-"+name));
@@ -30,6 +31,7 @@ async function lazyLoadTab(name){
     else if(name==="captains") await initCaptains();
     else if(name==="analyzer") await initAnalyzer();
     else if(name==="leagueanalyzer") await initLeagueAnalyzer();
+    else if(name==="market") await initFplMarket();
     else if(name==="transfer") await initTransferAnalyzer();
     else if(name==="compare") await initManagerCompare();
     else if(name==="cards") await initCardCreator();

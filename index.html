@@ -93,6 +93,7 @@
 </script>
 <link rel="stylesheet" href="/css/app.css">
 <link rel="stylesheet" href="/css/price-progress.css">
+<link rel="stylesheet" href="/css/market.css">
 </head>
 <body>
 <div class="wrap">
@@ -135,6 +136,7 @@
     <div class="tab-label">Analysis</div>
     <button class="tab hot-tab" data-tab="analyzer">Team Rating <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="leagueanalyzer">League Analyzer</button>
+    <button class="tab" data-tab="market"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> FPL Market</button>
     <button class="tab" data-tab="compare">Manager Compare</button>
     <button class="tab" data-tab="cards">Card Creator</button>
 
@@ -368,6 +370,12 @@
       <button class="primary-action" id="laRun">Analyze league</button>
     </div>
     <div id="leagueAnalyzerBody" class="tool-output"><div class="tool-empty">Enter a Classic League ID to build a league dashboard.</div></div>
+  </section>
+
+
+  <!-- ============ FPL MARKET TERMINAL ============ -->
+  <section class="tabpanel" id="tab-market">
+    <div id="marketBody"><div class="market-loading"><div><i class="fa-solid fa-circle-notch fa-spin"></i> Loading live FPL market…</div></div></div>
   </section>
 
   <!-- ============ TEAM ANALYZER TAB ============ -->
@@ -1169,6 +1177,7 @@
     <button class="hot-mobile" data-mobile-tab="planner">Gameweek Planner <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button class="hot-mobile" data-mobile-tab="analyzer">Team Rating <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button data-mobile-tab="leagueanalyzer">League Analyzer</button>
+    <button data-mobile-tab="market">FPL Market</button>
     <button class="hot-mobile" data-mobile-tab="transfer">Player Compare <span class="tab-hot" aria-hidden="true">🔥</span></button>
     <button data-mobile-tab="compare">Manager Compare</button>
     <button data-mobile-tab="cards">Card Creator</button>
@@ -1269,6 +1278,7 @@
 <script defer src="/js/captains.js"></script>
 <script defer src="/js/analyzer.js"></script>
 <script defer src="/js/league-analyzer.js"></script>
+<script defer src="/js/market.js"></script>
 <script defer src="/js/transfer-analyzer.js"></script>
 <script defer src="/js/compare.js"></script>
 <script defer src="/js/card-creator.js"></script>

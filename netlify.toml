@@ -223,3 +223,9 @@
   from = "/one-to-watch"
   to = "/index.html"
   status = 200
+
+
+[[redirects]]
+  from = "/fpl-market"
+  to = "/index.html"
+  status = 200

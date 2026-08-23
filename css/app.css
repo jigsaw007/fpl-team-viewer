@@ -3775,3 +3775,6 @@ button.lm-chip-card.compact{grid-template-columns:30px minmax(0,1fr) 8px;align-i
   .otw-card{max-width:390px;width:100%;margin:0 auto}
   .otw-player-top{min-height:230px}
 }
+
+/* Insights media safety — prefer official club kits over unreliable headshots. */
+.home-insight-feature-kit{width:72px;height:94px;object-fit:contain;display:block;filter:drop-shadow(0 8px 10px rgba(23,33,28,.10))}.home-insight-media:has(.home-insight-feature-kit){align-items:center}.insights-team-visual .insights-team-kit{width:100px;height:128px;object-fit:contain}.insight-player-avatar.photo-missing{background:var(--soft)!important}.insight-player-avatar.photo-missing .insight-face-kit{width:31px!important;height:39px!important}

@@ -6,9 +6,7 @@
   const safeImg=(src,cls,alt,extra='')=>src?`<img class="${cls}" src="${h(src)}" alt="${h(alt||'')}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.hidden=true" ${extra}>`:'';
   function playerAvatar(r){
     const kit=r.kit_url?safeImg(r.kit_url,'insight-face-kit',`${r.team_name||r.team_short||''} kit`):'';
-    if(!r.photo_url) return r.kit_url?`<span class="insight-player-avatar photo-missing">${kit}</span>`:'<span class="insight-avatar-fallback" aria-hidden="true"></span>';
-    const face=`<img class="insight-face" src="${h(r.photo_url)}" alt="${h(r.name||'')}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.hidden=true;this.parentElement.classList.add('photo-missing')">`;
-    return `<span class="insight-player-avatar">${face}${kit}</span>`;
+    return r.kit_url?`<span class="insight-player-avatar photo-missing">${kit}</span>`:'<span class="insight-avatar-fallback" aria-hidden="true"></span>';
   }
   function rowMedia(r){
     if(r.fixture_kits?.length) return `<span class="insight-row-kits">${r.fixture_kits.slice(0,2).map((u,i)=>safeImg(u,'insight-kit',i?'Away kit':'Home kit')).join('')}</span>`;
@@ -26,7 +24,7 @@
     const p=lead?.featured_player;
     const t=lead?.featured_team;
     if(lead?.visual_mode==='neutral') return `<div class="insights-lead-visual insights-neutral-visual"><div class="insights-gw-mark"><span>FPL PEEK</span><b>${h(lead.visual_label||'GW')}</b><small>Gameweek briefing</small></div></div>`;
-    if(p?.photo_url) return `<div class="insights-lead-visual"><div class="insights-player-frame">${safeImg(p.photo_url,'insights-player-photo',p.name,'fetchpriority="low"')}</div><small>${h(p.name)}${p.team?` · ${h(p.team)}`:''}</small></div>`;
+    if(p?.kit_url) return `<div class="insights-lead-visual insights-team-visual">${safeImg(p.kit_url,'insights-team-kit',`${p.team||p.name} kit`)}<small>${h(p.name)}${p.team?` · ${h(p.team)}`:''}</small></div>`;
     if(t?.kit_url) return `<div class="insights-lead-visual insights-team-visual">${safeImg(t.kit_url,'insights-team-kit',`${t.name} kit`)}<small>${h(t.name)}</small></div>`;
     return `<div class="insights-lead-mark">P</div>`;
   }
@@ -60,7 +58,7 @@
     const box=el('homeEditorialInsights');if(!box||!data)return;
     const lead=data.lead||{};
     const blocks=(data.blocks||[]).slice(0,2);
-    const leadImg=lead.visual_mode==='neutral'?`<div class="home-gw-mark"><span>FPL PEEK</span><b>${h(lead.visual_label||'GW')}</b></div>`:lead.featured_player?.photo_url?safeImg(lead.featured_player.photo_url,'home-insight-photo',lead.featured_player.name):lead.featured_team?.kit_url?safeImg(lead.featured_team.kit_url,'home-insight-kit',`${lead.featured_team.name} kit`):'';
+    const leadImg=lead.visual_mode==='neutral'?`<div class="home-gw-mark"><span>FPL PEEK</span><b>${h(lead.visual_label||'GW')}</b></div>`:lead.featured_player?.kit_url?safeImg(lead.featured_player.kit_url,'home-insight-feature-kit',`${lead.featured_player.team||lead.featured_player.name} kit`):lead.featured_team?.kit_url?safeImg(lead.featured_team.kit_url,'home-insight-feature-kit',`${lead.featured_team.name} kit`):'';
     const feature=`<a class="home-editorial-card home-editorial-feature" href="/?tool=insights"><div class="home-insight-copy"><span>${h(lead.kicker||'Current')}</span><b>${h(lead.title||'FPL Peek Insights')}</b><small>${h(lead.text||'')}</small><em>Read the briefing →</em></div>${leadImg?`<div class="home-insight-media">${leadImg}</div>`:''}</a>`;
     const rest=blocks.map((b,i)=>{const r=b.rows?.[0]||{};return `<a class="home-editorial-card home-editorial-secondary" href="/?tool=insights"><div class="home-insight-card-head"><span>${h(b.kind||'Insight')}</span><i>${String(i+2).padStart(2,'0')}</i></div><b>${h(b.title)}</b><small>${h(b.intro||'')}</small>${r.kit_url?`<div class="home-insight-club">${safeImg(r.kit_url,'home-insight-kit',`${r.team_name||''} kit`)}<span>${h(r.name||r.team_name||'')}</span></div>`:''}</a>`}).join('');
     box.innerHTML=feature+rest;
