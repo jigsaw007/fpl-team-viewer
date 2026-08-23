@@ -3937,26 +3937,35 @@ html[data-theme="dark"] .home-live-scorers{color:#9eb0a8}
 @media(max-width:620px){.home-live-scorers{max-width:68px}.home-live-discipline{max-width:104px;gap:3px}.home-live-card b{max-width:82px;font-size:6px}}
 html[data-theme="dark"] .home-live-card{color:#aab8b1}html[data-theme="dark"] .home-live-card-red{color:#ff8c99}html[data-theme="dark"] .home-live-card-yellow{color:#e7cb72}
 
-/* FPL Peek global football loader */
+/* FPL Peek global football loader — shared animated SVG */
 .spinner,.la-spinner{
-  width:30px!important;height:30px!important;border:0!important;border-radius:0!important;
+  width:34px!important;height:34px!important;border:0!important;border-radius:0!important;
   background:none!important;display:inline-grid!important;place-items:center!important;
   animation:none!important;flex:0 0 auto;
 }
 .spinner::before,.la-spinner::before,
-.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before{
-  content:"⚽"!important;
-  font-family:Arial,"Segoe UI Emoji","Apple Color Emoji",sans-serif!important;
-  font-weight:400!important;
-  display:inline-block;
-  color:var(--accent,#079b62)!important;
-  animation:fplSoccerSpin .9s linear infinite!important;
-  transform-origin:50% 50%;
+.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before,
+.market-loading>div::before{
+  content:""!important;
+  display:inline-block!important;
+  width:30px;height:30px;
+  background:url("../assets/fpl-soccer-loader.svg") center/contain no-repeat!important;
+  border:0!important;border-radius:0!important;
+  animation:none!important;
+  vertical-align:middle;
+  flex:0 0 auto;
 }
-.spinner::before,.la-spinner::before{font-size:24px;line-height:1}
-.tool-loading::before{width:auto!important;height:auto!important;border:0!important;border-radius:0!important;margin-right:8px!important;font-size:15px!important;vertical-align:-1px!important}
-.captain-loading::before,.rank-loading::before,.insights-loading::before{font-size:22px;margin-right:9px;vertical-align:-3px}
+.spinner::before,.la-spinner::before{width:32px;height:32px}
+.tool-loading::before{width:22px!important;height:22px!important;margin-right:8px!important;vertical-align:-6px!important}
+.captain-loading::before,.rank-loading::before,.insights-loading::before{width:30px;height:30px;margin-right:9px;vertical-align:-9px}
 .market-loading i.fa-circle-notch{display:none!important}
-.market-loading>div::before{content:"⚽";font-family:Arial,"Segoe UI Emoji","Apple Color Emoji",sans-serif;font-weight:400;display:inline-block;color:inherit;margin-right:8px;animation:fplSoccerSpin .9s linear infinite}
-@keyframes fplSoccerSpin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.spinner::before,.la-spinner::before,.tool-loading::before,.captain-loading::before,.rank-loading::before,.insights-loading::before,.market-loading>div::before{animation:none!important}}
+.market-loading>div::before{width:30px;height:30px;margin-right:9px;vertical-align:-9px}
+/* The supplied SVG already contains its own football/field motion, so no extra CSS spin is applied. */
+@media(max-width:620px){
+  .spinner,.la-spinner{width:30px!important;height:30px!important}
+  .spinner::before,.la-spinner::before{width:28px;height:28px}
+}
+@media(prefers-reduced-motion:reduce){
+  /* No additional CSS animation is added; the loader remains legible as a static visual if SVG animation is unsupported. */
+}
+
