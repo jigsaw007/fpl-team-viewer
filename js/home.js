@@ -1,5 +1,5 @@
 /* ============ home dashboard ============ */
-let _homeReady=false, _homeLiveTimer=null;
+let _homeReady=false, _homeLiveTimer=null, _homeLiveRefreshBusy=false;
 
 async function initHome(){
   bindHomeActions();
@@ -214,15 +214,30 @@ function renderHomeLiveMatches(b, fixtures){
 }
 
 async function refreshHomeLiveMatches(){
-  if(document.hidden || !$("homeLiveMatches")) return;
+  const el=$("homeLiveMatches");
+  if(document.hidden || !el || _homeLiveRefreshBusy) return;
+  _homeLiveRefreshBusy=true;
   try{
     const b=await loadBoot();
-    const fixtures=await get('/fixtures/');
+    // The cache-buster is intentionally on the proxy URL (not the FPL API path),
+    // so only this live strip bypasses browser/CDN caching.
+    const url=PROXY_BASE+encodeURIComponent('/fixtures/')+'&live_refresh='+Date.now();
+    const r=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const fixtures=await r.json();
     renderHomeLiveMatches(b,fixtures);
-  }catch(_){ }
+  }catch(_){
+    // Keep the last good live state on screen if one poll fails.
+  }finally{
+    _homeLiveRefreshBusy=false;
+  }
 }
 
 function startHomeLivePolling(){
   if(_homeLiveTimer) return;
-  _homeLiveTimer=setInterval(refreshHomeLiveMatches,45000);
+  // Fixture minutes/scores can move during a match, so keep only this strip fresh.
+  _homeLiveTimer=setInterval(refreshHomeLiveMatches,15000);
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden) refreshHomeLiveMatches();
+  });
 }

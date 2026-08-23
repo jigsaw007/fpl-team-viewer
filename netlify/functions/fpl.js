@@ -16,7 +16,7 @@ const ALLOWED = [
 function cacheFor(path) {
   if (path === "/bootstrap-static/") return "public, max-age=120, s-maxage=300";
   if (path.startsWith("/event/") && path.endsWith("/live/")) return "public, max-age=10, s-maxage=15";
-  if (path.startsWith("/fixtures/")) return "public, max-age=60, s-maxage=120";
+  if (path.startsWith("/fixtures/")) return "public, max-age=5, s-maxage=10";
   return "public, max-age=30, s-maxage=60";
 }
 
