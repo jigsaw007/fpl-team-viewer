@@ -3902,3 +3902,24 @@ html[data-theme="dark"] .home-live-match{background:rgba(16,36,28,.7)}
 html[data-theme="dark"] .home-live-match:hover{background:#173126}
 html[data-theme="dark"] .home-live-minute{background:#32161b;border-color:#5b252e}
 html[data-theme="dark"] .home-live-score strong{color:var(--ink)}
+
+/* Home live ticker: carousel + scorers/red cards without increasing strip height */
+.home-live-head-actions{display:flex;align-items:center;gap:6px;margin-left:auto;min-width:0}
+.home-live-nav{width:26px;height:26px;border:1px solid #cfe9df;border-radius:8px;background:#fff;color:#087a55;display:grid;place-items:center;cursor:pointer;padding:0;flex:0 0 auto}
+.home-live-nav:hover{background:#eaf8f1}.home-live-nav i{font-size:9px}
+.home-live-tape.is-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain}
+.home-live-tape.is-carousel::-webkit-scrollbar{display:none}
+.home-live-tape.is-carousel .home-live-match{flex:0 0 calc(33.333% - 1px);min-width:300px;scroll-snap-align:start}
+.home-live-teammeta{display:flex;flex-direction:column;min-width:0;line-height:1.05}
+.home-live-teammeta>b{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-live-scorers{display:flex;align-items:center;gap:4px;margin-top:3px;max-width:108px;font-size:7px;font-weight:700;color:#66766f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-live-scorers i{font-size:7px;color:#087a55;flex:0 0 auto}
+.home-live-side-away .home-live-scorers{margin-left:auto}
+.home-live-red{display:inline-flex;align-items:center;gap:3px;margin-top:3px;font-size:7px;font-weight:900;color:#c51d2f}
+.home-live-side-away .home-live-red{justify-content:flex-end}
+.home-live-red span{width:6px;height:9px;border-radius:1px;background:#e51f35;box-shadow:0 0 0 1px rgba(151,12,29,.08);flex:0 0 auto}
+@media(max-width:980px){.home-live-tape.is-carousel .home-live-match{flex-basis:50%;min-width:270px}}
+@media(max-width:620px){.home-live-head-actions small{display:none}.home-live-tape.is-carousel .home-live-match{flex-basis:88%;min-width:245px}.home-live-scorers{max-width:86px}.home-live-scoreboard{gap:6px}}
+html[data-theme="dark"] .home-live-nav{background:#14281f;border-color:#285c49;color:#8be3bf}
+html[data-theme="dark"] .home-live-nav:hover{background:#193329}
+html[data-theme="dark"] .home-live-scorers{color:#9eb0a8}

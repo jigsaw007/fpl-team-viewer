@@ -192,24 +192,87 @@ function homeLiveStatus(f){
   return minute>0?`LIVE · ${minute}'`:'LIVE';
 }
 
+function homeFixtureStat(f, identifier){
+  return ((f&&f.stats)||[]).find(s=>s.identifier===identifier)||{h:[],a:[]};
+}
+
+function homeLiveSideInfo(f, side, playerMap){
+  const goals=homeFixtureStat(f,'goals_scored')[side]||[];
+  const reds=homeFixtureStat(f,'red_cards')[side]||[];
+  const scorerNames=goals.map(row=>{
+    const player=playerMap[row.element];
+    if(!player) return '';
+    const qty=Number(row.value||0);
+    return `${player.web_name}${qty>1?` ×${qty}`:''}`;
+  }).filter(Boolean);
+  const redCount=reds.reduce((sum,row)=>sum+Number(row.value||0),0);
+  return {scorerNames,redCount};
+}
+
+function homeLiveScorers(names){
+  if(!names.length) return '';
+  const visible=names.slice(0,2);
+  const more=names.length-visible.length;
+  return `<small class="home-live-scorers" title="${esc(names.join(', '))}"><i class="fa-solid fa-futbol"></i>${esc(visible.join(', '))}${more?` +${more}`:''}</small>`;
+}
+
+function homeLiveRedCard(count){
+  if(!count) return '';
+  return `<small class="home-live-red" title="${count} red card${count===1?'':'s'}"><span aria-hidden="true"></span>${count>1?`×${count}`:''}</small>`;
+}
+
+function setupHomeLiveCarousel(el, count){
+  if(count<4) return;
+  const tape=el.querySelector('.home-live-tape');
+  const prev=el.querySelector('[data-live-prev]');
+  const next=el.querySelector('[data-live-next]');
+  if(!tape||!prev||!next) return;
+  const step=()=>Math.max(260,Math.min(420,tape.clientWidth/3));
+  const move=dir=>tape.scrollBy({left:dir*step(),behavior:'smooth'});
+  prev.onclick=e=>{e.stopPropagation();move(-1)};
+  next.onclick=e=>{e.stopPropagation();move(1)};
+  let paused=false;
+  let timer=null;
+  const start=()=>{
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if(timer) clearInterval(timer);
+    timer=setInterval(()=>{
+      if(paused||document.hidden) return;
+      const nearEnd=tape.scrollLeft+tape.clientWidth>=tape.scrollWidth-10;
+      tape.scrollTo({left:nearEnd?0:tape.scrollLeft+step(),behavior:'smooth'});
+    },5500);
+  };
+  const stop=()=>{if(timer){clearInterval(timer);timer=null}};
+  tape.addEventListener('mouseenter',()=>paused=true);
+  tape.addEventListener('mouseleave',()=>paused=false);
+  tape.addEventListener('pointerdown',()=>paused=true,{passive:true});
+  tape.addEventListener('pointerup',()=>{paused=false},{passive:true});
+  start();
+  el._liveCarouselCleanup=stop;
+}
+
 function renderHomeLiveMatches(b, fixtures){
   const el=$("homeLiveMatches"); if(!el) return;
+  if(el._liveCarouselCleanup){el._liveCarouselCleanup();el._liveCarouselCleanup=null;}
   const teams=Object.fromEntries((b.teams||[]).map(t=>[t.id,t]));
+  const playerMap=Object.fromEntries((b.elements||[]).map(p=>[p.id,p]));
   const live=(fixtures||[]).filter(f=>f.started && !f.finished && !f.finished_provisional);
   if(!live.length){el.hidden=true;el.innerHTML='';return;}
+  const carousel=live.length>=4;
   el.hidden=false;
   el.innerHTML=`<div class="home-live-head">
       <div class="home-live-title"><span class="home-live-dot" aria-hidden="true"></span><b>LIVE NOW</b><span class="home-live-headline">Premier League matchday</span></div>
-      <small>${live.length} match${live.length===1?'':'es'} in progress</small>
+      <div class="home-live-head-actions">${carousel?`<button type="button" class="home-live-nav" data-live-prev aria-label="Previous live matches"><i class="fa-solid fa-chevron-left"></i></button><button type="button" class="home-live-nav" data-live-next aria-label="Next live matches"><i class="fa-solid fa-chevron-right"></i></button>`:''}<small>${live.length} match${live.length===1?'':'es'} in progress</small></div>
     </div>
-    <div class="home-live-tape">${live.map(f=>{
+    <div class="home-live-tape${carousel?' is-carousel':''}">${live.map(f=>{
       const h=teams[f.team_h]||{},a=teams[f.team_a]||{};
+      const hs=homeLiveSideInfo(f,'h',playerMap),as=homeLiveSideInfo(f,'a',playerMap);
       return `<button class="home-live-match" data-live-gw="${f.event||1}">
         <div class="home-live-match-top"><span class="home-live-minute"><i class="fa-solid fa-circle"></i>${esc(homeLiveStatus(f))}</span><span class="home-live-details">Match centre <i class="fa-solid fa-arrow-right"></i></span></div>
         <div class="home-live-scoreboard">
-          <div class="home-live-side home-live-side-home">${teamKitImg(h,'home-live-kit',`${h.name||'Home'} kit`)}<span>${esc(h.short_name||h.name||'HOME')}</span></div>
+          <div class="home-live-side home-live-side-home">${teamKitImg(h,'home-live-kit',`${h.name||'Home'} kit`)}<span class="home-live-teammeta"><b>${esc(h.short_name||h.name||'HOME')}</b>${homeLiveScorers(hs.scorerNames)}${homeLiveRedCard(hs.redCount)}</span></div>
           <div class="home-live-score"><strong>${f.team_h_score??0}</strong><span>–</span><strong>${f.team_a_score??0}</strong></div>
-          <div class="home-live-side home-live-side-away">${teamKitImg(a,'home-live-kit',`${a.name||'Away'} kit`)}<span>${esc(a.short_name||a.name||'AWAY')}</span></div>
+          <div class="home-live-side home-live-side-away"><span class="home-live-teammeta"><b>${esc(a.short_name||a.name||'AWAY')}</b>${homeLiveScorers(as.scorerNames)}${homeLiveRedCard(as.redCount)}</span>${teamKitImg(a,'home-live-kit',`${a.name||'Away'} kit`)}</div>
         </div>
       </button>`
     }).join('')}</div>`;
@@ -218,6 +281,7 @@ function renderHomeLiveMatches(b, fixtures){
     switchTab('fixtures');
     setTimeout(()=>{if(typeof setFixtureGw==='function') setFixtureGw(gw);},0);
   });
+  setupHomeLiveCarousel(el,live.length);
 }
 
 async function refreshHomeLiveMatches(){
