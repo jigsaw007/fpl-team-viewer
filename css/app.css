@@ -3445,3 +3445,33 @@ html[data-theme="dark"] .pressure-row.fall .pressure-score b{color:#ff9bad}
 @media(max-width:900px){.otw-context{flex-direction:column;gap:7px}.otw-context>div{white-space:normal}}
 @media(max-width:700px){.otw-grid{grid-template-columns:1fr}.otw-card{max-width:390px;width:100%;margin:0 auto}.otw-player-top{min-height:230px}}
 @media(max-width:520px){.otw-player-top{padding:18px 12px 14px}.otw-player-visual{height:118px}.otw-face-img{height:114px;max-width:114px}.otw-player-copy h3{font-size:18px}.otw-gw-points{min-width:58px;padding:7px 5px}.otw-gw-points b{font-size:22px}.otw-fx-grid{gap:3px}.otw-fx{padding:6px 1px}.otw-fx small{font-size:7px}}
+
+/* ===== Home loading states ===== */
+.home-loading-state{
+  min-height:92px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:9px;
+  color:var(--muted,#7a8796);
+  font-size:13px;
+  text-align:center;
+}
+.home-soccer-loader{
+  width:42px;
+  height:42px;
+  display:block;
+  object-fit:contain;
+  animation:homeLoaderFloat 1.15s ease-in-out infinite;
+  filter:drop-shadow(0 5px 9px rgba(0,0,0,.08));
+}
+#homeGameweek .home-loading-state{min-height:70px;}
+#homeFixtures .home-loading-state{min-height:110px;}
+@keyframes homeLoaderFloat{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-5px) scale(1.035)}
+}
+@media (prefers-reduced-motion:reduce){
+  .home-soccer-loader{animation:none}
+}
