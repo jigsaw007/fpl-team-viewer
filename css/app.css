@@ -3379,17 +3379,69 @@ html[data-theme="dark"] .pressure-row.fall .pressure-score-arrow{background:rgba
 html[data-theme="dark"] .pressure-row.rise .pressure-score b{color:#86d9b7}
 html[data-theme="dark"] .pressure-row.fall .pressure-score b{color:#ff9bad}
 
-/* FPL Peek Team — Gameweek navigator */
-.peek-gw-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 4px;min-width:0}
-.peek-gw-tabs{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none;max-width:min(100%,760px);padding:2px}
+/* FPL Peek Team Gameweek navigator */
+.peek-gw-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 14px;min-width:0}
+.peek-gw-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;max-width:100%;padding:2px}
 .peek-gw-tabs::-webkit-scrollbar{display:none}
-.peek-gw-tabs button,.peek-gw-arrow{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;transition:.16s ease}
-.peek-gw-tabs button{min-width:72px;border-radius:10px;padding:7px 11px;display:grid;gap:1px;text-align:center}
-.peek-gw-tabs button span{font-weight:800;font-size:12px}.peek-gw-tabs button em{font-style:normal;font-size:8px;line-height:1.2;text-transform:uppercase;letter-spacing:.06em;color:var(--sub)}
-.peek-gw-tabs button:hover{border-color:#80bda2;background:#f5fbf8}.peek-gw-tabs button.active{background:#eaf8f1;border-color:#61b58f;box-shadow:inset 0 -2px 0 var(--accent)}
-.peek-gw-tabs button.active em{color:var(--accent);font-weight:800}
-.peek-gw-arrow{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;font-size:20px;line-height:1}
-.peek-gw-arrow:disabled{opacity:.3;cursor:not-allowed}
-html[data-theme="dark"] .peek-gw-tabs button,html[data-theme="dark"] .peek-gw-arrow{background:var(--panel);border-color:var(--line)}
-html[data-theme="dark"] .peek-gw-tabs button:hover,html[data-theme="dark"] .peek-gw-tabs button.active{background:#142a21;border-color:#3f8568}
-@media(max-width:600px){.peek-gw-nav{gap:5px;justify-content:stretch}.peek-gw-tabs{flex:1;justify-content:flex-start}.peek-gw-tabs button{min-width:62px;padding:7px 8px}.peek-gw-arrow{width:32px;height:32px;flex-basis:32px}}
+.peek-gw-tabs button,.peek-gw-arrow{border:1px solid var(--border,#dfe5e3);background:var(--card,#fff);color:var(--text,#101418);border-radius:12px;min-height:44px;font:inherit;cursor:pointer}
+.peek-gw-tabs button{display:grid;gap:2px;min-width:84px;padding:8px 13px;text-align:center}
+.peek-gw-tabs button b{font-size:13px}.peek-gw-tabs button span{font-size:10px;color:var(--muted,#7b8790);text-transform:uppercase;letter-spacing:.05em}
+.peek-gw-tabs button.active{border-color:#0a9b69;background:#eaf9f3;color:#087d58;box-shadow:inset 0 0 0 1px rgba(10,155,105,.08)}
+.peek-gw-tabs button.active span{color:#087d58}
+.peek-gw-arrow{width:44px;min-width:44px;font-size:24px;line-height:1}
+.peek-gw-arrow:disabled{opacity:.35;cursor:not-allowed}
+@media(max-width:640px){.peek-gw-nav{justify-content:stretch}.peek-gw-tabs{flex:1}.peek-gw-tabs button{min-width:76px;padding:7px 10px}}
+
+/* =========================================================
+   One To Watch - restored responsive portrait cards
+   ========================================================= */
+.otw-note{display:none!important}
+.otw-context{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;border:1px solid var(--line);border-radius:16px;background:var(--card);padding:16px 18px;margin-bottom:16px}
+.otw-context>div{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.otw-context b{font-size:15px}
+.otw-context p{margin:0;color:var(--muted);font-size:12px;max-width:720px;line-height:1.5}
+.otw-gw{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:var(--accent-soft,#e9f7f1);color:var(--accent,#07865f);font-size:11px;font-weight:900}
+.otw-loading{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--card)}
+.otw-loading b,.otw-loading small{display:block}
+.otw-loading small{color:var(--muted);margin-top:3px}
+
+.otw-grid{display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:16px;align-items:stretch}
+.otw-card{position:relative;min-height:500px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:20px;background:var(--card);padding:0;overflow:hidden;box-shadow:0 5px 18px rgba(17,24,39,.035)}
+.otw-player-top{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-height:245px;padding:22px 18px 16px;text-align:center;background:linear-gradient(135deg,color-mix(in srgb,var(--accent-soft,#e9f7f1) 72%,var(--card) 28%),var(--card) 68%)}
+.otw-player-visual{width:100%;height:132px;display:flex;align-items:flex-end;justify-content:center}
+.otw-face-img{height:128px;max-width:128px;object-fit:contain;filter:drop-shadow(0 7px 6px rgba(0,0,0,.12))}
+.otw-player-visual .face-fb{width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff}
+.otw-player-copy{width:100%;min-width:0}
+.otw-player-line{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--muted);font-size:10px;font-weight:700}
+.otw-kit{width:24px;height:30px;object-fit:contain}
+.otw-player-copy h3{margin:5px 0 2px;font-size:20px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.1}
+.otw-price{font-size:13px;font-weight:800;color:var(--muted)}
+.otw-gw-points{position:absolute;right:12px;top:12px;min-width:62px;text-align:center;padding:8px 7px;border-radius:13px;background:var(--card);border:1px solid var(--line)}
+.otw-gw-points small,.otw-gw-points b,.otw-gw-points span{display:block}
+.otw-gw-points small{font-size:9px;color:var(--muted);font-weight:800}
+.otw-gw-points b{font-size:24px;line-height:1.05;color:var(--accent,#07865f)}
+.otw-gw-points span{font-size:9px;color:var(--muted)}
+.otw-metrics{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.otw-metrics>div{padding:10px 6px;text-align:center;border-right:1px solid var(--line)}
+.otw-metrics>div:nth-child(2),.otw-metrics>div:nth-child(4){border-right:0}
+.otw-metrics>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+.otw-metrics span,.otw-metrics b{display:block}
+.otw-metrics span{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:800}
+.otw-metrics b{font-size:13px;margin-top:2px}
+.otw-availability{display:flex;align-items:center;gap:7px;margin:10px 13px 0;padding:8px 10px;border-radius:10px;background:#fff8e8;color:#8a6413;font-size:11px;font-weight:700}
+.otw-fixtures{margin-top:auto;padding:12px 12px 14px}
+.otw-fixtures-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.otw-fixtures-title b{font-size:11px}
+.otw-fixtures-title span{font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.otw-fx-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.otw-fx{min-width:0;border-radius:9px;padding:7px 2px;text-align:center;color:#17221d}
+.otw-fx span,.otw-fx b,.otw-fx small{display:block}
+.otw-fx span{font-size:8px;opacity:.7}
+.otw-fx b{font-size:11px}
+.otw-fx small{font-size:7.5px;white-space:nowrap}
+.otw-fx.fdr1{background:#72dfb0}.otw-fx.fdr2{background:#a7e9cb}.otw-fx.fdr3{background:#e4e7ec}.otw-fx.fdr4{background:#f3a7b8}.otw-fx.fdr5{background:#db6e88;color:#fff}
+
+@media(max-width:1100px){.otw-grid{grid-template-columns:repeat(2,minmax(250px,1fr))}}
+@media(max-width:900px){.otw-context{flex-direction:column;gap:7px}.otw-context>div{white-space:normal}}
+@media(max-width:700px){.otw-grid{grid-template-columns:1fr}.otw-card{max-width:390px;width:100%;margin:0 auto}.otw-player-top{min-height:230px}}
+@media(max-width:520px){.otw-player-top{padding:18px 12px 14px}.otw-player-visual{height:118px}.otw-face-img{height:114px;max-width:114px}.otw-player-copy h3{font-size:18px}.otw-gw-points{min-width:58px;padding:7px 5px}.otw-gw-points b{font-size:22px}.otw-fx-grid{gap:3px}.otw-fx{padding:6px 1px}.otw-fx small{font-size:7px}}
