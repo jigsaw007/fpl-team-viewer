@@ -39,7 +39,7 @@ async function runTeamAnalyzer(rawId){
     }
     const {gw,data:picks}=publicPicks,teams=b.teams||[],byId=Object.fromEntries((b.elements||[]).map(e=>[e.id,e]));
     const squad=(picks.picks||[]).map(pk=>({pick:pk,e:byId[pk.element]})).filter(x=>x.e);
-    const start=(b.events.find(e=>e.is_current)||b.events.find(e=>e.is_next)||b.events[0]||{}).id||gw;
+    const start=(activeGameweekEvent(b.events)||b.events[0]||{}).id||gw;
     const fmap=buildFixtureMap(fixtures,start);
     const enriched=squad.map(x=>({...x,proj:fplPeekProjectedPoints(x.e,fmap,1),proj5:fplPeekProjectedPoints(x.e,fmap,5),fdr:fixtureAverageForTeam(x.e.team,fmap,5)}));
     const xi=enriched.filter(x=>Number(x.pick.position)<=11),bench=enriched.filter(x=>Number(x.pick.position)>11);

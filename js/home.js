@@ -9,7 +9,7 @@ async function initHome(){
   _homeReady=true;
   try{
     const [b, fixtures]=await Promise.all([loadBoot(), get("/fixtures/")]);
-    renderHomeGameweek(b);
+    renderHomeGameweek(b,fixtures);
     renderHomeLiveMatches(b, fixtures);
     startHomeLivePolling();
     renderHomeInsights(b);
@@ -95,12 +95,12 @@ async function enrichHomeSavedTeam(){
   }catch(_){ /* saved-team shell is still useful */ }
 }
 
-function renderHomeGameweek(b){
+function renderHomeGameweek(b,fixtures=[]){
   const el=$("homeGameweek"); if(!el) return;
   const events=b.events||[];
   const current=events.find(e=>e.is_current);
   const next=events.find(e=>e.is_next);
-  const previous=[...events].reverse().find(e=>e.finished);
+  const previous=[...events].reverse().find(e=>homeEventComplete(e));
   const total=b.total_players?short(b.total_players):"—";
 
   // Before GW1 starts, avoid showing an empty-looking statistics card.
@@ -114,16 +114,18 @@ function renderHomeGameweek(b){
     return;
   }
 
-  const ev=current||previous||next||events[0];
+  const currentFixtures=(fixtures||[]).filter(f=>f.event===current?.id);
+  const currentDone=!!(current&&(homeEventComplete(current)||(currentFixtures.length&&currentFixtures.every(f=>f.finished||f.finished_provisional))));
+  const ev=(current&&!currentDone)?current:(next||current||previous||events[0]);
   if(!ev){
     el.innerHTML=`<div class="home-card-label">Gameweek status</div><div class="home-card-value small">Season setup</div><div class="home-card-sub">Gameweek data is not available yet.</div>`;
     return;
   }
 
-  const live=current && !current.finished;
+  const live=!!(current&&!currentDone&&ev.id===current.id);
   const avg=Number(ev.average_entry_score||0);
   const high=Number(ev.highest_score||0);
-  const status=live?"Live":ev.finished?"Finished":ev.is_next?"Up next":"Gameweek";
+  const status=live?"Live":homeEventComplete(ev)?"Final":ev.is_next?"Up next":"Gameweek";
   el.innerHTML=`
     <div class="home-card-label">Gameweek status</div>
     <div class="home-gw-status-row"><div class="home-card-value small">GW${ev.id}</div><span class="home-gw-pill${live?" live":""}">${status}</span></div>
@@ -169,7 +171,8 @@ function renderHomeInsights(b){
 function renderHomeBestFixtures(b, fixtures){
   const el=$("homeFixtures"); if(!el) return;
   const events=b.events||[];
-  const start=(events.find(e=>e.is_current)||events.find(e=>e.is_next)||events[0]||{}).id||1;
+  const cur=events.find(e=>e.is_current), active=(cur&&!homeEventComplete(cur))?cur:(events.find(e=>e.is_next)||cur);
+  const start=(active||events[0]||{}).id||1;
   const map=buildFixtureMap(fixtures,start);
   const rows=(b.teams||[]).map(t=>{
     const fx=(map[t.id]||[]).slice(0,3);

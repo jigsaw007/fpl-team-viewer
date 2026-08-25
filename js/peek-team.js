@@ -2,8 +2,10 @@
    A deterministic, public-data-only fantasy squad built for one Gameweek at a time.
    No real FPL account is used or changed. Historical Gameweeks are reconstructed from
    information available before that round where the public API permits it. */
-const PEEK_TEAM_VERSION="v4";
-let _peekFixtures=null,_peekLiveCache=new Map(),_peekHistoryBusy=false,_peekCurrentGw=null,_peekTargetGw=null;
+const PEEK_TEAM_VERSION="v3";
+let _peekFixtures=null,_peekLiveCache=new Map(),_peekHistoryBusy=false,_peekCurrentGw=null;
+
+function peekEventComplete(ev){ return !!(ev && (ev.finished || ev.data_checked)); }
 
 async function peekFixtures(){
   if(!_peekFixtures) _peekFixtures=await get('/fixtures/');
@@ -20,34 +22,17 @@ function peekFixtureFor(teamId,gw,fixtures){
   const home=f.team_h===teamId;
   return {home,opp:home?f.team_a:f.team_h,fdr:Number(home?f.team_h_difficulty:f.team_a_difficulty)||3};
 }
-function peekEventFixturesDone(gw,fixtures){
-  const rows=(fixtures||[]).filter(f=>Number(f.event)===Number(gw));
-  return rows.length>0&&rows.every(f=>f.finished===true);
-}
-function peekEventState(gw,fixtures){
+function peekEventState(gw){
   const ev=(boot?.events||[]).find(e=>e.id===gw)||{};
-  if(ev.finished||ev.data_checked||peekEventFixturesDone(gw,fixtures)) return 'final';
+  if(peekEventComplete(ev)) return 'final';
   if(ev.is_current) return 'live';
   return 'upcoming';
 }
-function peekTargetEvent(fixtures){
+function peekTargetEvent(){
   const evs=boot?.events||[];
-  const current=evs.find(e=>e.is_current);
-  const next=evs.find(e=>e.is_next);
-  // FPL can keep the previous Gameweek marked as current while league tables are
-  // still being processed. Once every fixture in that round is finished (or FPL
-  // has data_checked it), move FPL Peek Team to the next deadline immediately.
-  if(next&&(!current||current.finished||current.data_checked||peekEventFixturesDone(current.id,fixtures))) return next;
-  return (current&&!current.finished?current:null) || next || evs.find(e=>!e.finished) || [...evs].reverse().find(e=>e.finished) || evs[0];
-}
-function peekFixtureRunFactor(teamId,gw,fixtures){
-  const weights=[.58,.27,.15], factors={1:1.12,2:1.07,3:1,4:.91,5:.82};
-  let total=0,weight=0;
-  for(let i=0;i<3;i++){
-    const fx=peekFixtureFor(teamId,gw+i,fixtures); if(!fx)continue;
-    const w=weights[i]; total+=(factors[fx.fdr]||1)*w; weight+=w;
-  }
-  return weight?total/weight:1;
+  const cur=evs.find(e=>e.is_current);
+  if(cur && !peekEventComplete(cur)) return cur;
+  return evs.find(e=>e.is_next) || evs.find(e=>!peekEventComplete(e)) || cur || [...evs].reverse().find(e=>peekEventComplete(e)) || evs[0];
 }
 async function peekPriorStats(gw){
   const ids=(boot?.elements||[]).map(e=>e.id);
@@ -102,7 +87,6 @@ function peekAvailability(e,state){
 function peekPlayerModel(e,gw,fixtures,prior,state){
   const fx=peekFixtureFor(e.team,gw,fixtures); if(!fx) return {...e,_peek:-99,_peekCaptain:-99,_peekFx:null};
   const fdr=fx.fdr||3, fixtureFactor={1:1.23,2:1.13,3:1,4:.87,5:.74}[fdr]||1;
-  const runFactor=state==='upcoming'?peekFixtureRunFactor(e.team,gw,fixtures):1;
   const homeFactor=fx.home?1.035:.985;
   const strengthFactor=peekTeamStrengthFactor(e,fx);
   const own=Math.min(85,Number(e.selected_by_percent)||0), price=(Number(e.now_cost)||40)/10;
@@ -128,13 +112,7 @@ function peekPlayerModel(e,gw,fixtures,prior,state){
     // Blend the official next-GW estimate with underlying role/output signals. After GW1,
     // recent match data gets the largest say; before GW1, stable historical/profile data carries more weight.
     if(s?.games){
-      // From GW2 onward, avoid overreacting to a single previous-GW haul. Official
-      // next-GW expectation, underlying involvement, minutes/security and the next
-      // fixture do more of the work, while recent returns remain an important signal.
-      base=Math.min(8,ep)*.34 + recentAvg*.18 + form*.08 + ppg*.06
-        + Math.min(2.8,recentXgi*1.45)*.13 + Math.min(2.5,xgi90*1.35)*.09
-        + Math.min(1.1,recentBps/42)*.05 + Math.min(.9,recentBonus*.22)*.03
-        + Math.min(7,historicalRate)*.04;
+      base=recentAvg*.46 + recentPlain*.10 + Math.min(8,ep)*.16 + form*.10 + ppg*.06 + Math.min(2.5,recentXgi*1.35)*.08 + Math.min(1.2,recentBonus*.28)*.04;
     }else{
       base=Math.min(8,ep)*.30 + form*.12 + ppg*.18 + Math.min(7,historicalRate)*.14 + Math.min(2.8,xgi90*1.55)*.15 + Math.min(1.2,ict/22)*.06 + Math.min(.8,(threat+creativity)/160)*.05;
       if(base<1.4) base=1.0 + Math.max(0,price-4)*.23 + Math.min(.95,xgi90*.6) + own*.006;
@@ -157,7 +135,7 @@ function peekPlayerModel(e,gw,fixtures,prior,state){
   const attackingProfile=Math.min(1.6,Math.max(xgi90,recentXgi)*.85 + Math.max(xg90,0)*.32 + Math.max(xa90,0)*.18);
   const premiumCeiling=(e.element_type>=3?Math.max(0,price-8)*.11:Math.max(0,price-6)*.035);
   const roleCeiling=attackingProfile*.24 + penalty*.30 + (e.element_type>=3?Math.min(.34,ppg/18):0);
-  let projected=(base+penalty+directFk+corners+defensive+premiumCeiling*.30+roleCeiling*.34)*fixtureFactor*Math.pow(runFactor,.26)*homeFactor*strengthFactor*minuteFactor*availability;
+  let projected=(base+penalty+directFk+corners+defensive+premiumCeiling*.30+roleCeiling*.34)*fixtureFactor*homeFactor*strengthFactor*minuteFactor*availability;
   projected=Math.max(.35,Math.min(10.8,projected));
   const market=state==='upcoming'?Math.min(.18,Math.max(-.10,(Number(e.transfers_in_event)||0-(Number(e.transfers_out_event)||0))/300000*.05)):0;
   const reliability=minuteFactor*.40 + Math.min(.16,own/250) + Math.min(.12,recentBps/180);
@@ -170,11 +148,7 @@ function peekPlayerModel(e,gw,fixtures,prior,state){
   const captainHome=fx.home?.30:0;
   const captainGoalThreat=Math.min(2.1,Math.max(xg90,0)*1.05 + Math.max(xgi90,recentXgi)*.62);
   const captainPedigree=Math.min(1.25,Math.max(0,price-8)*.13) + Math.min(.72,ppg*.10);
-  let capScore=projected*1.17 + roleCeiling*.58 + premiumCeiling*.42 + captainGoalThreat + captainPedigree + captainHome + Math.min(.34,own/190) + minuteFactor*.22 + penalty*.68;
-  // Captaincy should strongly prefer secure starters. A doubtful/sub-risk player can
-  // still make the squad, but should rarely be trusted with the armband.
-  if(state==='upcoming'&&minuteFactor<.82) capScore*=.84;
-  if(state==='upcoming'&&availability<.9) capScore*=Math.max(.72,availability);
+  const capScore=projected*1.17 + roleCeiling*.58 + premiumCeiling*.42 + captainGoalThreat + captainPedigree + captainHome + Math.min(.34,own/190) + minuteFactor*.22 + penalty*.68;
   return {...e,_peek:projected,_peekSquad:squadScore,_peekCaptain:capScore,_peekFx:fx,_peekAvailability:availability,_peekCeiling:roleCeiling+premiumCeiling,_peekMinutes:minuteFactor};
 }
 function peekClubCount(sel){const m=new Map(); for(const p of sel)m.set(p.team,(m.get(p.team)||0)+1); return m;}
@@ -253,7 +227,7 @@ function peekStartingXI(squad){
   return {xi,bench:[benchGk,...benchOut].filter(Boolean),form:best?.form||'—'};
 }
 async function buildPeekTeam(gw){
-  await loadBoot(); const fixtures=await peekFixtures(); const state=peekEventState(gw,fixtures);
+  await loadBoot(); const fixtures=await peekFixtures(); const state=peekEventState(gw);
   const prior=gw>1?await peekPriorStats(gw):null;
   const candidates=(boot.elements||[]).map(e=>peekPlayerModel(e,gw,fixtures,prior,state)).filter(p=>p._peekFx&&p._peekAvailability>.12);
   let squad=peekBuildSquad(candidates);
@@ -319,29 +293,25 @@ function peekMethodText(state){
   if(state==='upcoming')return 'The squad combines official FPL expected points where available with recent Gameweek returns, rolling minutes, xGI and attacking involvement, team and opponent strength, fixture difficulty, home/away context, availability, penalties and set pieces, defensive signals, price and a small market-confidence signal. Premium ceiling is scored separately from value so elite captaincy options are not excluded simply for being expensive. The final 15 always obey the £100.0m budget, positional limits and maximum three players per club.';
   return 'For completed and live rounds, the selection model uses only earlier Gameweek returns for recent form, plus the target fixture and stable player-role signals. This helps keep the archive from simply selecting players because they already scored in that round.';
 }
-function peekEnsureNavigator(){
-  let nav=$('peekGwNav'); if(nav)return nav;
-  const status=$('peekTeamStatus'); if(!status)return null;
-  nav=document.createElement('div'); nav.id='peekGwNav'; nav.className='peek-gw-nav';
-  status.parentNode.insertBefore(nav,status);
-  return nav;
+function peekEnsureGwNavStyles(){
+  if(document.getElementById('peekGwNavStyles'))return;
+  const st=document.createElement('style');st.id='peekGwNavStyles';st.textContent=`.peek-gw-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 14px;min-width:0}.peek-gw-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;max-width:100%;padding:2px}.peek-gw-tabs::-webkit-scrollbar{display:none}.peek-gw-tabs button,.peek-gw-arrow{border:1px solid var(--border,#dfe5e3);background:var(--card,#fff);color:var(--text,#101418);border-radius:12px;min-height:44px;font:inherit;cursor:pointer}.peek-gw-tabs button{display:grid;gap:2px;min-width:84px;padding:8px 13px;text-align:center}.peek-gw-tabs button b{font-size:13px}.peek-gw-tabs button span{font-size:10px;color:var(--muted,#7b8790);text-transform:uppercase;letter-spacing:.05em}.peek-gw-tabs button.active{border-color:#0a9b69;background:#eaf9f3;color:#087d58;box-shadow:inset 0 0 0 1px rgba(10,155,105,.08)}.peek-gw-tabs button.active span{color:#087d58}.peek-gw-arrow{width:44px;min-width:44px;font-size:24px;line-height:1}.peek-gw-arrow:disabled{opacity:.35;cursor:not-allowed}@media(max-width:640px){.peek-gw-nav{justify-content:stretch}.peek-gw-tabs{flex:1}.peek-gw-tabs button{min-width:76px;padding:7px 10px}}`;document.head.appendChild(st);
 }
-function peekRenderNavigator(selectedGw){
-  const nav=peekEnsureNavigator(); if(!nav)return;
-  const evs=(boot?.events||[]).filter(e=>Number(e.id)<=Number(_peekTargetGw||selectedGw));
-  if(!evs.length){nav.innerHTML='';return}
-  nav.innerHTML=`<button class="peek-gw-arrow" type="button" data-peek-step="-1" aria-label="Previous Gameweek">‹</button><div class="peek-gw-tabs">${evs.map(e=>`<button type="button" data-peek-nav-gw="${e.id}" class="${Number(e.id)===Number(selectedGw)?'active':''}"><span>GW${e.id}</span>${Number(e.id)===Number(_peekTargetGw)?'<em>Active</em>':(e.finished||e.data_checked?'<em>Final</em>':'')}</button>`).join('')}</div><button class="peek-gw-arrow" type="button" data-peek-step="1" aria-label="Next Gameweek">›</button>`;
-  nav.querySelectorAll('[data-peek-nav-gw]').forEach(b=>b.addEventListener('click',()=>peekLoadGw(Number(b.dataset.peekNavGw))));
-  nav.querySelectorAll('[data-peek-step]').forEach(b=>b.addEventListener('click',()=>{
-    const ids=evs.map(e=>Number(e.id)),i=ids.indexOf(Number(selectedGw)),n=i+Number(b.dataset.peekStep);
-    if(n>=0&&n<ids.length)peekLoadGw(ids[n]);
-  }));
-  const prev=nav.querySelector('[data-peek-step="-1"]'),next=nav.querySelector('[data-peek-step="1"]'),ids=evs.map(e=>Number(e.id)),idx=ids.indexOf(Number(selectedGw));
-  if(prev)prev.disabled=idx<=0; if(next)next.disabled=idx<0||idx>=ids.length-1;
+function peekRenderGwNav(selectedGw){
+  let host=$('peekGwNav');
+  if(!host){const status=$('peekTeamStatus'); if(!status)return; host=document.createElement('div');host.id='peekGwNav';host.className='peek-gw-nav';host.setAttribute('aria-label','FPL Peek Team Gameweek selector');status.parentNode.insertBefore(host,status);}
+  const evs=boot?.events||[], target=peekTargetEvent();
+  const visible=evs.filter(e=>peekEventComplete(e) || e.id===target?.id).sort((a,b)=>a.id-b.id);
+  if(!visible.length){host.innerHTML='';return;}
+  const idx=visible.findIndex(e=>e.id===selectedGw);
+  const prev=idx>0?visible[idx-1]:null, next=idx>=0&&idx<visible.length-1?visible[idx+1]:null;
+  host.innerHTML=`<button type="button" class="peek-gw-arrow" data-peek-nav="${prev?.id||''}" ${prev?'':'disabled'} aria-label="Previous Gameweek">‹</button><div class="peek-gw-tabs">${visible.map(e=>`<button type="button" data-peek-gw-tab="${e.id}" class="${e.id===selectedGw?'active':''}"><b>GW${e.id}</b><span>${peekEventComplete(e)?'Final':e.id===target?.id?'Active':'Upcoming'}</span></button>`).join('')}</div><button type="button" class="peek-gw-arrow" data-peek-nav="${next?.id||''}" ${next?'':'disabled'} aria-label="Next Gameweek">›</button>`;
+  host.querySelectorAll('[data-peek-gw-tab]').forEach(b=>b.addEventListener('click',()=>peekLoadGw(Number(b.dataset.peekGwTab))));
+  host.querySelectorAll('[data-peek-nav]').forEach(b=>{if(b.dataset.peekNav)b.addEventListener('click',()=>peekLoadGw(Number(b.dataset.peekNav)))});
 }
 function peekRender(team,score){
   _peekCurrentGw=team.gw; const state=team.state;
-  peekRenderNavigator(team.gw);
+  peekRenderGwNav(team.gw);
   const ev=(boot.events||[]).find(e=>e.id===team.gw)||{};
   const status=state==='final'?`Final score · ${score?.total??'—'} pts`:state==='live'?`Live score · ${score?.total??'—'} pts`:`Projected XI · ${team.projected.toFixed(1)} pts`;
   $('peekTeamStatus').innerHTML=`<span class="peek-status-dot ${state}"></span><b>${status}</b><span>${state==='upcoming'&&ev.deadline_time?`Deadline ${new Date(ev.deadline_time).toLocaleString(undefined,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`:state==='live'?'Points are provisional until the Gameweek is final.':'Official FPL points with captaincy and valid autosubs applied.'}</span>`;
@@ -352,6 +322,7 @@ function peekRender(team,score){
   $('peekMethodBody').textContent=peekMethodText(state);
   $('peekArchiveTitle').textContent=`Gameweek record`;
   document.querySelectorAll('[data-peek-gw]').forEach(b=>b.classList.toggle('active',Number(b.dataset.peekGw)===team.gw));
+  const currentBtn=$('peekCurrentBtn'); if(currentBtn){const target=peekTargetEvent();currentBtn.textContent=target?`${peekEventComplete(target)?'Final':'Active'} · GW${target.id}`:'Active Gameweek';}
 }
 async function peekLoadGw(gw){
   const wrap=$('peekTeamBody'); if(!wrap)return;
@@ -365,8 +336,7 @@ async function peekLoadGw(gw){
 async function peekLoadArchive(){
   if(_peekHistoryBusy)return; _peekHistoryBusy=true;
   const box=$('peekArchive'); if(!box)return;
-  const fixtures=await peekFixtures();
-  const done=(boot.events||[]).filter(e=>e.finished||e.data_checked||peekEventFixturesDone(e.id,fixtures)).sort((a,b)=>b.id-a.id);
+  const done=(boot.events||[]).filter(e=>peekEventComplete(e)).sort((a,b)=>b.id-a.id);
   if(!done.length){box.innerHTML='<div class="peek-empty">Gameweek scores will appear here once GW1 is complete.</div>';_peekHistoryBusy=false;return}
   box.innerHTML=done.map(e=>`<button data-peek-gw="${e.id}"><span>GW${e.id}</span><b id="peekScore${e.id}">Calculating…</b><em>View squad →</em></button>`).join('');
   box.querySelectorAll('[data-peek-gw]').forEach(b=>b.addEventListener('click',()=>peekLoadGw(Number(b.dataset.peekGw))));
@@ -379,11 +349,9 @@ async function peekLoadArchive(){
 }
 async function initPeekTeam(){
   await loadBoot();
-  const fixtures=await peekFixtures();
-  const ev=peekTargetEvent(fixtures); if(!ev)return;
-  _peekTargetGw=ev.id;
-  const currentBtn=$('peekCurrentBtn'); if(currentBtn)currentBtn.textContent=`Active · GW${ev.id}`;
+  peekEnsureGwNavStyles();
+  const ev=peekTargetEvent(); if(!ev)return;
   await peekLoadGw(ev.id);
   peekLoadArchive();
-  currentBtn?.addEventListener('click',()=>peekLoadGw(_peekTargetGw));
+  $('peekCurrentBtn')?.addEventListener('click',()=>{const x=peekTargetEvent();if(x)peekLoadGw(x.id)});
 }

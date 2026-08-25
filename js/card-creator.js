@@ -97,7 +97,7 @@ async function initCardCreator(){
     _ccBound=true;
     const st=savedTeam(); if(st&&st.id) $("ccTeamA").value=st.id;
     const gwSel=$("ccGw");
-    const playable=(b.events||[]).filter(e=>e.finished||e.is_current);
+    const playable=(b.events||[]).filter(e=>eventComplete(e)||e.is_current);
     gwSel.innerHTML=playable.length
       ? playable.slice().reverse().map(e=>`<option value="${e.id}">Gameweek ${e.id}${e.is_current?" - current":""}</option>`).join("")
       : `<option value="">Gameweek cards unlock after GW1 starts</option>`;

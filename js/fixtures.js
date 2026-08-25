@@ -5,7 +5,7 @@ async function initFixtures(){
   $("fxMatches").innerHTML=`<div class="tab-status"><div class="spinner"></div>Loading fixtures…</div>`;
   const b=await loadBoot();
   _allFixtures=await get(`/fixtures/`);
-  const initial=b.events.find(e=>e.is_current) || b.events.find(e=>e.is_next) || b.events.find(e=>!e.finished) || b.events[0];
+  const initial=activeGameweekEvent(b.events) || b.events[0];
   _fxGw=initial ? initial.id : 1;
 
   $("fxGwSelect").innerHTML=b.events.map(e=>`<option value="${e.id}">GW${e.id}</option>`).join("");
@@ -107,7 +107,7 @@ function drawMatchCentre(){
   $("fxNext").disabled=_fxGw>=38;
   $("fxGwSelect").value=String(_fxGw);
   const ev=fixtureEventMeta(_fxGw);
-  const status=ev.finished?"Completed":ev.is_current?"Current gameweek":ev.is_next?"Up next":_fxGw===1&&!seasonStarted()?"Season opener":"Scheduled";
+  const status=eventComplete(ev)?"Completed":ev.is_current?"Current gameweek":ev.is_next?"Up next":_fxGw===1&&!seasonStarted()?"Season opener":"Scheduled";
   $("fxGwStatus").textContent=status;
 
   let games=_allFixtures.filter(f=>Number(f.event)===_fxGw).sort((a,b)=>String(a.kickoff_time||"").localeCompare(String(b.kickoff_time||"")));
@@ -279,9 +279,7 @@ function matchRowHtml(f){
 function drawFixtures(){
   if(!_allFixtures||!boot) return;
   const b=boot;
-  const curEvent=b.events.find(e=>e.is_current);
-  const nextEvent=b.events.find(e=>e.is_next);
-  const fromGw=(curEvent||nextEvent||b.events.find(e=>!e.finished)||b.events[0]).id;
+  const fromGw=(activeGameweekEvent(b.events)||b.events[0]).id;
   const gws=[]; for(let g=fromGw; g<fromGw+_fxN && g<=38; g++) gws.push(g);
   const perTeam={};
   b.teams.forEach(t=>perTeam[t.id]={});
@@ -318,7 +316,7 @@ function rotationFixturesFor(teamId,gws){
 function drawRotationPlanner(){
   if(!_allFixtures||!boot||!$("rotTeamA")||!$("rotTeamB")) return;
   const a=Number($("rotTeamA").value),b=Number($("rotTeamB").value);
-  const start=((boot.events||[]).find(e=>e.is_current)||(boot.events||[]).find(e=>e.is_next)||(boot.events||[]).find(e=>!e.finished)||boot.events[0]||{id:1}).id;
+  const start=(activeGameweekEvent(boot.events||[])||boot.events[0]||{id:1}).id;
   const gws=[];for(let g=start;g<start+_rotN&&g<=38;g++)gws.push(g);
   const ra=rotationFixturesFor(a,gws),rb=rotationFixturesFor(b,gws),ta=boot.teams.find(t=>t.id===a)||{},tb=boot.teams.find(t=>t.id===b)||{};
   let quality=0,count=0;

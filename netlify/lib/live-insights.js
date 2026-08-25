@@ -84,6 +84,14 @@ function availability(p) {
   return n(p.chance_of_playing_next_round) >= 75;
 }
 
+
+function eventComplete(ev, fixtures=[]) {
+  if (!ev) return false;
+  if (ev.finished || ev.data_checked) return true;
+  const rows=(fixtures||[]).filter(f=>f.event===ev.id);
+  return rows.length>0 && rows.every(f=>f.finished || f.finished_provisional);
+}
+
 function playerScore(p, fdr, seasonStarted) {
   const form = n(p.form);
   const ppg = n(p.points_per_game);
@@ -171,14 +179,16 @@ async function buildLiveInsights() {
   const players = boot.elements || [];
   const events = boot.events || [];
   const teamById = new Map(teams.map(t=>[t.id,t]));
-  const latestFinished = [...events].filter(e=>e.finished).sort((a,b)=>b.id-a.id)[0] || null;
+  const completedEvents = [...events].filter(e=>eventComplete(e,fixtures)).sort((a,b)=>b.id-a.id);
+  const latestFinished = completedEvents[0] || null;
   const current = events.find(e=>e.is_current) || null;
   const next = events.find(e=>e.is_next) || null;
+  const currentComplete = eventComplete(current,fixtures);
   const reviewGw = latestFinished?.id || 0;
   const now = Date.now();
   const currentDeadline = current?.deadline_time ? Date.parse(current.deadline_time) : 0;
-  const isLive = !!(current && !current.finished && currentDeadline && currentDeadline <= now);
-  const previewGw = next?.id || (!isLive && !current?.finished && current?.id ? current.id : 0);
+  const isLive = !!(current && !currentComplete && currentDeadline && currentDeadline <= now);
+  const previewGw = next?.id || (!isLive && current && !currentComplete ? current.id : (reviewGw<38 ? reviewGw+1 : 0));
   const seasonStarted = reviewGw > 0 || !!current;
   const baseGw = previewGw || Math.min(38,(reviewGw || 0)+1) || 1;
   const fmap = fixtureMap(fixtures, teams, baseGw, 5);
@@ -211,6 +221,13 @@ async function buildLiveInsights() {
     };
     if (topPerformers.length) blocks.push(listBlock("live","Live returns so far", "Useful for context, but not a final verdict while matches and bonus can still change.", topPerformers.slice(0,4).map(p=>({
       name:sentenceName(p), meta:`${teamById.get(p.team)?.short_name || ""} · ${p.event_points} pts · ${pct(p.selected_by_percent)}% owned`, note:n(p.selected_by_percent)<10?"A low-owned return worth monitoring after the Gameweek closes.":"Wait for the Gameweek to finish before making conclusions."
+    }))));
+  } else if (previewGw) {
+    // Between deadlines the live notebook should move forward to the next Gameweek.
+    // The completed round remains available in the archive and as a compact review block below.
+    lead = previewLead(previewGw, fixtureSwings, marketIn, teamById);
+    if (reviewGw && topPerformers.length) blocks.push(listBlock("review",`GW${reviewGw} final standouts`, `A quick final look at GW${reviewGw}; the main briefing has already moved on to GW${previewGw}.`, topPerformers.slice(0,4).map(p=>({
+      name:sentenceName(p), meta:`${teamById.get(p.team)?.short_name || ""} · ${p.event_points} pts · ${pct(p.selected_by_percent)}% owned`, note:n(p.selected_by_percent)<10?"A low-owned return worth carrying into the next-fixture conversation.":"Final return recorded; judge the player on what comes next."
     }))));
   } else if (reviewGw) {
     lead = reviewLead(reviewGw, topPerformers[0], popularBlanks, teamById);
@@ -255,6 +272,20 @@ async function buildLiveInsights() {
     ];
     lead.takeaway = "Treat live scores as provisional. The finished Gameweek matters more than an early rank swing, and the next fixture run should decide whether a return is worth acting on.";
     decorateLead(lead, players, teamById, liveTop || null);
+  } else if (previewGw) {
+    const mover = marketIn[0];
+    const easy = fixtureSwings[0];
+    const cap = captains[0];
+    lead.paragraphs = [
+      reviewGw ? `GW${reviewGw} is complete, so the live notebook has moved on to GW${previewGw}. Final GW${reviewGw} returns remain in the archive; this briefing is about the next decision.` : `The focus is now GW${previewGw}: fixture quality, expected minutes, availability and role matter more than chasing the previous round's points.`,
+      easy ? `${teamById.get(easy.team)?.name || "One club"} has one of the friendlier short-term fixture runs${mover ? `, while ${sentenceName(mover)} is attracting early transfer interest` : ""}. Market movement is useful context, not a transfer command.` : `The next fixtures now matter more than the points already scored.`,
+      cap ? `${sentenceName(cap)} currently leads the FPL Peek captain ranking for GW${previewGw}. Recheck availability and team news before the deadline.` : `Captaincy will become clearer as the deadline approaches and availability information settles.`
+    ];
+    lead.takeaway = `Treat GW${reviewGw || Math.max(1,previewGw-1)} as history and GW${previewGw} as the decision window. Prioritise the next three fixtures, expected minutes and role before reacting to one return or blank.`;
+    lead.visual_mode = "neutral";
+    lead.visual_label = `GW${previewGw}`;
+    delete lead.featured_player;
+    delete lead.featured_team;
   } else if (reviewGw) {
     const star = topPerformers[0];
     const mover = marketIn[0];
@@ -291,7 +322,7 @@ async function buildLiveInsights() {
     preview_gameweek:previewGw || null,
     lead,
     blocks:blocks.slice(0,7),
-    available_gameweeks:[...events].filter(e=>e.finished).map(e=>e.id),
+    available_gameweeks:[...events].filter(e=>eventComplete(e,fixtures)).map(e=>e.id),
     footer_note:"FPL Peek Insights uses public Fantasy Premier League data and transparent rules. It does not claim to have watched matches or know information outside the public data feed."
   };
 }
@@ -306,7 +337,7 @@ async function buildHistoricalInsights(gw) {
     getJson("/fixtures/")
   ]);
   const event = (boot.events || []).find(e => e.id === gameweek);
-  if (!event || !event.finished) throw new Error(`GW${gameweek} is not finished yet`);
+  if (!event || !eventComplete(event,fixtures)) throw new Error(`GW${gameweek} is not complete yet`);
   const teams = boot.teams || [];
   const players = boot.elements || [];
   const teamById = new Map(teams.map(t => [t.id, t]));
@@ -360,7 +391,7 @@ async function buildHistoricalInsights(gw) {
     preview_gameweek:null,
     lead,
     blocks:blocks.slice(0,7),
-    available_gameweeks:[...boot.events].filter(e=>e.finished).map(e=>e.id),
+    available_gameweeks:[...boot.events].filter(e=>eventComplete(e,fixtures)).map(e=>e.id),
     footer_note:"This archive is rebuilt from final public Fantasy Premier League Gameweek data. Historical ownership and transfer snapshots are not shown because the public feed does not preserve every past market value."
   };
 }

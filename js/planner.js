@@ -532,7 +532,7 @@ function plPickerSort(list){
 function plGwEvent(gw){return (boot?.events||[]).find(e=>+e.id===+gw)||null}
 function plGwStatus(gw){
   const ev=plGwEvent(gw);if(!ev)return "upcoming";
-  if(ev.finished)return "final";
+  if(eventComplete(ev))return "final";
   const deadline=ev.deadline_time?new Date(ev.deadline_time).getTime():Infinity;
   if(ev.is_current||Date.now()>=deadline)return "live";
   return "upcoming";

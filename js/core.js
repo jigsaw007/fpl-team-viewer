@@ -43,10 +43,19 @@ window.fplConfirm=(message,opts={})=>fplPeekDialog({title:opts.title||"Confirm a
 window.fplPrompt=(title,value="",opts={})=>fplPeekDialog({title,message:opts.message||"",confirmText:opts.confirmText||"Save",cancelText:opts.cancelText||"Cancel",input:true,value});
 
 /* season / gameweek state helpers */
-function seasonStarted(){ return !!(boot && boot.events && boot.events.some(e=>e.finished||e.is_current)); }
+function eventComplete(ev){ return !!(ev && (ev.finished || ev.data_checked)); }
+function activeGameweekEvent(events=(boot&&boot.events)||[]){
+  const cur=events.find(e=>e.is_current);
+  if(cur && !eventComplete(cur)) return cur;
+  return events.find(e=>e.is_next) || events.find(e=>!eventComplete(e)) || cur || null;
+}
+function latestCompletedEvent(events=(boot&&boot.events)||[]){
+  return [...events].reverse().find(e=>eventComplete(e)) || null;
+}
+function seasonStarted(){ return !!(boot && boot.events && boot.events.some(e=>eventComplete(e)||e.is_current)); }
 function nextDeadlineEvent(){
   if(!boot||!boot.events) return null;
-  return boot.events.find(e=>e.is_next) || boot.events.find(e=>!e.finished && !e.is_current) || null;
+  return boot.events.find(e=>e.is_next) || boot.events.find(e=>!eventComplete(e) && !e.is_current) || null;
 }
 function gwStartNotice(what){
   const ev=nextDeadlineEvent();
@@ -99,7 +108,7 @@ function buildFixtureMap(fixtures, fromGw){
 
 function publicSquadEvent(){
   if(!boot||!boot.events) return null;
-  return [...boot.events].reverse().find(e=>e.finished||e.is_current)||null;
+  return [...boot.events].reverse().find(e=>eventComplete(e)||e.is_current)||null;
 }
 
 async function latestPublicPicks(tid){

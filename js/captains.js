@@ -3,7 +3,7 @@ let _captainsReady=false,_capFixtureMap={};
 async function initCaptains(){
   if(_captainsReady) return;_captainsReady=true;
   const [b,fixtures]=await Promise.all([loadBoot(),get("/fixtures/").catch(()=>[])]);
-  const start=(b.events.find(e=>e.is_current)||b.events.find(e=>e.is_next)||b.events.find(e=>!e.finished)||b.events[0]||{}).id||1;
+  const start=(activeGameweekEvent(b.events)||b.events[0]||{}).id||1;
   _capFixtureMap=buildFixtureMap(fixtures,start);drawCaptainPicks();
 }
 function capStars(v,max=10){const n=Math.max(1,Math.min(5,Math.round((v/max)*5)));return `<span class="matrix-stars" aria-label="${n} out of 5">${"★".repeat(n)}${"☆".repeat(5-n)}</span>`;}

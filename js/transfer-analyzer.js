@@ -8,7 +8,7 @@ async function initTransferAnalyzer(){
   _taReady=true;
   try{
     const [b,fixtures]=await Promise.all([loadBoot(),get("/fixtures/")]);
-    const start=(b.events.find(e=>e.is_current)||b.events.find(e=>e.is_next)||b.events[0]||{}).id||1;
+    const start=(activeGameweekEvent(b.events)||b.events[0]||{}).id||1;
     _taFixtureMap=buildFixtureMap(fixtures,start);
 
     const teamOptions=(b.teams||[])

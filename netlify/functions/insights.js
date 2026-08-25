@@ -57,7 +57,7 @@ exports.handler=async function(event){
       return {statusCode:302,headers:{Location:"/insights/","Cache-Control":"no-store"},body:""};
     }
     const data=await buildLiveInsights();
-    return {statusCode:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=120, s-maxage=600, stale-while-revalidate=900"},body:shell(data,{canonicalPath:"/insights/"})};
+    return {statusCode:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=30, s-maxage=60, stale-while-revalidate=120"},body:shell(data,{canonicalPath:"/insights/"})};
   }catch(e){
     return {statusCode:404,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"},body:`<!doctype html><meta charset="utf-8"><title>Insights unavailable | FPL Peek</title><style>body{font-family:system-ui;padding:40px;max-width:700px;margin:auto}a{color:#078755}</style><h1>That Gameweek insight is not available.</h1><p>${esc(e.message||"The FPL data could not be loaded.")}</p><p><a href="/insights/">Back to Insights</a></p>`};
   }

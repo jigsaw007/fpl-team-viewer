@@ -2,7 +2,7 @@
 let _pxSort="total_points", _pxDir=-1, _pxPos=0, _pxQuery="", _pxLimit=40, _pxWatchOnly=false, _pxFixtureMap={};
 async function initPlayers(){
   const [b,fixtures]=await Promise.all([loadBoot(),get("/fixtures/").catch(()=>[])]);
-  const start=(b.events.find(e=>e.is_current)||b.events.find(e=>e.is_next)||b.events.find(e=>!e.finished)||b.events[0]||{}).id||1;
+  const start=(activeGameweekEvent(b.events)||b.events[0]||{}).id||1;
   _pxFixtureMap=buildFixtureMap(fixtures,start);
   $("plSearch").addEventListener("input",e=>{_pxQuery=e.target.value.toLowerCase();_pxLimit=40;drawPlayers();});
   $("plPos").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;

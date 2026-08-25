@@ -3,9 +3,7 @@ let _scoutView="buy", _scoutFdr=null;
 async function initScout(){
   await loadBoot();
   const fixtures=await get(`/fixtures/`);
-  const curEvent=boot.events.find(e=>e.is_current);
-  const nextEvent=boot.events.find(e=>e.is_next);
-  const fromGw=(curEvent||nextEvent||boot.events[0]).id;
+  const fromGw=(activeGameweekEvent(boot.events)||boot.events[0]).id;
   // avg FDR over next 5 for each team
   _scoutFdr={};
   boot.teams.forEach(t=>_scoutFdr[t.id]={sum:0,n:0});
