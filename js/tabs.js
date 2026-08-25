@@ -9,6 +9,7 @@ function markActiveSidebarGroup(name){
   if(node) node.classList.add("active-group");
 }
 function switchTab(name,opts={}){
+  if(name==="preseason"){ name="home"; opts={...opts,fromRoute:false,replace:true}; }
   document.body.classList.toggle("market-mode",name==="market");
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
   markActiveSidebarGroup(name);
@@ -20,7 +21,6 @@ function switchTab(name,opts={}){
   if(!opts.fromRoute && window.FPLPeekSEO) window.FPLPeekSEO.navigate(name,!!opts.replace);
   else if(window.FPLPeekSEO) window.FPLPeekSEO.setMetadata(name);
   if(!opts.noScroll) window.scrollTo({top:0,behavior:opts.fromRoute?"auto":"smooth"});
-  if(name==="team" && typeof syncMyTeamFromSaved==="function") setTimeout(syncMyTeamFromSaved,0);
   if(!_tabLoaded[name]){ _tabLoaded[name]=true; lazyLoadTab(name); }
 }
 async function lazyLoadTab(name){
@@ -39,7 +39,6 @@ async function lazyLoadTab(name){
     else if(name==="builder") await initBuilder();
     else if(name==="planner") await initPlanner();
     else if(name==="onetowatch") await initOneToWatch();
-    else if(name==="preseason") await initPreseason();
     else if(name==="fixtures") await initFixtures();
     else if(name==="players") await initPlayers();
     else if(name==="injuries") await initInjuries();
@@ -70,4 +69,14 @@ window.addEventListener("popstate",()=>{
   if(document.getElementById("tab-"+tab)) switchTab(tab,{fromRoute:true,noScroll:true});
 });
 
+function polishNavigation(){
+  document.querySelectorAll('[data-tab="preseason"],[data-mobile-tab="preseason"]').forEach(el=>el.remove());
+  const preseasonPanel=document.getElementById("tab-preseason");if(preseasonPanel) preseasonPanel.remove();
+  document.querySelectorAll('[data-tab="analyzer"],[data-mobile-tab="analyzer"]').forEach(btn=>{
+    if(!btn.querySelector(".beta-badge")) btn.insertAdjacentHTML("beforeend",'<span class="beta-badge" aria-label="Beta feature">BETA</span>');
+    const hot=btn.querySelector(".tab-hot");if(hot) hot.remove();
+    btn.classList.remove("hot-tab","hot-mobile");
+  });
+}
+polishNavigation();
 markActiveSidebarGroup("home");
