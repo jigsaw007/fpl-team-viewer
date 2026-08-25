@@ -36,6 +36,11 @@ async function initHome(){
 
     renderHomeGameweek(b,fixtures);
     renderHomeInsights(b);
+    enrichHomeGameweekRecap(b,fixtures).catch(err=>{
+      console.warn("Home GW recap failed", err);
+      const el=$("homeGameweek");
+      if(el) el.innerHTML=`<div class="home-card-label">Gameweek recap</div><div class="home-empty">Couldn’t load your previous Gameweek recap right now. <button class="home-inline-btn" onclick="_homeReady=false;initHome()">Try again</button></div>`;
+    });
 
     if(fixtureError){
       renderHomeLiveMatches(b,[]);
@@ -46,7 +51,7 @@ async function initHome(){
       startHomeLivePolling();
     }
 
-    await enrichHomeSavedTeam();
+    await enrichHomeSavedTeam(b,fixtures);
   }catch(e){
     console.error("Home bootstrap failed", e);
     const msg=`<div class="home-empty">Couldn’t load live FPL data right now. <button class="home-inline-btn" onclick="_homeReady=false;initHome()">Try again</button></div>`;
@@ -59,15 +64,35 @@ async function initHome(){
 function bindHomeActions(){
   if(!$("homeGo") || $("homeGo").dataset.bound) return;
   $("homeGo").dataset.bound="1";
-  const openTeam=()=>{
+  $("homeGo").textContent="Load team";
+  const loadTeamOnHome=async()=>{
     const id=String($("homeTeamId").value||"").trim();
     if(!id) return;
-    $("tid").value=id;
-    switchTab("team");
-    view(id);
+    const btn=$("homeGo");
+    const original=btn.textContent;
+    btn.disabled=true; btn.textContent="Loading…";
+    if($("homeSavedTeam")) $("homeSavedTeam").innerHTML=`<div class="home-card-label">Your team</div>${homeLoadingMarkup(`Loading Team ${id}…`)}`;
+    try{
+      const entry=await get(`/entry/${id}/`);
+      saveTeam(id,entry.name||"");
+      pushRecent(id,entry.name||id);
+      $("tid").value=id;
+      renderHomeRecent();
+      renderHomeSavedTeam();
+      const b=await loadBoot();
+      let fixtures=[];
+      try{ fixtures=await get("/fixtures/"); }catch(_){}
+      renderHomeGameweek(b,fixtures);
+      await Promise.allSettled([enrichHomeSavedTeam(b,fixtures),enrichHomeGameweekRecap(b,fixtures)]);
+    }catch(err){
+      console.error("Home team load failed",err);
+      if($("homeSavedTeam")) $("homeSavedTeam").innerHTML=`<div class="home-card-label">Your team</div><div class="home-empty">Couldn’t load Team ${esc(id)}. Check the Team ID and try again.</div>`;
+    }finally{
+      btn.disabled=false; btn.textContent=original||"Load team";
+    }
   };
-  $("homeGo").onclick=openTeam;
-  $("homeTeamId").addEventListener("keydown",e=>{ if(e.key==="Enter") openTeam(); });
+  $("homeGo").onclick=loadTeamOnHome;
+  $("homeTeamId").addEventListener("keydown",e=>{ if(e.key==="Enter") loadTeamOnHome(); });
   document.querySelectorAll("[data-home-tab]").forEach(btn=>{
     btn.onclick=()=>switchTab(btn.dataset.homeTab);
   });
@@ -80,8 +105,7 @@ function renderHomeRecent(){
   el.innerHTML=`<span class="home-recent-label">Recent</span>${rows.map(r=>`<button class="home-recent-chip" data-id="${esc(r.id)}">${esc(r.name||r.id)}</button>`).join("")}`;
   el.querySelectorAll(".home-recent-chip").forEach(btn=>btn.onclick=()=>{
     $("homeTeamId").value=btn.dataset.id;
-    $("tid").value=btn.dataset.id;
-    switchTab("team"); view(btn.dataset.id);
+    $("homeGo")?.click();
   });
 }
 
@@ -97,32 +121,67 @@ function renderHomeSavedTeam(){
   $("homeSavedAnalyze").onclick=()=>{ switchTab("analyzer"); $("anTeamId").value=st.id; runTeamAnalyzer(st.id); };
 }
 
-async function enrichHomeSavedTeam(){
+async function enrichHomeSavedTeam(b,fixtures=[]){
   const st=savedTeam(); if(!st||!st.id||!$("homeSavedTeam")) return;
   try{
     const [entry, history]=await Promise.all([
       get(`/entry/${st.id}/`),
       get(`/entry/${st.id}/history/`).catch(()=>null)
     ]);
-    const pts=entry.summary_overall_points||0;
-    const rank=entry.summary_overall_rank;
-    const past=(history&&history.past)||[];
-    const careerPts=past.reduce((sum,row)=>sum+(row.total_points||0),0);
-    const best=past.length?past.reduce((a,row)=>(row.total_points||0)>(a.total_points||0)?row:a):null;
     const manager=[entry.player_first_name,entry.player_last_name].filter(Boolean).join(" ");
-    const currentLine=(pts||rank)?`<div class="home-current-season"><span>This season</span><b>${pts?short(pts):"—"} pts</b><b>${rank?short(rank):"—"} rank</b></div>`:"";
-    const careerGrid=past.length?`<div class="home-career-grid">
-        <div><span>Career pts</span><b>${short(careerPts)}</b></div>
-        <div><span>Best season</span><b>${best?short(best.total_points):"—"}</b><small>${best?esc(best.season_name):""}</small></div>
-        <div><span>Best rank</span><b>${best&&best.rank?short(best.rank):"—"}</b></div>
-        <div><span>Seasons</span><b>${past.length}</b></div>
-      </div>`:"";
+    saveTeam(st.id,entry.name||st.name||"");
+    if($("homeTeamId")) $("homeTeamId").value=st.id;
+    if($("tid")) $("tid").value=st.id;
+
+    let lastGwReport="";
+    try{
+      const events=(b&&b.events)||[];
+      const completedIds=new Set((fixtures||[]).filter(f=>f.event&&f.finished).map(f=>f.event));
+      const last=[...events].filter(e=>eventComplete(e)||completedIds.has(e.id)).sort((a,c)=>c.id-a.id)[0];
+      if(last){
+        const [picks,live]=await Promise.all([
+          get(`/entry/${st.id}/event/${last.id}/picks/`),
+          get(`/event/${last.id}/live/`)
+        ]);
+        const playerById=Object.fromEntries(((b&&b.elements)||[]).map(x=>[x.id,x]));
+        const teamById=Object.fromEntries(((b&&b.teams)||[]).map(x=>[x.id,x]));
+        const liveById=Object.fromEntries(((live&&live.elements)||[]).map(x=>[x.id,x.stats||{}]));
+        const xi=(picks.picks||[]).filter(pk=>Number(pk.position)<=11).map(pk=>{
+          const player=playerById[pk.element]||{};
+          const stats=liveById[pk.element]||{};
+          return {pk,player,points:Number(stats.total_points||0),minutes:Number(stats.minutes||0)};
+        });
+        const played=xi.filter(x=>x.minutes>0);
+        const top=(played.length?played:xi).slice().sort((a,c)=>c.points-a.points)[0];
+        const topTeam=top?teamById[top.player.team]||{}:{};
+        const rows=xi.map(x=>{
+          const badge=x.pk.is_captain?'<span class="home-lastgw-badge captain" title="Captain">C</span>':x.pk.is_vice_captain?'<span class="home-lastgw-badge vice" title="Vice-captain">V</span>':'';
+          const club=teamById[x.player.team]||{};
+          return `<div class="home-lastgw-row">
+            <span class="home-lastgw-player">${teamKitImg(club,'home-lastgw-row-kit')}<span class="home-lastgw-name">${esc(x.player.web_name||'—')}</span>${badge}</span>
+            <span class="home-lastgw-points"><b>${x.points}</b><small>pts</small></span>
+          </div>`;
+        }).join('');
+        const gwPoints=Number((picks.entry_history&&picks.entry_history.points)||0);
+        lastGwReport=`<div class="home-lastgw-report">
+          <div class="home-lastgw-head">
+            <div class="home-lastgw-title"><span>Last Gameweek</span><b>GW${last.id} Squad</b></div>
+            <div class="home-lastgw-score"><strong>${gwPoints}</strong><small>pts</small></div>
+          </div>
+          ${top?`<div class="home-lastgw-top">${teamKitImg(topTeam,'home-lastgw-top-kit')}<div class="home-lastgw-top-copy"><span>Top performer</span><b>${esc(top.player.web_name||'—')}</b><small>${top.points} pts</small></div></div>`:''}
+          <div class="home-lastgw-xi-head"><span>Starting XI</span><small><b>C</b> captain · <b>V</b> vice</small></div>
+          <div class="home-lastgw-xi">${rows}</div>
+        </div>`;
+      }
+    }catch(err){
+      console.warn('Home last-GW squad recap failed',err);
+    }
+
     $("homeSavedTeam").innerHTML=`
       <div class="home-card-label">Your team</div>
       <div class="home-card-value small">${esc(entry.name||st.name||`Team ${st.id}`)}</div>
       ${manager?`<div class="home-manager-name">${esc(manager)}${entry.player_region_name?` · ${esc(entry.player_region_name)}`:""}</div>`:""}
-      ${currentLine}
-      ${careerGrid}
+      ${lastGwReport}
       <div class="home-card-actions"><button class="home-card-action" id="homeSavedOpen">View team</button><button class="home-card-action secondary" id="homeSavedAnalyze">Analyze</button></div>`;
     $("homeSavedOpen").onclick=()=>{ $("tid").value=st.id; switchTab("team"); view(st.id); };
     $("homeSavedAnalyze").onclick=()=>{ switchTab("analyzer"); $("anTeamId").value=st.id; runTeamAnalyzer(st.id); };
@@ -134,8 +193,18 @@ function renderHomeGameweek(b,fixtures=[]){
   const events=b.events||[];
   const current=events.find(e=>e.is_current);
   const next=events.find(e=>e.is_next);
-  const previous=[...events].reverse().find(e=>eventComplete(e));
+  const fixtureGroups=(fixtures||[]).reduce((m,f)=>{ if(f.event){ (m[f.event]||(m[f.event]=[])).push(f); } return m; },{});
+  const isFinished=e=>eventComplete(e)||((fixtureGroups[e.id]||[]).length>0 && (fixtureGroups[e.id]||[]).every(f=>f.finished||f.finished_provisional));
+  const previous=[...events].reverse().find(isFinished);
   const total=b.total_players?short(b.total_players):"—";
+
+  // Between Gameweeks, this Home card is reserved for the user's previous-GW
+  // recap + next-GW availability watch. Do not flash generic Average/Highest
+  // stats while that recap is being built.
+  if(previous && next && savedTeam()?.id){
+    el.innerHTML=`<div class="home-card-label">Gameweek recap</div>${homeLoadingMarkup(`Loading GW${previous.id} recap…`)}`;
+    return;
+  }
 
   // Before GW1 starts, avoid showing an empty-looking statistics card.
   if(!current && next && !previous){
@@ -149,7 +218,7 @@ function renderHomeGameweek(b,fixtures=[]){
   }
 
   const currentFixtures=(fixtures||[]).filter(f=>f.event===current?.id);
-  const currentDone=!!(current&&(eventComplete(current)||(currentFixtures.length&&currentFixtures.every(f=>f.finished||f.finished_provisional))));
+  const currentDone=!!(current&&isFinished(current));
   const ev=(current&&!currentDone)?current:(next||current||previous||events[0]);
   if(!ev){
     el.innerHTML=`<div class="home-card-label">Gameweek status</div><div class="home-card-value small">Season setup</div><div class="home-card-sub">Gameweek data is not available yet.</div>`;
@@ -159,7 +228,7 @@ function renderHomeGameweek(b,fixtures=[]){
   const live=!!(current&&!currentDone&&ev.id===current.id);
   const avg=Number(ev.average_entry_score||0);
   const high=Number(ev.highest_score||0);
-  const status=live?"Live":eventComplete(ev)?"Final":ev.is_next?"Up next":"Gameweek";
+  const status=live?"Live":isFinished(ev)?"Final":ev.is_next?"Up next":"Gameweek";
   el.innerHTML=`
     <div class="home-card-label">Gameweek status</div>
     <div class="home-gw-status-row"><div class="home-card-value small">GW${ev.id}</div><span class="home-gw-pill${live?" live":""}">${status}</span></div>
@@ -169,6 +238,82 @@ function renderHomeGameweek(b,fixtures=[]){
       <div><span>Managers</span><b>${total}</b></div>
     </div>
     ${!avg&&!high?`<div class="home-gw-note">Scores will populate once Gameweek data is available.</div>`:""}`;
+}
+
+
+async function enrichHomeGameweekRecap(b,fixtures=[]){
+  const el=$("homeGameweek");
+  const st=savedTeam();
+  if(!el || !st || !st.id) return;
+
+  const events=b.events||[];
+  const fixtureGroups=(fixtures||[]).reduce((m,f)=>{ if(f.event){ (m[f.event]||(m[f.event]=[])).push(f); } return m; },{});
+  const isFinished=e=>eventComplete(e)||((fixtureGroups[e.id]||[]).length>0 && (fixtureGroups[e.id]||[]).every(f=>f.finished||f.finished_provisional));
+  const completed=[...events].filter(isFinished).sort((a,c)=>c.id-a.id);
+  const last=completed[0];
+  const next=events.find(e=>e.is_next) || events.find(e=>e.id===(last?.id||0)+1);
+  if(!last || !next) return;
+
+  const current=events.find(e=>e.is_current);
+  if(current && !isFinished(current) && current.id===next.id) return;
+
+  el.innerHTML=`<div class="home-card-label">Gameweek status</div>${homeLoadingMarkup(`Building GW${last.id} recap…`)}`;
+
+  const [picks, live] = await Promise.all([
+    get(`/entry/${st.id}/event/${last.id}/picks/`),
+    get(`/event/${last.id}/live/`)
+  ]);
+
+  const playerById=Object.fromEntries((b.elements||[]).map(x=>[x.id,x]));
+  const teamById=Object.fromEntries((b.teams||[]).map(x=>[x.id,x]));
+  const liveById=Object.fromEntries(((live&&live.elements)||[]).map(x=>[x.id,x.stats||{}]));
+  const squad=(picks.picks||[]).map(pk=>{
+    const p=playerById[pk.element]||{};
+    const stats=liveById[pk.element]||{};
+    return {pick:pk, player:p, stats, points:Number(stats.total_points||0), minutes:Number(stats.minutes||0)};
+  });
+
+  const played=squad.filter(x=>x.minutes>0);
+  const top=played.length?[...played].sort((a,c)=>c.points-a.points || c.minutes-a.minutes)[0]:null;
+  const low=played.length?[...played].sort((a,c)=>a.points-c.points || a.minutes-c.minutes)[0]:null;
+  const benchPts=squad.filter(x=>Number(x.pick.position)>=12).reduce((sum,x)=>sum+x.points,0);
+  const gwPts=Number((picks.entry_history&&picks.entry_history.points)||0);
+  const chip=String(picks.active_chip||'').toLowerCase();
+  const chipLabel=chip==='bboost'?'Bench Boost':chip==='3xc'?'Triple Captain':chip==='freehit'?'Free Hit':chip==='wildcard'?'Wildcard':'None';
+  const unavailable=squad.filter(x=>String(x.player.status||'a')!=='a');
+
+  const playerLine=(row, fallback='—')=>{
+    if(!row||!row.player||!row.player.id) return fallback;
+    const t=teamById[row.player.team]||{};
+    return `<span class="home-gw-player">${teamKitImg(t,'home-gw-mini-kit')}<span><b>${esc(row.player.web_name||fallback)}</b><small>${row.points} pts</small></span></span>`;
+  };
+
+  const injuryHtml=unavailable.length
+    ? unavailable.map(x=>{
+        const chance=x.player.chance_of_playing_next_round;
+        const label=x.player.status==='i'?'Injured':x.player.status==='d'?'Doubtful':x.player.status==='s'?'Suspended':x.player.status==='u'?'Unavailable':'Flagged';
+        return `<span class="home-gw-injury" title="${esc(x.player.news||label)}"><b>${esc(x.player.web_name)}</b><small>${esc(label)}${chance!=null?` · ${chance}%`:''}</small></span>`;
+      }).join('')
+    : `<span class="home-gw-clear">No flagged players from your latest squad.</span>`;
+
+  el.innerHTML=`
+    <div class="home-gw-recap-heading">
+      <div><div class="home-card-label">Last Gameweek</div><div class="home-card-value small">GW${last.id} Recap</div></div>
+      <span class="home-gw-pill">GW${next.id} · Up next</span>
+    </div>
+    <div class="home-gw-recap-grid">
+      <div><span>GW${last.id} score</span><b>${gwPts}</b></div>
+      <div><span>Bench points</span><b>${benchPts}</b></div>
+      <div><span>Chip used</span><b class="home-gw-chip-value">${esc(chipLabel)}</b></div>
+    </div>
+    <div class="home-gw-performers">
+      <div><span>Top scorer</span>${playerLine(top)}</div>
+      <div><span>Lowest scorer who played</span>${playerLine(low)}</div>
+    </div>
+    <div class="home-gw-injury-wrap">
+      <span>GW${next.id} Availability Watch</span>
+      <div class="home-gw-injury-list">${injuryHtml}</div>
+    </div>`;
 }
 
 function homeInsightCard(kind, title, e, t, value, sub){

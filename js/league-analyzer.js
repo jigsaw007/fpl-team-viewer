@@ -106,6 +106,9 @@ function renderLeagueAnalyzer(){
   const avg=points.length?points.reduce((a,b)=>a+b,0)/points.length:0;
   const high=points.length?Math.max(...points):0;
   const chipUsers=rows.filter(r=>r.chip).length;
+  const benchVals=rows.map(r=>Number(r.benchPoints)||0);
+  const avgBench=benchVals.length?benchVals.reduce((a,b)=>a+b,0)/benchVals.length:0;
+  const highBench=benchVals.length?Math.max(...benchVals):0;
   const chipCounts={wildcard:0,freehit:0,bboost:0,"3xc":0};
   rows.forEach(r=>{if(r.chip&&Object.prototype.hasOwnProperty.call(chipCounts,r.chip))chipCounts[r.chip]++;});
   const caps={};rows.forEach(r=>{if(r.captainId)caps[r.captainId]=(caps[r.captainId]||0)+1;});
@@ -114,15 +117,25 @@ function renderLeagueAnalyzer(){
   const topCapPct=topCap&&rows.length?Math.round(topCap[1]/rows.length*100):0;
   $("leagueAnalyzerBody").innerHTML=`
     <div class="la-hero">
-      <div><span class="la-gw">Gameweek ${gw}</span><h3>${esc(league?.name||"Classic League")}</h3><p>${rows.length} managers analysed from the public FPL league table.</p></div>
+      <div class="la-hero-copy">
+        <div class="la-hero-kicker"><span class="la-gw">GW${gw}</span><span>Classic League Analytics</span></div>
+        <h3>${esc(league?.name||"Classic League")}</h3>
+        <p><strong>${rows.length}</strong> managers analysed · live public FPL data</p>
+      </div>
       <a class="la-official-link" href="https://fantasy.premierleague.com/leagues/${esc(_laState.leagueId)}/standings/c" target="_blank" rel="noopener">Open in FPL <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
     </div>
     <div class="la-stat-grid">
-      <article><i class="fa-solid fa-users"></i><span>Managers</span><b>${rows.length}</b></article>
-      <article><i class="fa-solid fa-chart-line"></i><span>Average GW score</span><b>${avg.toFixed(1)}</b></article>
-      <article><i class="fa-solid fa-trophy"></i><span>Highest GW score</span><b>${high}</b></article>
-      <article class="la-chip-stat"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Chip users</span><b>${chipUsers}</b><div class="la-chip-breakdown"><small><strong>Wildcard</strong> ${chipCounts.wildcard}</small><small><strong>Free Hit</strong> ${chipCounts.freehit}</small><small><strong>Bench Boost</strong> ${chipCounts.bboost}</small><small><strong>Triple Captain</strong> ${chipCounts["3xc"]}</small></div></article>
-      <article class="la-stat-wide"><i class="fa-solid fa-c"></i><span>Most captained</span><b>${topCapPlayer?esc(topCapPlayer.web_name):"—"}</b><small>${topCapPlayer?`${topCapPct}% of analysed managers`:"No captain data"}</small></article>
+      <article><span class="la-stat-icon"><i class="fa-solid fa-users"></i></span><span>Managers</span><b>${rows.length}</b><small>League size analysed</small></article>
+      <article><span class="la-stat-icon"><i class="fa-solid fa-chart-line"></i></span><span>Average GW score</span><b>${avg.toFixed(1)}</b><small>Across this league</small></article>
+      <article><span class="la-stat-icon"><i class="fa-solid fa-trophy"></i></span><span>Highest GW score</span><b>${high}</b><small>Best manager this GW</small></article>
+      <article class="la-chip-stat"><span class="la-stat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span>Chip users</span><b>${chipUsers}</b><div class="la-chip-breakdown"><small><strong>WC</strong><em>${chipCounts.wildcard}</em></small><small><strong>FH</strong><em>${chipCounts.freehit}</em></small><small><strong>BB</strong><em>${chipCounts.bboost}</em></small><small><strong>TC</strong><em>${chipCounts["3xc"]}</em></small></div></article>
+      <article class="la-stat-wide"><span class="la-stat-icon"><i class="fa-solid fa-c"></i></span><span>Most captained</span><b>${topCapPlayer?esc(topCapPlayer.web_name):"—"}</b><small>${topCapPlayer?`${topCapPct}% of analysed managers`:"No captain data"}</small></article>
+    </div>
+    <div class="la-signal-strip">
+      <div><span>Captain share</span><b>${topCapPlayer?`${esc(topCapPlayer.web_name)} · ${topCapPct}%`:"—"}</b></div>
+      <div><span>Average bench</span><b>${avgBench.toFixed(1)} pts</b></div>
+      <div><span>Highest bench</span><b>${highBench} pts</b></div>
+      <div><span>Most-used chip</span><b>${(()=>{const x=Object.entries(chipCounts).sort((a,b)=>b[1]-a[1])[0];return x&&x[1]?`${laChipLabel(x[0])} · ${x[1]}`:"None";})()}</b></div>
     </div>
     <div class="la-table-card">
       <div class="la-table-head"><div><span>League table</span><h3>Gameweek ${gw} breakdown</h3></div><input id="laSearch" type="search" placeholder="Search team or manager" value="${esc(_laState.search||"")}"></div>

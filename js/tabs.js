@@ -20,6 +20,7 @@ function switchTab(name,opts={}){
   if(!opts.fromRoute && window.FPLPeekSEO) window.FPLPeekSEO.navigate(name,!!opts.replace);
   else if(window.FPLPeekSEO) window.FPLPeekSEO.setMetadata(name);
   if(!opts.noScroll) window.scrollTo({top:0,behavior:opts.fromRoute?"auto":"smooth"});
+  if(name==="team" && typeof syncMyTeamFromSaved==="function") setTimeout(syncMyTeamFromSaved,0);
   if(!_tabLoaded[name]){ _tabLoaded[name]=true; lazyLoadTab(name); }
 }
 async function lazyLoadTab(name){

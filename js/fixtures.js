@@ -279,7 +279,15 @@ function matchRowHtml(f){
 function drawFixtures(){
   if(!_allFixtures||!boot) return;
   const b=boot;
-  const fromGw=(activeGameweekEvent(b.events)||b.events[0]).id;
+  // FDR is forward-looking: start from the first Gameweek that still has
+  // at least one unfinished fixture. This avoids showing a completed GW
+  // when FPL has not yet flipped its event-level is_current/data_checked flags.
+  const unfinishedGws=[...new Set((_allFixtures||[])
+    .filter(f=>f.event && !(f.finished || f.finished_provisional))
+    .map(f=>Number(f.event))
+    .filter(Number.isFinite))].sort((a,c)=>a-c);
+  const fallbackEvent=activeGameweekEvent(b.events)||b.events[0]||{id:1};
+  const fromGw=unfinishedGws[0] || Number(fallbackEvent.id) || 1;
   const gws=[]; for(let g=fromGw; g<fromGw+_fxN && g<=38; g++) gws.push(g);
   const perTeam={};
   b.teams.forEach(t=>perTeam[t.id]={});
