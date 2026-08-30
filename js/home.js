@@ -1,5 +1,5 @@
 /* ============ home dashboard ============ */
-let _homeReady=false, _homeLiveTimer=null, _homeTopPlayersViewGw=null;
+let _homeReady=false, _homeLiveTimer=null, _homeTopPlayersViewGw=null, _homeTopPlayersLatestSeenGw=null;
 
 function homeLoadingMarkup(label="Loading FPL data…"){
   return `<div class="home-loading-state" role="status" aria-live="polite">
@@ -602,15 +602,22 @@ async function renderHomeLiveTopPlayers(b, fixtures=[]){
     return;
   }
 
-  if(!_homeTopPlayersViewGw || !available.some(x=>Number(x.ev.id)===Number(_homeTopPlayersViewGw))){
-    _homeTopPlayersViewGw=Number(available[0].ev.id);
+  const newestStartedGw=Number(available[0].ev.id);
+  // Always jump to a newly-started Gameweek exactly once. After that, users can
+  // browse older GWs without the 45s refresh forcing them back to the latest one.
+  if(_homeTopPlayersLatestSeenGw===null || newestStartedGw>Number(_homeTopPlayersLatestSeenGw)){
+    _homeTopPlayersLatestSeenGw=newestStartedGw;
+    _homeTopPlayersViewGw=newestStartedGw;
+  }else if(!_homeTopPlayersViewGw || !available.some(x=>Number(x.ev.id)===Number(_homeTopPlayersViewGw))){
+    _homeTopPlayersViewGw=newestStartedGw;
   }
 
   let index=available.findIndex(x=>Number(x.ev.id)===Number(_homeTopPlayersViewGw));
   if(index<0) index=0;
   const selected=available[index];
   const rows=await homeTopPlayersForGw(b,selected.ev.id);
-  if(!rows.length){el.hidden=true;el.innerHTML='';return;}
+  const isFinal=!!selected.complete;
+  const hasMeaningfulReturn=rows.some(x=>x.points>=3 || x.goals>0 || x.assists>0 || x.bonus>0);
 
   const hasPrevious=index<available.length-1;
   const hasNext=index>0;
@@ -623,7 +630,9 @@ async function renderHomeLiveTopPlayers(b, fixtures=[]){
         <button type="button" data-top3-next ${hasNext?'':'disabled'} aria-label="Next Gameweek">Next →</button>
       </div>
     </div>
-    ${homeTopPlayersGroupMarkup(b,selected,rows)}`;
+    ${(!isFinal && !hasMeaningfulReturn)
+      ? `<div class="home-empty">Top performers will appear here as points come in.</div>`
+      : homeTopPlayersGroupMarkup(b,selected,rows)}`;
 
   const prev=el.querySelector('[data-top3-prev]');
   const next=el.querySelector('[data-top3-next]');
