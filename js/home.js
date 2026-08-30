@@ -65,9 +65,11 @@ async function initHome(){
 
     if(fixtureError){
       renderHomeLiveMatches(b,[]);
+      renderHomeLiveTopPlayers(b,[]).catch(()=>{});
       if($("homeFixtures")) $("homeFixtures").innerHTML=`<div class="home-empty">Couldn’t load fixture data right now. <button class="home-inline-btn" onclick="_homeReady=false;initHome()">Try again</button></div>`;
     }else{
       renderHomeLiveMatches(b,fixtures);
+      renderHomeLiveTopPlayers(b,fixtures).catch(err=>console.warn("Home live top players failed",err));
       renderHomeBestFixtures(b,fixtures);
       startHomeLivePolling();
     }
@@ -506,12 +508,70 @@ function renderHomeLiveMatches(b, fixtures){
   setupHomeLiveCarousel(el,live.length);
 }
 
+function ensureHomeLiveTopPlayers(){
+  let el=$("homeLiveTopPlayers");
+  if(el) return el;
+  const insights=$("homeInsights");
+  if(!insights) return null;
+  const section=document.createElement('section');
+  section.id='homeLiveTopPlayers';
+  section.className='home-live-topplayers';
+  section.hidden=true;
+  insights.parentNode.insertBefore(section,insights);
+  return section;
+}
+
+async function renderHomeLiveTopPlayers(b, fixtures=[]){
+  const el=ensureHomeLiveTopPlayers();
+  if(!el) return;
+  const liveFixtures=(fixtures||[]).filter(f=>f.started && !f.finished && !f.finished_provisional && f.event);
+  if(!liveFixtures.length){el.hidden=true;el.innerHTML='';return;}
+
+  const gw=Math.max(...liveFixtures.map(f=>Number(f.event)||0));
+  if(!gw){el.hidden=true;el.innerHTML='';return;}
+  const live=await get(`/event/${gw}/live/`);
+  const playerById=Object.fromEntries((b.elements||[]).map(p=>[p.id,p]));
+  const teamById=Object.fromEntries((b.teams||[]).map(t=>[t.id,t]));
+  const rows=((live&&live.elements)||[]).map(row=>{
+    const p=playerById[row.id];
+    const stats=row.stats||{};
+    return p?{p,stats,points:Number(stats.total_points||0),minutes:Number(stats.minutes||0)}:null;
+  }).filter(Boolean).filter(x=>x.minutes>0 || x.points!==0)
+    .sort((a,c)=>c.points-a.points || c.minutes-a.minutes || String(a.p.web_name||'').localeCompare(String(c.p.web_name||'')))
+    .slice(0,3);
+
+  if(!rows.length){el.hidden=true;el.innerHTML='';return;}
+  const medals=['1','2','3'];
+  el.hidden=false;
+  el.innerHTML=`<div class="home-live-topplayers-head">
+      <div><span class="home-live-dot" aria-hidden="true"></span><b>GW${gw} LIVE</b><small>Top performers right now</small></div>
+      <span>Updates with live FPL points</span>
+    </div>
+    <div class="home-live-topplayers-grid">${rows.map((x,i)=>{
+      const team=teamById[x.p.team]||{};
+      return `<button type="button" class="home-live-topplayer" data-live-player="${x.p.id}">
+        <span class="home-live-topplayer-rank">${medals[i]}</span>
+        ${teamKitImg(team,'home-live-topplayer-kit',`${team.name||'Club'} kit`)}
+        <span class="home-live-topplayer-copy">
+          <b>${esc(x.p.web_name||'—')}</b>
+          <small>${esc(team.short_name||'')} · ${esc(POS[x.p.element_type]||'')} · ${x.minutes} min</small>
+        </span>
+        <span class="home-live-topplayer-points"><strong>${x.points}</strong><small>pts</small></span>
+      </button>`;
+    }).join('')}</div>`;
+
+  el.querySelectorAll('[data-live-player]').forEach(btn=>btn.onclick=()=>{
+    switchTab('players');
+  });
+}
+
 async function refreshHomeLiveMatches(){
   if(document.hidden || !$("homeLiveMatches")) return;
   try{
     const b=await loadBoot();
     const fixtures=await get('/fixtures/');
     renderHomeLiveMatches(b,fixtures);
+    await renderHomeLiveTopPlayers(b,fixtures);
   }catch(_){ }
 }
 
