@@ -144,7 +144,7 @@ function renderLeagueAnalyzer(){
       <article><span class="la-stat-icon"><i class="fa-solid fa-chart-line"></i></span><span>Average GW score</span><b>${avg.toFixed(1)}</b><small>Across this league</small></article>
       <article><span class="la-stat-icon"><i class="fa-solid fa-trophy"></i></span><span>Highest GW score</span><b>${high}</b><small>Best manager this GW</small></article>
       <article class="la-chip-stat"><span class="la-stat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span>Chip users</span><b>${chipUsers}</b><div class="la-chip-breakdown"><small><strong>WC</strong><em>${chipCounts.wildcard}</em></small><small><strong>FH</strong><em>${chipCounts.freehit}</em></small><small><strong>BB</strong><em>${chipCounts.bboost}</em></small><small><strong>TC</strong><em>${chipCounts["3xc"]}</em></small></div></article>
-      <article class="la-stat-wide"><span class="la-stat-icon"><i class="fa-solid fa-c"></i></span><span>Most captained</span><b>${topCapPlayer?esc(topCapPlayer.web_name):"—"}</b><small>${topCapPlayer?`${topCapPct}% of analysed managers`:"No captain data"}</small></article>
+      <article class="la-stat-wide la-top-captain"><span class="la-stat-icon"><i class="fa-solid fa-c"></i></span><span>Most captained</span>${topCapPlayer?`<div class="la-top-captain-main">${teamKitImg((boot.teams||[]).find(t=>t.id===topCapPlayer.team)||{},'la-topcap-kit',`${topCapPlayer.web_name||'Captain'} club kit`)}<div><b>${esc(topCapPlayer.web_name)}</b><small>${topCapPct}% of analysed managers</small></div></div>`:`<b>—</b><small>No captain data</small>`}</article>
     </div>
     <div class="la-signal-strip">
       <div><span>Captain share</span><b>${topCapPlayer?`${esc(topCapPlayer.web_name)} · ${topCapPct}%`:"—"}</b></div>

@@ -142,6 +142,21 @@ function renderHomeSavedTeam(){
   $("homeSavedAnalyze").onclick=()=>{ switchTab("analyzer"); $("anTeamId").value=st.id; runTeamAnalyzer(st.id); };
 }
 
+function homePickRawPoints(pk,liveById){
+  const stats=(liveById&&liveById[pk.element])||{};
+  return Number(stats.total_points||0);
+}
+
+function homePickDisplayPoints(pk,liveById){
+  const raw=homePickRawPoints(pk,liveById);
+  const multiplier=Math.max(0,Number(pk.multiplier)||0);
+  return raw*multiplier;
+}
+
+function homeComputedGwPoints(picks,liveById){
+  return (picks.picks||[]).reduce((sum,pk)=>sum+homePickDisplayPoints(pk,liveById),0);
+}
+
 async function enrichHomeSavedTeam(b,fixtures=[]){
   const st=savedTeam(); if(!st||!st.id||!$("homeSavedTeam")) return;
   try{
@@ -170,7 +185,7 @@ async function enrichHomeSavedTeam(b,fixtures=[]){
         const xi=(picks.picks||[]).filter(pk=>Number(pk.position)<=11).map(pk=>{
           const player=playerById[pk.element]||{};
           const stats=liveById[pk.element]||{};
-          return {pk,player,points:Number(stats.total_points||0),minutes:Number(stats.minutes||0)};
+          return {pk,player,rawPoints:Number(stats.total_points||0),points:homePickDisplayPoints(pk,liveById),minutes:Number(stats.minutes||0)};
         });
         const played=xi.filter(x=>x.minutes>0);
         const top=(played.length?played:xi).slice().sort((a,c)=>c.points-a.points)[0];
@@ -183,7 +198,8 @@ async function enrichHomeSavedTeam(b,fixtures=[]){
             <span class="home-lastgw-points"><b>${x.points}</b><small>pts</small></span>
           </div>`;
         }).join('');
-        const gwPoints=Number((picks.entry_history&&picks.entry_history.points)||entry.summary_event_points||0);
+        const computedGwPoints=homeComputedGwPoints(picks,liveById);
+        const gwPoints=focusState.complete?Number((picks.entry_history&&picks.entry_history.points)||computedGwPoints||entry.summary_event_points||0):computedGwPoints;
         const reportLabel=focusState.anyLive?'Current Gameweek':focusState.complete?'Latest Gameweek':'Current Gameweek';
         const reportStatus=focusState.anyLive?' · LIVE':'';
         lastGwReport=`<div class="home-lastgw-report">
@@ -277,14 +293,15 @@ async function enrichHomeGameweekRecap(b,fixtures=[]){
   const squad=(picks.picks||[]).map(pk=>{
     const p=playerById[pk.element]||{};
     const stats=liveById[pk.element]||{};
-    return {pick:pk, player:p, stats, points:Number(stats.total_points||0), minutes:Number(stats.minutes||0)};
+    return {pick:pk, player:p, stats, rawPoints:Number(stats.total_points||0), points:homePickDisplayPoints(pk,liveById), minutes:Number(stats.minutes||0)};
   });
 
   const played=squad.filter(x=>x.minutes>0);
   const top=played.length?[...played].sort((a,c)=>c.points-a.points || c.minutes-a.minutes)[0]:null;
   const low=played.length?[...played].sort((a,c)=>a.points-c.points || a.minutes-c.minutes)[0]:null;
-  const benchPts=squad.filter(x=>Number(x.pick.position)>=12).reduce((sum,x)=>sum+x.points,0);
-  const gwPts=Number((picks.entry_history&&picks.entry_history.points)||0);
+  const benchPts=squad.filter(x=>Number(x.pick.position)>=12).reduce((sum,x)=>sum+x.rawPoints,0);
+  const computedGwPts=homeComputedGwPoints(picks,liveById);
+  const gwPts=focus.complete?Number((picks.entry_history&&picks.entry_history.points)||computedGwPts||0):computedGwPts;
   const chip=String(picks.active_chip||'').toLowerCase();
   const chipLabel=chip==='bboost'?'Bench Boost':chip==='3xc'?'Triple Captain':chip==='freehit'?'Free Hit':chip==='wildcard'?'Wildcard':'None';
   const unavailable=squad.filter(x=>String(x.player.status||'a')!=='a');

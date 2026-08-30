@@ -4089,3 +4089,11 @@ html[data-theme="dark"] #tab-prices .price-status-pill{background:rgba(0,255,135
 @media(max-width:620px){.home-live-head-actions small{display:none}.home-live-tape.is-carousel .home-live-match{flex-basis:88%;min-width:245px}.home-live-scorers{max-width:68px}.home-live-discipline{max-width:104px;gap:3px}.home-live-card b{max-width:82px;font-size:6px}.home-live-scoreboard{gap:6px}}
 @media(prefers-reduced-motion:reduce){.home-live-dot::before,.home-live-dot::after,.home-live-minute i{animation:none}}
 html[data-theme="dark"] .home-live-wrap{background:linear-gradient(180deg,#10221b 0%,#0e1c17 100%);border-color:#285c49;box-shadow:none}html[data-theme="dark"] .home-live-head,html[data-theme="dark"] .home-live-match{border-color:#285c49}html[data-theme="dark"] .home-live-match{background:rgba(16,36,28,.7)}html[data-theme="dark"] .home-live-match:hover{background:#173126}html[data-theme="dark"] .home-live-minute{background:#32161b;border-color:#5b252e}html[data-theme="dark"] .home-live-score strong{color:var(--ink)}html[data-theme="dark"] .home-live-nav{background:#14281f;border-color:#285c49;color:#8be3bf}html[data-theme="dark"] .home-live-nav:hover{background:#193329}html[data-theme="dark"] .home-live-scorers{color:#9eb0a8}html[data-theme="dark"] .home-live-card{color:#aab8b1}html[data-theme="dark"] .home-live-card-red{color:#ff8c99}html[data-theme="dark"] .home-live-card-yellow{color:#e7cb72}
+
+/* League Analyzer: most-captained player visual */
+.la-top-captain-main{display:flex;align-items:center;gap:12px;margin-top:7px;min-width:0}
+.la-top-captain-main>div{min-width:0}
+.la-top-captain-main b{display:block;font-size:22px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.la-top-captain-main small{display:block;margin-top:6px;color:var(--muted);font-size:10px}
+.la-topcap-kit{width:42px;height:52px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 4px 7px rgba(15,23,42,.12))}
+@media(max-width:700px){.la-topcap-kit{width:38px;height:47px}.la-top-captain-main b{font-size:20px}}
