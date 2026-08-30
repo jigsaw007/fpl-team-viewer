@@ -1,10 +1,47 @@
 /* ============ standalone league analyzer ============ */
 let _laState={leagueId:null,gw:null,league:null,rows:[],page:1,pageSize:20,search:"",sortKey:"rank",sortDir:"asc"};
 const _laCache=new Map();
+const LA_RECENT_KEY="fplpeek_recent_leagues";
+
+function laRecentLeagues(){
+  try{
+    const rows=JSON.parse(localStorage.getItem(LA_RECENT_KEY)||"[]");
+    return Array.isArray(rows)?rows.filter(r=>r&&/^\d+$/.test(String(r.id||""))).slice(0,4):[];
+  }catch(_){ return []; }
+}
+
+function laSaveRecentLeague(id,name){
+  const leagueId=String(id||"").trim(); if(!/^\d+$/.test(leagueId)) return;
+  const rows=laRecentLeagues().filter(r=>String(r.id)!==leagueId);
+  rows.unshift({id:leagueId,name:String(name||`League ${leagueId}`).trim()});
+  try{localStorage.setItem(LA_RECENT_KEY,JSON.stringify(rows.slice(0,4)));}catch(_){ }
+  laRenderRecentLeagues();
+}
+
+function laRenderRecentLeagues(){
+  const form=document.querySelector("#tab-leagueanalyzer .la-form"); if(!form) return;
+  let el=$("laRecent");
+  if(!el){
+    el=document.createElement("div"); el.id="laRecent"; el.className="home-recent la-recent";
+    form.insertAdjacentElement("afterend",el);
+  }
+  const rows=laRecentLeagues();
+  if(!rows.length){
+    el.innerHTML=`<span class="home-recent-hint">Recent leagues will appear here after you analyse one.</span>`;
+    return;
+  }
+  el.innerHTML=`<span class="home-recent-label">Recent</span>${rows.map(r=>`<button type="button" class="home-recent-chip" data-league-id="${esc(r.id)}" title="League ${esc(r.id)}">${esc(r.name||r.id)}</button>`).join("")}`;
+  el.querySelectorAll("[data-league-id]").forEach(btn=>btn.addEventListener("click",()=>{
+    const id=btn.dataset.leagueId||"";
+    if($("laLeagueId")) $("laLeagueId").value=id;
+    runLeagueAnalyzer();
+  }));
+}
 
 async function initLeagueAnalyzer(){
   await loadBoot();
   const input=$("laLeagueId"),run=$("laRun"),search=$("laSearch");
+  laRenderRecentLeagues();
   if(run&&!run.dataset.bound){
     run.dataset.bound="1";
     run.addEventListener("click",()=>runLeagueAnalyzer());
@@ -103,6 +140,7 @@ async function runLeagueAnalyzer(){
     const merged=standings.map((r,i)=>({...r,...(details[i]?.error?{}:details[i])}));
     const payload={leagueId,gw,league,rows:merged,page:1,pageSize:20,search:"",sortKey:"rank",sortDir:"asc"};
     _laCache.set(cacheKey,payload); _laState={...payload};
+    laSaveRecentLeague(leagueId,league?.name||`League ${leagueId}`);
     renderLeagueAnalyzer();
   }catch(e){
     $("leagueAnalyzerBody").innerHTML=`<div class="banner err"><div><b>Couldn’t load this league.</b><small>Check the league ID and try again. ${esc(e.message||"")}</small></div></div>`;
