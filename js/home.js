@@ -8,6 +8,27 @@ function homeLoadingMarkup(label="Loading FPL data…"){
   </div>`;
 }
 
+function homeGwState(events=[],fixtures=[]){
+  const groups=(fixtures||[]).reduce((m,f)=>{ if(f.event){ (m[f.event]||(m[f.event]=[])).push(f); } return m; },{});
+  const rows=(events||[]).map(ev=>{
+    const fx=groups[ev.id]||[];
+    const anyStarted=fx.some(f=>f.started||f.finished||f.finished_provisional);
+    const anyLive=fx.some(f=>f.started&&!f.finished&&!f.finished_provisional);
+    const allDone=fx.length>0&&fx.every(f=>f.finished||f.finished_provisional);
+    return {ev,fx,anyStarted,anyLive,allDone,complete:eventComplete(ev)||allDone};
+  });
+  const latestStarted=[...rows].filter(x=>x.anyStarted).sort((a,b)=>b.ev.id-a.ev.id)[0]||null;
+  const live=[...rows].filter(x=>x.anyLive).sort((a,b)=>b.ev.id-a.ev.id)[0]||null;
+  const completed=[...rows].filter(x=>x.complete).sort((a,b)=>b.ev.id-a.ev.id)[0]||null;
+  const next=(events||[]).find(e=>e.is_next) || (latestStarted ? (events||[]).find(e=>e.id===latestStarted.ev.id+1) : (events||[]).find(e=>!eventComplete(e)));
+  return {rows,latestStarted,live,completed,next};
+}
+
+function homeDisplayGw(events=[],fixtures=[]){
+  const state=homeGwState(events,fixtures);
+  return state.live || state.latestStarted || state.completed || (state.next?{ev:state.next,fx:[],anyStarted:false,anyLive:false,allDone:false,complete:false}:null);
+}
+
 function setHomeLoadingStates(){
   if($("homeGameweek")) $("homeGameweek").innerHTML=`<div class="home-card-label">Gameweek</div>${homeLoadingMarkup("Checking Gameweek status…")}`;
   if($("homeFixtures")) $("homeFixtures").innerHTML=homeLoadingMarkup("Loading upcoming fixtures…");
@@ -136,9 +157,9 @@ async function enrichHomeSavedTeam(b,fixtures=[]){
     let lastGwReport="";
     try{
       const events=(b&&b.events)||[];
-      const completedIds=new Set((fixtures||[]).filter(f=>f.event&&f.finished).map(f=>f.event));
-      const last=[...events].filter(e=>eventComplete(e)||completedIds.has(e.id)).sort((a,c)=>c.id-a.id)[0];
-      if(last){
+      const focusState=homeDisplayGw(events,fixtures);
+      const last=focusState&&focusState.ev;
+      if(last && focusState.anyStarted){
         const [picks,live]=await Promise.all([
           get(`/entry/${st.id}/event/${last.id}/picks/`),
           get(`/event/${last.id}/live/`)
@@ -162,10 +183,12 @@ async function enrichHomeSavedTeam(b,fixtures=[]){
             <span class="home-lastgw-points"><b>${x.points}</b><small>pts</small></span>
           </div>`;
         }).join('');
-        const gwPoints=Number((picks.entry_history&&picks.entry_history.points)||0);
+        const gwPoints=Number((picks.entry_history&&picks.entry_history.points)||entry.summary_event_points||0);
+        const reportLabel=focusState.anyLive?'Current Gameweek':focusState.complete?'Latest Gameweek':'Current Gameweek';
+        const reportStatus=focusState.anyLive?' · LIVE':'';
         lastGwReport=`<div class="home-lastgw-report">
           <div class="home-lastgw-head">
-            <div class="home-lastgw-title"><span>Last Gameweek</span><b>GW${last.id} Squad</b></div>
+            <div class="home-lastgw-title"><span>${reportLabel}</span><b>GW${last.id} Squad${reportStatus}</b></div>
             <div class="home-lastgw-score"><strong>${gwPoints}</strong><small>pts</small></div>
           </div>
           ${top?`<div class="home-lastgw-top">${teamKitImg(topTeam,'home-lastgw-top-kit')}<div class="home-lastgw-top-copy"><span>Top performer</span><b>${esc(top.player.web_name||'—')}</b><small>${top.points} pts</small></div></div>`:''}
@@ -191,55 +214,43 @@ async function enrichHomeSavedTeam(b,fixtures=[]){
 function renderHomeGameweek(b,fixtures=[]){
   const el=$("homeGameweek"); if(!el) return;
   const events=b.events||[];
-  const current=events.find(e=>e.is_current);
-  const next=events.find(e=>e.is_next);
-  const fixtureGroups=(fixtures||[]).reduce((m,f)=>{ if(f.event){ (m[f.event]||(m[f.event]=[])).push(f); } return m; },{});
-  const isFinished=e=>eventComplete(e)||((fixtureGroups[e.id]||[]).length>0 && (fixtureGroups[e.id]||[]).every(f=>f.finished||f.finished_provisional));
-  const previous=[...events].reverse().find(isFinished);
+  const state=homeGwState(events,fixtures);
+  const focus=state.live||state.latestStarted;
   const total=b.total_players?short(b.total_players):"—";
 
-  // Between Gameweeks, this Home card is reserved for the user's previous-GW
-  // recap + next-GW availability watch. Do not flash generic Average/Highest
-  // stats while that recap is being built.
-  if(previous && next && savedTeam()?.id){
-    el.innerHTML=`<div class="home-card-label">Gameweek recap</div>${homeLoadingMarkup(`Loading GW${previous.id} recap…`)}`;
+  if(focus && savedTeam()?.id){
+    const label=focus.anyLive?`Loading live GW${focus.ev.id}…`:`Loading GW${focus.ev.id} recap…`;
+    el.innerHTML=`<div class="home-card-label">Gameweek</div>${homeLoadingMarkup(label)}`;
     return;
   }
 
-  // Before GW1 starts, avoid showing an empty-looking statistics card.
-  if(!current && next && !previous){
+  if(!focus && state.next){
     el.innerHTML=`
       <div class="home-card-label">Gameweek status</div>
-      <div class="home-gw-status-row"><div class="home-card-value small">GW${next.id} is next</div><span class="home-gw-pill">Pre-season</span></div>
-      <div class="home-card-sub">The season hasn’t started yet.</div>
-      <div class="home-gw-note">Average score, highest score and live Gameweek stats will appear here after the first deadline.</div>
+      <div class="home-gw-status-row"><div class="home-card-value small">GW${state.next.id} is next</div><span class="home-gw-pill">Up next</span></div>
+      <div class="home-gw-note">Scores will populate after the Gameweek starts.</div>
       <div class="home-gw-meta">${total} managers registered</div>`;
     return;
   }
 
-  const currentFixtures=(fixtures||[]).filter(f=>f.event===current?.id);
-  const currentDone=!!(current&&isFinished(current));
-  const ev=(current&&!currentDone)?current:(next||current||previous||events[0]);
-  if(!ev){
+  const row=focus||state.completed;
+  if(!row){
     el.innerHTML=`<div class="home-card-label">Gameweek status</div><div class="home-card-value small">Season setup</div><div class="home-card-sub">Gameweek data is not available yet.</div>`;
     return;
   }
-
-  const live=!!(current&&!currentDone&&ev.id===current.id);
+  const ev=row.ev;
   const avg=Number(ev.average_entry_score||0);
   const high=Number(ev.highest_score||0);
-  const status=live?"Live":isFinished(ev)?"Final":ev.is_next?"Up next":"Gameweek";
+  const status=row.anyLive?'Live':row.complete?'Final':row.anyStarted?'In progress':'Gameweek';
   el.innerHTML=`
     <div class="home-card-label">Gameweek status</div>
-    <div class="home-gw-status-row"><div class="home-card-value small">GW${ev.id}</div><span class="home-gw-pill${live?" live":""}">${status}</span></div>
+    <div class="home-gw-status-row"><div class="home-card-value small">GW${ev.id}</div><span class="home-gw-pill${row.anyLive?' live':''}">${status}</span></div>
     <div class="home-gw-stats">
-      <div><span>Average</span><b>${avg?avg:"—"}</b></div>
-      <div><span>Highest</span><b>${high?high:"—"}</b></div>
+      <div><span>Average</span><b>${avg?avg:'—'}</b></div>
+      <div><span>Highest</span><b>${high?high:'—'}</b></div>
       <div><span>Managers</span><b>${total}</b></div>
-    </div>
-    ${!avg&&!high?`<div class="home-gw-note">Scores will populate once Gameweek data is available.</div>`:""}`;
+    </div>`;
 }
-
 
 async function enrichHomeGameweekRecap(b,fixtures=[]){
   const el=$("homeGameweek");
@@ -247,17 +258,13 @@ async function enrichHomeGameweekRecap(b,fixtures=[]){
   if(!el || !st || !st.id) return;
 
   const events=b.events||[];
-  const fixtureGroups=(fixtures||[]).reduce((m,f)=>{ if(f.event){ (m[f.event]||(m[f.event]=[])).push(f); } return m; },{});
-  const isFinished=e=>eventComplete(e)||((fixtureGroups[e.id]||[]).length>0 && (fixtureGroups[e.id]||[]).every(f=>f.finished||f.finished_provisional));
-  const completed=[...events].filter(isFinished).sort((a,c)=>c.id-a.id);
-  const last=completed[0];
-  const next=events.find(e=>e.is_next) || events.find(e=>e.id===(last?.id||0)+1);
-  if(!last || !next) return;
+  const state=homeGwState(events,fixtures);
+  const focus=state.live||state.latestStarted||state.completed;
+  const last=focus&&focus.ev;
+  const next=events.find(e=>last&&e.id===last.id+1) || state.next;
+  if(!last || !focus || !focus.anyStarted) return;
 
-  const current=events.find(e=>e.is_current);
-  if(current && !isFinished(current) && current.id===next.id) return;
-
-  el.innerHTML=`<div class="home-card-label">Gameweek status</div>${homeLoadingMarkup(`Building GW${last.id} recap…`)}`;
+  el.innerHTML=`<div class="home-card-label">Gameweek status</div>${homeLoadingMarkup(`${focus.anyLive?'Updating':'Building'} GW${last.id} ${focus.anyLive?'live score':'recap'}…`)}`;
 
   const [picks, live] = await Promise.all([
     get(`/entry/${st.id}/event/${last.id}/picks/`),
@@ -296,10 +303,12 @@ async function enrichHomeGameweekRecap(b,fixtures=[]){
       }).join('')
     : `<span class="home-gw-clear">No flagged players from your latest squad.</span>`;
 
+  const headingLabel=focus.anyLive?'Current Gameweek':focus.complete?'Latest Gameweek':'Current Gameweek';
+  const headingTitle=`GW${last.id}${focus.anyLive?' · Live':focus.complete?' Recap':' · In progress'}`;
   el.innerHTML=`
     <div class="home-gw-recap-heading">
-      <div><div class="home-card-label">Last Gameweek</div><div class="home-card-value small">GW${last.id} Recap</div></div>
-      <span class="home-gw-pill">GW${next.id} · Up next</span>
+      <div><div class="home-card-label">${headingLabel}</div><div class="home-card-value small">${headingTitle}</div></div>
+      ${next?`<span class="home-gw-pill">GW${next.id} · Up next</span>`:''}
     </div>
     <div class="home-gw-recap-grid">
       <div><span>GW${last.id} score</span><b>${gwPts}</b></div>
@@ -311,7 +320,7 @@ async function enrichHomeGameweekRecap(b,fixtures=[]){
       <div><span>Lowest scorer who played</span>${playerLine(low)}</div>
     </div>
     <div class="home-gw-injury-wrap">
-      <span>GW${next.id} Availability Watch</span>
+      <span>${next?`GW${next.id} Availability Watch`:`Availability Watch`}</span>
       <div class="home-gw-injury-list">${injuryHtml}</div>
     </div>`;
 }

@@ -13,8 +13,22 @@ async function initLeagueAnalyzer(){
   }
 }
 
-function laCurrentGw(){
-  const ev=(boot.events||[]).find(e=>e.is_current)||(boot.events||[]).find(e=>e.is_next)||[...(boot.events||[])].reverse().find(e=>e.finished);
+async function laCurrentGw(){
+  const events=boot.events||[];
+  let fixtures=[];
+  try{ fixtures=await get('/fixtures/'); }catch(_){ }
+  const byEvent=(fixtures||[]).reduce((m,f)=>{ if(f.event){ (m[f.event]||(m[f.event]=[])).push(f); } return m; },{});
+  const startedIds=Object.entries(byEvent)
+    .filter(([,fx])=>fx.some(f=>f.started||f.finished||f.finished_provisional))
+    .map(([id])=>Number(id))
+    .sort((a,b)=>b-a);
+  const liveId=Object.entries(byEvent)
+    .filter(([,fx])=>fx.some(f=>f.started&&!f.finished&&!f.finished_provisional))
+    .map(([id])=>Number(id))
+    .sort((a,b)=>b-a)[0];
+  if(liveId) return liveId;
+  if(startedIds.length) return startedIds[0];
+  const ev=events.find(e=>e.is_current)||events.find(e=>e.is_next)||[...events].reverse().find(e=>e.finished||e.data_checked);
   return ev?ev.id:1;
 }
 
@@ -54,8 +68,9 @@ async function runLeagueAnalyzer(){
   if(!/^\d+$/.test(leagueId)){
     $("leagueAnalyzerBody").innerHTML=`<div class="tool-empty">Enter a valid numeric FPL Classic League ID.</div>`; return;
   }
-  const gw=laCurrentGw(),cacheKey=`${leagueId}:${gw}`;
-  if(_laCache.has(cacheKey)){_laState={..._laCache.get(cacheKey),page:1,pageSize:20,search:"",sortKey:_laCache.get(cacheKey).sortKey||"rank",sortDir:_laCache.get(cacheKey).sortDir||"asc"};if($("laSearch"))$("laSearch").value="";renderLeagueAnalyzer();return;}
+  const gw=await laCurrentGw(),cacheKey=`${leagueId}:${gw}`;
+  // Always refresh the active/latest Gameweek. FPL standings can change while matches are live,
+  // so an in-memory GW cache must not become the source of truth.
   try{
     laLoading("Loading league…");
     const {league,rows:standings}=await laFetchAllStandings(leagueId,t=>laLoading(t));
@@ -83,7 +98,7 @@ async function runLeagueAnalyzer(){
       const playedNow=scoringPicks.filter(p=>teamsStarted.has(playerTeam.get(Number(p.element)))).length;
       const playedMax=activeChip==="bboost"?15:11;
       const benchPoints=pickRows.filter(p=>Number(p.position)>11).reduce((sum,p)=>sum+(livePoints.get(Number(p.element))||0),0);
-      return {captainId:captain?.element||null,chip:activeChip,playedNow,playedMax,benchPoints,points:Number(picks.entry_history?.points??row.event_total??0)};
+      return {captainId:captain?.element||null,chip:activeChip,playedNow,playedMax,benchPoints,points:Number(row.event_total??picks.entry_history?.points??0)};
     },(d,t)=>laLoading("Analysing managers…",d,t));
     const merged=standings.map((r,i)=>({...r,...(details[i]?.error?{}:details[i])}));
     const payload={leagueId,gw,league,rows:merged,page:1,pageSize:20,search:"",sortKey:"rank",sortDir:"asc"};
