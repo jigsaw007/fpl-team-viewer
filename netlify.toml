@@ -112,6 +112,12 @@
   status = 200
 
 
+
+[[redirects]]
+  from = "/transfer-stats"
+  to = "/index.html"
+  status = 200
+
 [[redirects]]
   from = "/price-watch"
   to = "/index.html"
@@ -227,25 +233,5 @@
 
 [[redirects]]
   from = "/fpl-market"
-  to = "/index.html"
-  status = 200
-
-# -------------------------
-# NEWER APP ROUTES
-# Explicit rewrites avoid a catch-all that can intercept CSS/JS in netlify dev.
-# -------------------------
-
-[[redirects]]
-  from = "/my-team"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/fpl-insights"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/fpl-scout"
   to = "/index.html"
   status = 200

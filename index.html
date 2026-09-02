@@ -92,6 +92,7 @@
 })();
 </script>
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/transfer-stats.css">
 <link rel="stylesheet" href="/css/price-progress.css">
 <link rel="stylesheet" href="/css/market.css">
 </head>
@@ -130,6 +131,7 @@
     <button class="tab" data-tab="injuries">Injuries</button>
     <button class="tab" data-tab="setpieces">Set Pieces</button>
     <button class="tab" data-tab="defcon">DEFCON Tracker</button>
+    <button class="tab" data-tab="transferstats">Transfer Stats</button>
     <button class="tab" data-tab="prices">Price Watch</button>
     <button class="tab" data-tab="pricepredict">Price Change Prediction</button>
 
@@ -1078,6 +1080,65 @@
     </div>
   </section>
 
+  <!-- ============ TRANSFER STATS TAB ============ -->
+  <section class="tabpanel" id="tab-transferstats">
+    <div class="thead transfer-stats-head">
+      <div>
+        <h2>Transfer stats</h2>
+        <p>Official FPL transfer activity across the current Gameweek or the full season.</p>
+      </div>
+      <div class="transfer-stats-gw" id="tsGwLabel">—</div>
+    </div>
+
+    <div class="transfer-stats-controls">
+      <div class="seg" id="tsMode">
+        <button type="button" data-mode="event" class="active">This Gameweek</button>
+        <button type="button" data-mode="season">Season total</button>
+      </div>
+      <select id="tsPosition" aria-label="Filter by position">
+        <option value="all">All positions</option>
+        <option value="1">Goalkeepers</option>
+        <option value="2">Defenders</option>
+        <option value="3">Midfielders</option>
+        <option value="4">Forwards</option>
+      </select>
+      <select id="tsClub" aria-label="Filter by club"><option value="all">All clubs</option></select>
+      <div class="field transfer-stats-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="tsSearch" type="search" placeholder="Search player…" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="transfer-stats-summary" id="tsSummary"></div>
+
+    <div class="transfer-stats-grid">
+      <section class="transfer-stats-card">
+        <div class="transfer-stats-card-head in">
+          <div><span>TRANSFER ACTIVITY</span><h3>Most transferred in</h3></div>
+          <span id="tsInCount"></span>
+        </div>
+        <div class="transfer-stats-table-head"><span>Player</span><span>In</span><span>Out</span><span>Net</span></div>
+        <div id="tsInList" class="transfer-stats-list"><div class="status"><div class="spinner"></div>Loading transfer data…</div></div>
+        <div class="transfer-stats-pager"><button type="button" id="tsInPrev">Previous</button><span id="tsInPage">Page 1 of 1</span><button type="button" id="tsInNext">Next</button></div>
+      </section>
+
+      <section class="transfer-stats-card">
+        <div class="transfer-stats-card-head out">
+          <div><span>TRANSFER ACTIVITY</span><h3>Most transferred out</h3></div>
+          <span id="tsOutCount"></span>
+        </div>
+        <div class="transfer-stats-table-head"><span>Player</span><span>In</span><span>Out</span><span>Net</span></div>
+        <div id="tsOutList" class="transfer-stats-list"><div class="status"><div class="spinner"></div>Loading transfer data…</div></div>
+        <div class="transfer-stats-pager"><button type="button" id="tsOutPrev">Previous</button><span id="tsOutPage">Page 1 of 1</span><button type="button" id="tsOutNext">Next</button></div>
+      </section>
+    </div>
+
+    <div class="transfer-stats-note">
+      <b>Official FPL data</b>
+      <p>Gameweek values use FPL's current <code>transfers_in_event</code> and <code>transfers_out_event</code> fields. Season totals use <code>transfers_in</code> and <code>transfers_out</code>. Net movement is transfers in minus transfers out.</p>
+    </div>
+  </section>
+
   <!-- ============ PRICE WATCH TAB ============ -->
   <section class="tabpanel" id="tab-prices">
     <div class="thead">
@@ -1189,6 +1250,7 @@
     <button data-mobile-tab="injuries">Injuries</button>
     <button data-mobile-tab="setpieces">Set Pieces</button>
     <button data-mobile-tab="defcon">DEFCON Tracker</button>
+    <button data-mobile-tab="transferstats">Transfer Stats</button>
     <button data-mobile-tab="prices">Price Watch</button>
     <button data-mobile-tab="pricepredict">Price Change Prediction</button>
     <button data-mobile-tab="preseason">Pre-season</button>
@@ -1293,6 +1355,7 @@
 <script defer src="/js/injuries.js"></script>
 <script defer src="/js/setpieces.js"></script>
 <script defer src="/js/defcon.js"></script>
+<script defer src="/js/transfer-stats.js"></script>
 <script defer src="/js/prices.js"></script>
 <script defer src="/js/live.js"></script>
 <script defer src="/js/insights.js"></script>
