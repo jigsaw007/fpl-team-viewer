@@ -70,20 +70,11 @@ async function fetchWholeLeagueRows(onProgress){
 
 async function mapInBatches(items, batchSize, worker, onProgress){
   const out=[];
-  let completed=0;
-  const total=items.length;
-  if(onProgress) onProgress(0,total);
   for(let i=0;i<items.length;i+=batchSize){
     const batch=items.slice(i,i+batchSize);
-    const values=await Promise.all(batch.map(async item=>{
-      try{
-        return await worker(item);
-      }finally{
-        completed++;
-        if(onProgress) onProgress(completed,total);
-      }
-    }));
+    const values=await Promise.all(batch.map(worker));
     out.push(...values);
+    if(onProgress) onProgress(Math.min(i+batch.length,items.length),items.length);
   }
   return out;
 }
@@ -161,8 +152,7 @@ async function analyseLeague(){
   const cacheKey=`${_leagueType}:${_leagueId}:gw${gw}`;
   const showLoad=(msg,done=0,total=0)=>{
     const pct=total?Math.round(done/total*100):0;
-    const progressText=total?`${done} of ${total} managers analysed · ${pct}%`:'';
-    $("lmBody").innerHTML=`<div class="status league-analysis-loading"><div class="spinner"></div><div class="league-load-copy"><b>Analysing whole league</b><small>${esc(msg)}</small>${total?`<div class="league-load-track"><i style="width:${pct}%"></i></div><em>${progressText}</em>`:''}</div></div>`;
+    $("lmBody").innerHTML=`<div class="status league-analysis-loading"><div class="spinner"></div><div class="league-load-copy"><b>Analysing whole league</b><small>${esc(msg)}</small>${total?`<div class="league-load-track"><i style="width:${pct}%"></i></div><em>${done}/${total}</em>`:''}</div></div>`;
   };
   try{
     if(_leagueAnalysisCache.has(cacheKey)){

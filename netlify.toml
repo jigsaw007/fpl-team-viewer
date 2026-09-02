@@ -186,8 +186,8 @@
 
 [[redirects]]
   from = "/pre-season"
-  to = "/index.html"
-  status = 200
+  to = "/"
+  status = 301
 
 
 [[redirects]]

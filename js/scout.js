@@ -1,40 +1,24 @@
 /* ============ SCOUT tab ============ */
-let _scoutView="buy", _scoutFdr=null, _scoutFixtures=null;
+let _scoutView="buy", _scoutFdr=null;
 async function initScout(){
   await loadBoot();
   const fixtures=await get(`/fixtures/`);
   const fromGw=(activeGameweekEvent(boot.events)||boot.events[0]).id;
-  // avg FDR + the next five actual fixtures for each team
+  // avg FDR over next 5 for each team
   _scoutFdr={};
-  _scoutFixtures={};
-  boot.teams.forEach(t=>{_scoutFdr[t.id]={sum:0,n:0};_scoutFixtures[t.id]=[];});
+  boot.teams.forEach(t=>_scoutFdr[t.id]={sum:0,n:0});
   const gws=[]; for(let g=fromGw; g<fromGw+5 && g<=38; g++) gws.push(g);
-  fixtures.filter(f=>f.event&&gws.includes(f.event)&&!f.finished).sort((a,b)=>a.event-b.event).forEach(f=>{
+  fixtures.filter(f=>f.event&&gws.includes(f.event)).forEach(f=>{
     _scoutFdr[f.team_h].sum+=f.team_h_difficulty; _scoutFdr[f.team_h].n++;
     _scoutFdr[f.team_a].sum+=f.team_a_difficulty; _scoutFdr[f.team_a].n++;
-    _scoutFixtures[f.team_h].push({gw:f.event,opp:f.team_a,home:true,fdr:Number(f.team_h_difficulty)||3});
-    _scoutFixtures[f.team_a].push({gw:f.event,opp:f.team_h,home:false,fdr:Number(f.team_a_difficulty)||3});
   });
-  for(const t in _scoutFdr){ const x=_scoutFdr[t]; x.avg=x.n?x.sum/x.n:3; _scoutFixtures[t]=(_scoutFixtures[t]||[]).slice(0,5); }
+  for(const t in _scoutFdr){ const x=_scoutFdr[t]; x.avg=x.n?x.sum/x.n:3; }
   $("scoutView").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;
     $("scoutView").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");
     _scoutView=x.dataset.v; drawScout();});
   drawScout();
 }
 function teamFdr(teamId){ return _scoutFdr&&_scoutFdr[teamId]?_scoutFdr[teamId].avg:3; }
-
-function scoutFixtureRun(teamId){
-  const rows=(_scoutFixtures&&_scoutFixtures[teamId]||[]).slice(0,5);
-  if(!rows.length) return `<div class="scout-fixtures scout-fixtures-empty">No upcoming fixture</div>`;
-  return `<div class="scout-fixtures" aria-label="Next five fixtures">${rows.map(f=>{
-    const opp=boot.teams.find(t=>t.id===f.opp)||{};
-    const short=esc(opp.short_name||"-");
-    const where=f.home?"H":"A";
-    const fdr=Math.max(1,Math.min(5,Math.round(Number(f.fdr)||3)));
-    return `<div class="scout-fx fdr${fdr}" title="GW${f.gw} vs ${esc(opp.name||opp.short_name||"Opponent")} (${where})"><small>GW${f.gw}</small><b>${short}</b><span>${where} · FDR ${fdr}</span></div>`;
-  }).join("")}</div>`;
-}
-
 function drawScout(){
   if(_scoutView==="buy") return scoutBuy();
   if(_scoutView==="trends") return scoutTrends();
@@ -66,7 +50,6 @@ function scoutBuy(){
       <div class="scout-main"><div class="scout-nm">${esc(e.web_name)} <span class="scout-meta">${esc(t.short_name||"")} · ${POS[e.element_type]} · ${money(e.now_cost)}</span></div>
         <div class="scout-bars"><span class="mini-lbl">${started?"Form "+(+e.form).toFixed(1):"Last szn "+e.total_points}</span><span class="mini-lbl">Own ${(+e.selected_by_percent).toFixed(1)}%</span><span class="mini-lbl fdr-chip fdr${Math.round(x.fdr)}">FDR ${x.fdr.toFixed(1)}</span></div>
       </div>
-      ${scoutFixtureRun(e.team)}
       <div class="scout-score">${x.score.toFixed(1)}</div>
     </div>`;
   }).join("");

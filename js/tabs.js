@@ -9,7 +9,6 @@ function markActiveSidebarGroup(name){
   if(node) node.classList.add("active-group");
 }
 function switchTab(name,opts={}){
-  if(name==="preseason"){ name="home"; opts={...opts,fromRoute:false,replace:true}; }
   document.body.classList.toggle("market-mode",name==="market");
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
   markActiveSidebarGroup(name);
@@ -71,8 +70,6 @@ window.addEventListener("popstate",()=>{
 });
 
 function polishNavigation(){
-  document.querySelectorAll('[data-tab="preseason"],[data-mobile-tab="preseason"]').forEach(el=>el.remove());
-  const preseasonPanel=document.getElementById("tab-preseason");if(preseasonPanel) preseasonPanel.remove();
   document.querySelectorAll('[data-tab="analyzer"],[data-mobile-tab="analyzer"]').forEach(btn=>{
     if(!btn.querySelector(".beta-badge")) btn.insertAdjacentHTML("beforeend",'<span class="beta-badge" aria-label="Beta feature">BETA</span>');
     const hot=btn.querySelector(".tab-hot");if(hot) hot.remove();

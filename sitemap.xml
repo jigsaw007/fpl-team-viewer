@@ -1,198 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://fplpeek.com/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.00</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/planner</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/team-builder</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/price-change-prediction</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/transfer-stats</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/price-watch</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.90</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/player-compare</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/captain-picks</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.90</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/team-rating</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/fpl-scout</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/fixtures</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/players</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/injuries</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/defcon-tracker</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/set-pieces</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/manager-compare</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/card-creator</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/my-team</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/fpl-insights</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/fpl-peek-team</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/live-center</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/pre-season</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.60</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/about.html</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/privacy.html</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.30</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/terms.html</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.30</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/league-analyzer</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.90</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/one-to-watch</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.90</priority>
-  </url>
-
-  <url>
-    <loc>https://fplpeek.com/fpl-market</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.90</priority>
-  </url>
+  <url><loc>https://fplpeek.com/</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>1.00</priority></url>
+  <url><loc>https://fplpeek.com/planner</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://fplpeek.com/team-builder</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://fplpeek.com/price-change-prediction</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.95</priority></url>
+  <url><loc>https://fplpeek.com/price-watch</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/player-compare</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/captain-picks</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/team-rating</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/fpl-scout</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://fplpeek.com/fixtures</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://fplpeek.com/players</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://fplpeek.com/injuries</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://fplpeek.com/defcon-tracker</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.80</priority></url>
+  <url><loc>https://fplpeek.com/set-pieces</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://fplpeek.com/manager-compare</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/card-creator</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://fplpeek.com/my-team</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.80</priority></url>
+  <url><loc>https://fplpeek.com/fpl-insights</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.80</priority></url>
+  <url><loc>https://fplpeek.com/fpl-peek-team</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/live-center</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.80</priority></url>
+  <url><loc>https://fplpeek.com/league-analyzer</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/one-to-watch</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/fpl-market</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/transfer-stats</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.95</priority></url>
+  <url><loc>https://fplpeek.com/analysis/</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.92</priority></url>
+  <url><loc>https://fplpeek.com/analysis/current-preview.html</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/analysis/current-captaincy.html</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/analysis/current-transfer-watch.html</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.88</priority></url>
+  <url><loc>https://fplpeek.com/analysis/current-differentials.html</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.86</priority></url>
+  <url><loc>https://fplpeek.com/analysis/current-fixture-focus.html</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.86</priority></url>
+  <url><loc>https://fplpeek.com/analysis/latest-review.html</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.82</priority></url>
+  <url><loc>https://fplpeek.com/guides/</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://fplpeek.com/methodology.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/about.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.50</priority></url>
+  <url><loc>https://fplpeek.com/contact.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.50</priority></url>
+  <url><loc>https://fplpeek.com/privacy.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.30</priority></url>
+  <url><loc>https://fplpeek.com/terms.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.30</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-bench-management-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-bonus-points-explained.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-captaincy-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-chip-strategy-2026-27.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-defensive-contributions-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-differentials-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-effective-ownership-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-fixture-difficulty-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-free-transfers-and-hits.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-gameweek-review-process.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-mini-league-strategy.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-minutes-rotation-risk.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-player-comparison-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-price-changes-explained.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-team-rating-methodology.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-transfer-strategy.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/fpl-wildcard-planning-guide.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/how-fpl-scoring-works.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/how-to-analyze-fpl-league.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://fplpeek.com/guides/how-to-use-fplpeek.html</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
 </urlset>

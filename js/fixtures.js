@@ -1,44 +1,12 @@
 /* ============ FIXTURES / RESULTS / TABLE tab ============ */
 let _fxN=5, _fxSort="team", _allFixtures=null, _fxGw=1, _fxView="matches", _fxMatchFilter="all", _rotN=5, _fxLiveTimer=null;
 
-function fixtureGwState(gw){
-  const games=(_allFixtures||[]).filter(f=>Number(f.event)===Number(gw));
-  const anyLive=games.some(f=>f.started && !(f.finished||f.finished_provisional));
-  const allFinished=games.length>0 && games.every(f=>f.finished||f.finished_provisional);
-  const anyUnfinished=games.some(f=>!(f.finished||f.finished_provisional));
-  return {games,anyLive,allFinished,anyUnfinished};
-}
-
-function firstUpcomingFixtureGw(){
-  const ids=[...new Set((_allFixtures||[]).map(f=>Number(f.event)).filter(Number.isFinite))].sort((a,b)=>a-b);
-  const live=ids.find(g=>fixtureGwState(g).anyLive);
-  if(live) return {gw:live,mode:"live"};
-  const upcoming=ids.find(g=>fixtureGwState(g).anyUnfinished);
-  if(upcoming) return {gw:upcoming,mode:"upcoming"};
-  const fallback=(latestCompletedEvent((boot&&boot.events)||[])||{}).id || ids[ids.length-1] || 1;
-  return {gw:Number(fallback),mode:"final"};
-}
-
-function setMatchFilter(filter, redraw=true){
-  _fxMatchFilter=filter;
-  const root=$("fxMatchFilter");
-  if(root) root.querySelectorAll("button[data-f]").forEach(btn=>btn.classList.toggle("active",btn.dataset.f===filter));
-  if(redraw) drawMatchCentre();
-}
-
-function syncMatchFilterForGw(gw, redraw=true){
-  const state=fixtureGwState(gw);
-  const filter=state.anyLive?"all":state.allFinished?"results":"fixtures";
-  setMatchFilter(filter,redraw);
-}
-
 async function initFixtures(){
   $("fxMatches").innerHTML=`<div class="tab-status"><div class="spinner"></div>Loading fixtures…</div>`;
   const b=await loadBoot();
   _allFixtures=await get(`/fixtures/`);
-  const initial=firstUpcomingFixtureGw();
-  _fxGw=initial.gw;
-  _fxMatchFilter=initial.mode==="live"?"all":initial.mode==="final"?"results":"fixtures";
+  const initial=activeGameweekEvent(b.events) || b.events[0];
+  _fxGw=initial ? initial.id : 1;
 
   $("fxGwSelect").innerHTML=b.events.map(e=>`<option value="${e.id}">GW${e.id}</option>`).join("");
   $("fxGwSelect").value=String(_fxGw);
@@ -52,7 +20,9 @@ async function initFixtures(){
   $("fxGwSelect").addEventListener("change",()=>setFixtureGw(+(""+$("fxGwSelect").value)));
   $("fxMatchFilter").addEventListener("click",e=>{
     const btn=e.target.closest("button[data-f]"); if(!btn) return;
-    setMatchFilter(btn.dataset.f);
+    _fxMatchFilter=btn.dataset.f;
+    $("fxMatchFilter").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===btn));
+    drawMatchCentre();
   });
   $("fxMatches").addEventListener("click",e=>{
     const row=e.target.closest(".fx-match-row[data-fixture-id]"); if(!row) return;
@@ -88,7 +58,6 @@ async function initFixtures(){
     $("fxSort").querySelectorAll("button").forEach(y=>y.classList.remove("active"));x.classList.add("active");
     _fxSort=x.dataset.s; drawFixtures();});
 
-  setMatchFilter(_fxMatchFilter,false);
   setFixturesView("matches");
   drawFixtures();
   drawLeagueTable();
@@ -112,7 +81,7 @@ function setFixtureGw(gw){
   const max=(boot&&boot.events&&boot.events.length)||38;
   _fxGw=Math.max(1,Math.min(max,Number(gw)||1));
   $("fxGwSelect").value=String(_fxGw);
-  syncMatchFilterForGw(_fxGw);
+  drawMatchCentre();
 }
 
 function fixtureEventMeta(gw){
@@ -138,8 +107,7 @@ function drawMatchCentre(){
   $("fxNext").disabled=_fxGw>=38;
   $("fxGwSelect").value=String(_fxGw);
   const ev=fixtureEventMeta(_fxGw);
-  const state=fixtureGwState(_fxGw);
-  const status=state.anyLive?"Live":state.allFinished?"Final":ev.is_next?"Up next":state.anyUnfinished?"Up next":_fxGw===1&&!seasonStarted()?"Season opener":"Scheduled";
+  const status=eventComplete(ev)?"Completed":ev.is_current?"Current gameweek":ev.is_next?"Up next":_fxGw===1&&!seasonStarted()?"Season opener":"Scheduled";
   $("fxGwStatus").textContent=status;
 
   let games=_allFixtures.filter(f=>Number(f.event)===_fxGw).sort((a,b)=>String(a.kickoff_time||"").localeCompare(String(b.kickoff_time||"")));
@@ -311,15 +279,7 @@ function matchRowHtml(f){
 function drawFixtures(){
   if(!_allFixtures||!boot) return;
   const b=boot;
-  // FDR is forward-looking: start from the first Gameweek that still has
-  // at least one unfinished fixture. This avoids showing a completed GW
-  // when FPL has not yet flipped its event-level is_current/data_checked flags.
-  const unfinishedGws=[...new Set((_allFixtures||[])
-    .filter(f=>f.event && !(f.finished || f.finished_provisional))
-    .map(f=>Number(f.event))
-    .filter(Number.isFinite))].sort((a,c)=>a-c);
-  const fallbackEvent=activeGameweekEvent(b.events)||b.events[0]||{id:1};
-  const fromGw=unfinishedGws[0] || Number(fallbackEvent.id) || 1;
+  const fromGw=(activeGameweekEvent(b.events)||b.events[0]).id;
   const gws=[]; for(let g=fromGw; g<fromGw+_fxN && g<=38; g++) gws.push(g);
   const perTeam={};
   b.teams.forEach(t=>perTeam[t.id]={});
@@ -356,7 +316,7 @@ function rotationFixturesFor(teamId,gws){
 function drawRotationPlanner(){
   if(!_allFixtures||!boot||!$("rotTeamA")||!$("rotTeamB")) return;
   const a=Number($("rotTeamA").value),b=Number($("rotTeamB").value);
-  const start=firstUpcomingFixtureGw().gw;
+  const start=(activeGameweekEvent(boot.events||[])||boot.events[0]||{id:1}).id;
   const gws=[];for(let g=start;g<start+_rotN&&g<=38;g++)gws.push(g);
   const ra=rotationFixturesFor(a,gws),rb=rotationFixturesFor(b,gws),ta=boot.teams.find(t=>t.id===a)||{},tb=boot.teams.find(t=>t.id===b)||{};
   let quality=0,count=0;

@@ -25,19 +25,6 @@ function pricePlayerRow(e,dir,main,sub){
   </div></div><div class="pc ${dir||""}">${main}</div></div>`;
 }
 
-function priceMarketEvent(){
-  const events=boot.events||[];
-  const next=events.find(e=>e.is_next);
-  if(next)return next;
-  const unfinished=events.find(e=>!e.finished&&!e.data_checked);
-  if(unfinished)return unfinished;
-  return events.find(e=>e.is_current)||events[events.length-1]||{};
-}
-function pricePreviousEvent(){
-  const target=Number(priceMarketEvent().id)||1;
-  return (boot.events||[]).filter(e=>Number(e.id)<target&&(e.finished||e.data_checked)).sort((a,b)=>Number(b.id)-Number(a.id))[0]||null;
-}
-
 function drawPrices(){
   const b=boot;
   const started=seasonStarted();
@@ -50,21 +37,17 @@ function drawPrices(){
 
   const status=$("prStatus");
   if(status){
-    const marketEvent=priceMarketEvent();
-    const marketGw=Number(marketEvent.id)||1;
-    const prevEvent=pricePreviousEvent();
-    const modeLabel=_prMode==="season"?"Season movement":`GW${marketGw} movement`;
     if(!started){
-      status.innerHTML=`<div class="price-status-card compact"><div><small>MARKET STATUS</small><b>Waiting for the season to start</b></div><span class="price-status-pill">PRE-SEASON</span></div>`;
+      status.innerHTML=`<div class="price-status-card"><b>Waiting for Gameweek 1</b><span>Official price changes and Gameweek transfer activity become meaningful once the season starts.</span></div>`;
     }else if(!withChange.length){
-      status.innerHTML=`<div class="price-status-card compact live"><div><small>MARKET STATUS</small><b>No official price changes yet</b></div><span class="price-status-pill">GW${marketGw} MARKET</span></div>`;
+      status.innerHTML=`<div class="price-status-card live"><b>GW1 is live — no official price changes recorded yet</b><span>FPL has not changed any player prices for ${label} yet. Transfer activity is already available below and will update as managers buy and sell players.</span></div>`;
     }else{
-      status.innerHTML=`<div class="price-status-card compact live"><div><small>${modeLabel.toUpperCase()}</small><b>${withChange.length} official price change${withChange.length===1?"":"s"}</b></div><span class="price-status-pill">${prevEvent?`AFTER GW${prevEvent.id}`:`GW${marketGw}`}</span></div>`;
+      status.innerHTML=`<div class="price-status-card live"><b>${withChange.length} official price change${withChange.length===1?"":"s"} recorded ${label}</b><span>These values come from FPL's current player price and price-change fields.</span></div>`;
     }
   }
 
-  $("prUp").innerHTML=risers.length?risers.map(e=>pricePlayerRow(e,"up",changeText(e),`${Number(e.transfers_in_event||0).toLocaleString()} in GW`)).join(""):`<div class="price-empty compact"><b>No official risers yet</b><small>Waiting for FPL's next price update.</small></div>`;
-  $("prDown").innerHTML=fallers.length?fallers.map(e=>pricePlayerRow(e,"down",changeText(e),`${Number(e.transfers_out_event||0).toLocaleString()} out GW`)).join(""):`<div class="price-empty compact"><b>No official fallers yet</b><small>Waiting for FPL's next price update.</small></div>`;
+  $("prUp").innerHTML=risers.length?risers.map(e=>pricePlayerRow(e,"up",changeText(e),`${Number(e.transfers_in_event||0).toLocaleString()} in GW`)).join(""):`<div class="price-empty"><b>No official risers yet.</b><span>Prices only appear here after FPL actually applies a price increase.</span></div>`;
+  $("prDown").innerHTML=fallers.length?fallers.map(e=>pricePlayerRow(e,"down",changeText(e),`${Number(e.transfers_out_event||0).toLocaleString()} out GW`)).join(""):`<div class="price-empty"><b>No official fallers yet.</b><span>Prices only appear here after FPL actually applies a price decrease.</span></div>`;
 
   const elements=(b.elements||[]).filter(e=>e.status!=="u");
   const incoming=[...elements].filter(e=>Number(e.transfers_in_event||0)>0).sort((a,c)=>Number(c.transfers_in_event||0)-Number(a.transfers_in_event||0)).slice(0,12);

@@ -1,13 +1,3 @@
-/* ============ saved Team ID sync ============ */
-function syncMyTeamFromSaved(){
-  const st=savedTeam();
-  if(!st||!st.id) return;
-  const id=String(st.id);
-  if($("tid")) $("tid").value=id;
-  if($("homeTeamId")) $("homeTeamId").value=id;
-  if(String(_currentEntryId||"")!==id || $("app")?.style.display!=="block") view(id);
-}
-
 /* ============ main ============ */
 async function view(tid){
   tid=String(tid).trim(); if(!tid) return;
@@ -25,7 +15,7 @@ async function view(tid){
 
     const curEvent=b.events.find(e=>e.is_current);
     const nextEvent=b.events.find(e=>e.is_next);
-    const lastStarted=[...b.events].reverse().find(e=>eventComplete(e)||e.is_current);
+    const lastStarted=[...b.events].reverse().find(e=>e.finished||e.is_current);
     const fixtureFromGw=(curEvent||nextEvent||b.events[0]).id;
     fixtureMap=buildFixtureMap(fixtures, fixtureFromGw);
 
@@ -58,10 +48,9 @@ async function view(tid){
       $("msg").innerHTML=`<div class="banner err"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div><b>No squad found.</b><small>This manager may not have entered a team this season.</small></div></div>`;
       $("app").style.display="none"; $("go").disabled=false; return;
     }
-    const gwLive=await get(`/event/${gwUsed}/live/`).catch(()=>null);
     renderSquad(picks, gwUsed, b);
     renderCaptaincy(picks, b);
-    renderRecap(picks, history, gwUsed, b, gwLive);
+    renderRecap(picks, history, gwUsed, b);
     // enrich header GW stat from picks history
     renderHeader(entry, history, {id:gwUsed}, true, picks.entry_history);
     renderGridFromPicks(entry, picks.entry_history, b);
@@ -80,31 +69,42 @@ async function view(tid){
 }
 
 function renderHeader(entry, history, gwEvent, started, gwHist){
+  const cur=(history&&history.current)||[];
+  const lastTwo=cur.slice(-2);
+  let rankDelta="";
+  if(lastTwo.length===2 && lastTwo[0].overall_rank && lastTwo[1].overall_rank){
+    const d=lastTwo[0].overall_rank-lastTwo[1].overall_rank; // positive = improved (rank number went down)
+    if(d>0) rankDelta=`<span class="delta up">▲ ${short(Math.abs(d))}</span>`;
+    else if(d<0) rankDelta=`<span class="delta down">▼ ${short(Math.abs(d))}</span>`;
+  }
   const flag = entry.player_region_iso_code_short?regionFlag(entry.player_region_iso_code_short):"";
   const past=(history&&history.past)||[];
   const careerPts=past.reduce((a,s)=>a+(s.total_points||0),0);
   const best=past.length?past.reduce((a,s)=>s.total_points>a.total_points?s:a):null;
+  const thisSeasonEmpty=!(entry.summary_overall_points>0);
+  // pre-season / empty: swap live totals for career highlights so the header isn't all zeros
+  const primaryStats = thisSeasonEmpty && past.length ? `
+      <div class="b"><div class="v">${short(careerPts)}</div><div class="k">Career points</div></div>
+      <div class="b"><div class="v">${best?short(best.total_points):"—"}</div><div class="k">Best season${best?` · ${esc(best.season_name)}`:""}</div></div>
+      <div class="b"><div class="v">${best&&best.rank?short(best.rank):"—"}</div><div class="k">Best rank</div></div>
+      <div class="b"><div class="v">${past.length}</div><div class="k">Seasons played</div></div>`
+    : `
+      <div class="b"><div class="v">${short(entry.summary_overall_points||0)}</div><div class="k">Overall points</div></div>
+      <div class="b"><div class="v">${entry.summary_overall_rank?short(entry.summary_overall_rank):"—"} ${rankDelta}</div><div class="k">Overall rank</div></div>
+      <div class="b"><div class="v">${entry.summary_event_points!=null?entry.summary_event_points:"—"}</div><div class="k">Last GW pts</div></div>
+      <div class="b"><div class="v">${best?short(best.total_points):"—"}</div><div class="k">Best season${best?` · ${esc(best.season_name)}`:""}</div></div>`;
   $("mhead").innerHTML=`
     <div class="top">
       <div>
-        <div class="profile-kicker">Manager profile</div>
         <div class="name">${esc(entry.name)}</div>
         <div class="mgr">${flag}${esc(entry.player_first_name)} ${esc(entry.player_last_name)} · ${esc(entry.player_region_name||"")}</div>
       </div>
       <div class="head-actions">
-        <div class="gwtag">${started?`Latest squad · GW${gwEvent?gwEvent.id:"—"}`:`GW${gwEvent?gwEvent.id:1} · upcoming`}</div>
+        <div class="gwtag">${started?`Gameweek ${gwEvent?gwEvent.id:"—"}`:`GW${gwEvent?gwEvent.id:1} · upcoming`}</div>
         <button class="share-btn" id="shareBtn" title="Download shareable card">Share card</button>
       </div>
     </div>
-    <div class="career-block">
-      <div class="career-head"><span>Career history</span><small>${past.length?`${past.length} completed season${past.length===1?"":"s"}`:"No previous seasons"}</small></div>
-      <div class="career-grid">
-        <div class="career-stat"><span>Career points</span><b>${past.length?short(careerPts):"—"}</b></div>
-        <div class="career-stat"><span>Best season</span><b>${best?short(best.total_points):"—"}</b><small>${best?esc(best.season_name):"—"}</small></div>
-        <div class="career-stat"><span>Best rank</span><b>${best&&best.rank?short(best.rank):"—"}</b></div>
-        <div class="career-stat"><span>Seasons</span><b>${past.length}</b></div>
-      </div>
-    </div>`;
+    <div class="ovr">${primaryStats}</div>`;
   _shareCtx={entry, best, gwEvent, started};
   const sb=$("shareBtn"); if(sb) sb.onclick=()=>makeShareCard();
 }
@@ -177,35 +177,17 @@ function wrapText(ctx,text,cx,y,maxW,lh){
 
 function renderGridFromPicks(entry, h, b){
   if(!h){ $("grid").innerHTML=""; return; }
-  const seasonPts=entry.summary_overall_points!=null?short(entry.summary_overall_points):"—";
-  const seasonRank=entry.summary_overall_rank?short(entry.summary_overall_rank):"—";
-  const gwPts=h.points??"—";
-  const gwRank=h.rank?short(h.rank):"—";
-  const totalManagers=short(b?.total_players||0);
-  $("grid").innerHTML=`
-    <section class="team-period-block season-now">
-      <div class="team-period-head">
-        <div><span class="team-period-kicker">Current season</span><b>2026/27</b></div>
-        <small>Season totals so far</small>
-      </div>
-      <div class="team-period-stats two">
-        <div class="team-period-stat"><span>Overall points</span><b>${seasonPts}</b></div>
-        <div class="team-period-stat"><span>Overall rank</span><b>${seasonRank}</b></div>
-      </div>
-    </section>
-    <section class="team-period-block latest-gw">
-      <div class="team-period-head">
-        <div><span class="team-period-kicker">Latest Gameweek</span><b>GW${h.event||"—"}</b></div>
-        <small>${h.points_on_bench!=null?`${h.points_on_bench} pts on bench`:""}</small>
-      </div>
-      <div class="team-period-stats four">
-        <div class="team-period-stat"><span>GW points</span><b>${gwPts}</b></div>
-        <div class="team-period-stat"><span>GW rank</span><b>${gwRank}</b><small>${totalManagers?`of ${totalManagers}`:""}</small></div>
-        <div class="team-period-stat"><span>Team value</span><b>${h.value?money(h.value):"—"}</b><small>${h.bank!=null?`${money(h.bank)} bank`:""}</small></div>
-        <div class="team-period-stat"><span>Transfers</span><b>${h.event_transfers??"—"}</b><small>${h.event_transfers_cost?`-${h.event_transfers_cost} pts hit`:"No hit"}</small></div>
-      </div>
-    </section>`;
+  const cards=[
+    ["GW points", h.points??"—", h.points_on_bench!=null?`${h.points_on_bench} on bench`:""],
+    ["GW rank", h.rank?short(h.rank):"—", h.rank_sort?`of ${short(b?.total_players||0)}`:""],
+    ["Team value", h.value?money(h.value):"—", h.bank!=null?`${money(h.bank)} in bank`:""],
+    ["Transfers", h.event_transfers??"—", h.event_transfers_cost?`-${h.event_transfers_cost} pts hit`:"no hit"],
+    ["Overall pts", short(entry.summary_overall_points||0), ""],
+    ["Overall rank", entry.summary_overall_rank?short(entry.summary_overall_rank):"—", ""],
+  ];
+  $("grid").innerHTML=cards.map(([k,v,s])=>`<div class="card"><div class="v">${v}</div><div class="k">${k}</div>${s?`<div class="sub">${s}</div>`:""}</div>`).join("");
 }
+
 function renderSquad(picks, gwUsed, b){
   const byId={}; b.elements.forEach(e=>byId[e.id]=e);
   const rows=picks.picks.map(p=>({...p, el:byId[p.element]})).filter(p=>p.el);
@@ -249,7 +231,7 @@ function renderHistory(history){
   <div style="text-align:center;color:var(--dim);font-size:11.5px;margin-top:10px">bar = total points · number below = overall rank</div>`;
 }
 
-function renderRecap(picks, history, gwUsed, b, gwLive){
+function renderRecap(picks, history, gwUsed, b){
   const cur=(history&&history.current)||[];
   const thisGw=cur.find(r=>r.event===gwUsed);
   if(!thisGw){ $("recapSec").style.display="none"; return; }
@@ -257,19 +239,14 @@ function renderRecap(picks, history, gwUsed, b, gwLive){
   $("recapSec").style.display="block";
   $("recapGw").textContent=`Gameweek ${gwUsed}`;
   const byId={}; b.elements.forEach(e=>byId[e.id]=e);
-  const liveById=Object.fromEntries((((gwLive&&gwLive.elements)||[]).map(x=>[x.id,x.stats||{}])));
-  const starters=picks.picks.filter(p=>p.position<=11).map(p=>({p,e:byId[p.element],stats:liveById[p.element]||null})).filter(x=>x.e);
-  const pointsFor=x=>Number(x?.stats?.total_points ?? x?.e?.event_points ?? 0);
-  const minutesFor=x=>Number(x?.stats?.minutes ?? 0);
+  const starters=picks.picks.filter(p=>p.position<=11).map(p=>({p,e:byId[p.element]})).filter(x=>x.e);
   // captain return
   const cap=picks.picks.find(p=>p.is_captain); const capEl=cap&&byId[cap.element];
-  const capStats=cap&&liveById[cap.element];
   const capMult=picks.active_chip==="3xc"?3:2;
-  const capPts=capEl?Number(capStats?.total_points ?? capEl.event_points ?? 0)*capMult:0;
-  // Best starter, and lowest scorer among starters who actually played.
-  const sorted=[...starters].sort((a,c)=>pointsFor(c)-pointsFor(a));
-  const played=[...starters].filter(x=>minutesFor(x)>0).sort((a,c)=>pointsFor(a)-pointsFor(c));
-  const best=sorted[0], worst=played[0]||sorted[sorted.length-1];
+  const capPts=capEl?(capEl.event_points||0)*capMult:0;
+  // best / worst starter (by GW points)
+  const sorted=[...starters].sort((a,c)=>(c.e.event_points||0)-(a.e.event_points||0));
+  const best=sorted[0], worst=sorted[sorted.length-1];
   // rank movement
   let rankMove="";
   if(prevGw&&prevGw.overall_rank&&thisGw.overall_rank){
@@ -288,8 +265,8 @@ function renderRecap(picks, history, gwUsed, b, gwLive){
     ${item({icon:"PTS"}, "GW points", thisGw.points, thisGw.points_on_bench!=null?`${thisGw.points_on_bench} on bench`:"")}
     ${item({icon:"RANK"}, "Overall rank", short(thisGw.overall_rank)+" "+rankMove, "")}
     ${item({player:capEl,badge:"C"}, "Captain", capEl?esc(capEl.web_name):"—", capEl?`${capPts} pts`:"")}
-    ${item({player:best?.e,badge:"TOP"}, "Top performer", best?esc(best.e.web_name):"—", best?`${pointsFor(best)} pts`:"")}
-    ${item({player:worst?.e,badge:"LOW"}, "Quietest starter", worst?esc(worst.e.web_name):"—", worst?`${pointsFor(worst)} pts`:"")}
+    ${item({player:best?.e,badge:"TOP"}, "Top performer", best?esc(best.e.web_name):"—", best?`${best.e.event_points} pts`:"")}
+    ${item({player:worst?.e,badge:"LOW"}, "Quietest starter", worst?esc(worst.e.web_name):"—", worst?`${worst.e.event_points} pts`:"")}
     ${item({icon:"MOVES"}, "Transfers", thisGw.event_transfers??0, thisGw.event_transfers_cost?`-${thisGw.event_transfers_cost} pt hit`:"no hit")}
   </div>`;
 }

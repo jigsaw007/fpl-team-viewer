@@ -1,0 +1,29 @@
+Phase 4 – Richer archive article upgrade
+
+What changed
+- Upgraded archive analysis pages with richer UI/UX and more substantial editorial layout:
+  * /analysis/gw3-preview.html
+  * /analysis/gw3-captaincy-watch.html
+  * /analysis/gw3-transfer-watch.html
+  * /analysis/gw3-differentials.html
+  * /analysis/gw3-fixture-focus.html
+  * /analysis/gw2-review.html
+
+- Added richer visual sections such as:
+  * archive note panels
+  * inline stat / concept cards
+  * flow / process boxes
+  * current reference widgets inside archive pages
+
+- Archive widgets are clearly labeled as CURRENT REFERENCE widgets so readers are not misled into thinking the live cards are exact historical reconstructions.
+
+- Captaincy archive page now includes player face/headshot cards and stats through the same current captain widget used on the rolling page.
+
+Why this is good for AdSense / content quality
+- Stronger page depth and clearer purpose.
+- More original explanatory content.
+- Better trust signals through transparent labeling.
+- Visual richness without becoming thin auto-generated content.
+
+Package intent
+- This phase includes all previous phase features plus richer archive pages.

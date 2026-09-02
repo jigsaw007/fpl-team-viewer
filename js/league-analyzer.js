@@ -1,47 +1,10 @@
 /* ============ standalone league analyzer ============ */
 let _laState={leagueId:null,gw:null,league:null,rows:[],page:1,pageSize:20,search:"",sortKey:"rank",sortDir:"asc"};
 const _laCache=new Map();
-const LA_RECENT_KEY="fplpeek_recent_leagues";
-
-function laRecentLeagues(){
-  try{
-    const rows=JSON.parse(localStorage.getItem(LA_RECENT_KEY)||"[]");
-    return Array.isArray(rows)?rows.filter(r=>r&&/^\d+$/.test(String(r.id||""))).slice(0,4):[];
-  }catch(_){ return []; }
-}
-
-function laSaveRecentLeague(id,name){
-  const leagueId=String(id||"").trim(); if(!/^\d+$/.test(leagueId)) return;
-  const rows=laRecentLeagues().filter(r=>String(r.id)!==leagueId);
-  rows.unshift({id:leagueId,name:String(name||`League ${leagueId}`).trim()});
-  try{localStorage.setItem(LA_RECENT_KEY,JSON.stringify(rows.slice(0,4)));}catch(_){ }
-  laRenderRecentLeagues();
-}
-
-function laRenderRecentLeagues(){
-  const form=document.querySelector("#tab-leagueanalyzer .la-form"); if(!form) return;
-  let el=$("laRecent");
-  if(!el){
-    el=document.createElement("div"); el.id="laRecent"; el.className="home-recent la-recent";
-    form.insertAdjacentElement("afterend",el);
-  }
-  const rows=laRecentLeagues();
-  if(!rows.length){
-    el.innerHTML=`<span class="home-recent-hint">Recent leagues will appear here after you analyse one.</span>`;
-    return;
-  }
-  el.innerHTML=`<span class="home-recent-label">Recent</span>${rows.map(r=>`<button type="button" class="home-recent-chip" data-league-id="${esc(r.id)}" title="League ${esc(r.id)}">${esc(r.name||r.id)}</button>`).join("")}`;
-  el.querySelectorAll("[data-league-id]").forEach(btn=>btn.addEventListener("click",()=>{
-    const id=btn.dataset.leagueId||"";
-    if($("laLeagueId")) $("laLeagueId").value=id;
-    runLeagueAnalyzer();
-  }));
-}
 
 async function initLeagueAnalyzer(){
   await loadBoot();
   const input=$("laLeagueId"),run=$("laRun"),search=$("laSearch");
-  laRenderRecentLeagues();
   if(run&&!run.dataset.bound){
     run.dataset.bound="1";
     run.addEventListener("click",()=>runLeagueAnalyzer());
@@ -50,22 +13,8 @@ async function initLeagueAnalyzer(){
   }
 }
 
-async function laCurrentGw(){
-  const events=boot.events||[];
-  let fixtures=[];
-  try{ fixtures=await get('/fixtures/'); }catch(_){ }
-  const byEvent=(fixtures||[]).reduce((m,f)=>{ if(f.event){ (m[f.event]||(m[f.event]=[])).push(f); } return m; },{});
-  const startedIds=Object.entries(byEvent)
-    .filter(([,fx])=>fx.some(f=>f.started||f.finished||f.finished_provisional))
-    .map(([id])=>Number(id))
-    .sort((a,b)=>b-a);
-  const liveId=Object.entries(byEvent)
-    .filter(([,fx])=>fx.some(f=>f.started&&!f.finished&&!f.finished_provisional))
-    .map(([id])=>Number(id))
-    .sort((a,b)=>b-a)[0];
-  if(liveId) return liveId;
-  if(startedIds.length) return startedIds[0];
-  const ev=events.find(e=>e.is_current)||events.find(e=>e.is_next)||[...events].reverse().find(e=>e.finished||e.data_checked);
+function laCurrentGw(){
+  const ev=(boot.events||[]).find(e=>e.is_current)||(boot.events||[]).find(e=>e.is_next)||[...(boot.events||[])].reverse().find(e=>e.finished);
   return ev?ev.id:1;
 }
 
@@ -105,9 +54,8 @@ async function runLeagueAnalyzer(){
   if(!/^\d+$/.test(leagueId)){
     $("leagueAnalyzerBody").innerHTML=`<div class="tool-empty">Enter a valid numeric FPL Classic League ID.</div>`; return;
   }
-  const gw=await laCurrentGw(),cacheKey=`${leagueId}:${gw}`;
-  // Always refresh the active/latest Gameweek. FPL standings can change while matches are live,
-  // so an in-memory GW cache must not become the source of truth.
+  const gw=laCurrentGw(),cacheKey=`${leagueId}:${gw}`;
+  if(_laCache.has(cacheKey)){_laState={..._laCache.get(cacheKey),page:1,pageSize:20,search:"",sortKey:_laCache.get(cacheKey).sortKey||"rank",sortDir:_laCache.get(cacheKey).sortDir||"asc"};if($("laSearch"))$("laSearch").value="";renderLeagueAnalyzer();return;}
   try{
     laLoading("Loading league…");
     const {league,rows:standings}=await laFetchAllStandings(leagueId,t=>laLoading(t));
@@ -135,12 +83,11 @@ async function runLeagueAnalyzer(){
       const playedNow=scoringPicks.filter(p=>teamsStarted.has(playerTeam.get(Number(p.element)))).length;
       const playedMax=activeChip==="bboost"?15:11;
       const benchPoints=pickRows.filter(p=>Number(p.position)>11).reduce((sum,p)=>sum+(livePoints.get(Number(p.element))||0),0);
-      return {captainId:captain?.element||null,chip:activeChip,playedNow,playedMax,benchPoints,points:Number(row.event_total??picks.entry_history?.points??0)};
+      return {captainId:captain?.element||null,chip:activeChip,playedNow,playedMax,benchPoints,points:Number(picks.entry_history?.points??row.event_total??0)};
     },(d,t)=>laLoading("Analysing managers…",d,t));
     const merged=standings.map((r,i)=>({...r,...(details[i]?.error?{}:details[i])}));
     const payload={leagueId,gw,league,rows:merged,page:1,pageSize:20,search:"",sortKey:"rank",sortDir:"asc"};
     _laCache.set(cacheKey,payload); _laState={...payload};
-    laSaveRecentLeague(leagueId,league?.name||`League ${leagueId}`);
     renderLeagueAnalyzer();
   }catch(e){
     $("leagueAnalyzerBody").innerHTML=`<div class="banner err"><div><b>Couldn’t load this league.</b><small>Check the league ID and try again. ${esc(e.message||"")}</small></div></div>`;
@@ -159,9 +106,6 @@ function renderLeagueAnalyzer(){
   const avg=points.length?points.reduce((a,b)=>a+b,0)/points.length:0;
   const high=points.length?Math.max(...points):0;
   const chipUsers=rows.filter(r=>r.chip).length;
-  const benchVals=rows.map(r=>Number(r.benchPoints)||0);
-  const avgBench=benchVals.length?benchVals.reduce((a,b)=>a+b,0)/benchVals.length:0;
-  const highBench=benchVals.length?Math.max(...benchVals):0;
   const chipCounts={wildcard:0,freehit:0,bboost:0,"3xc":0};
   rows.forEach(r=>{if(r.chip&&Object.prototype.hasOwnProperty.call(chipCounts,r.chip))chipCounts[r.chip]++;});
   const caps={};rows.forEach(r=>{if(r.captainId)caps[r.captainId]=(caps[r.captainId]||0)+1;});
@@ -170,25 +114,15 @@ function renderLeagueAnalyzer(){
   const topCapPct=topCap&&rows.length?Math.round(topCap[1]/rows.length*100):0;
   $("leagueAnalyzerBody").innerHTML=`
     <div class="la-hero">
-      <div class="la-hero-copy">
-        <div class="la-hero-kicker"><span class="la-gw">GW${gw}</span><span>Classic League Analytics</span></div>
-        <h3>${esc(league?.name||"Classic League")}</h3>
-        <p><strong>${rows.length}</strong> managers analysed · live public FPL data</p>
-      </div>
+      <div><span class="la-gw">Gameweek ${gw}</span><h3>${esc(league?.name||"Classic League")}</h3><p>${rows.length} managers analysed from the public FPL league table.</p></div>
       <a class="la-official-link" href="https://fantasy.premierleague.com/leagues/${esc(_laState.leagueId)}/standings/c" target="_blank" rel="noopener">Open in FPL <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
     </div>
     <div class="la-stat-grid">
-      <article><span class="la-stat-icon"><i class="fa-solid fa-users"></i></span><span>Managers</span><b>${rows.length}</b><small>League size analysed</small></article>
-      <article><span class="la-stat-icon"><i class="fa-solid fa-chart-line"></i></span><span>Average GW score</span><b>${avg.toFixed(1)}</b><small>Across this league</small></article>
-      <article><span class="la-stat-icon"><i class="fa-solid fa-trophy"></i></span><span>Highest GW score</span><b>${high}</b><small>Best manager this GW</small></article>
-      <article class="la-chip-stat"><span class="la-stat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span>Chip users</span><b>${chipUsers}</b><div class="la-chip-breakdown"><small><strong>WC</strong><em>${chipCounts.wildcard}</em></small><small><strong>FH</strong><em>${chipCounts.freehit}</em></small><small><strong>BB</strong><em>${chipCounts.bboost}</em></small><small><strong>TC</strong><em>${chipCounts["3xc"]}</em></small></div></article>
-      <article class="la-stat-wide la-top-captain"><span class="la-stat-icon"><i class="fa-solid fa-c"></i></span><span>Most captained</span>${topCapPlayer?`<div class="la-top-captain-main">${teamKitImg((boot.teams||[]).find(t=>t.id===topCapPlayer.team)||{},'la-topcap-kit',`${topCapPlayer.web_name||'Captain'} club kit`)}<div><b>${esc(topCapPlayer.web_name)}</b><small>${topCapPct}% of analysed managers</small></div></div>`:`<b>—</b><small>No captain data</small>`}</article>
-    </div>
-    <div class="la-signal-strip">
-      <div><span>Captain share</span><b>${topCapPlayer?`${esc(topCapPlayer.web_name)} · ${topCapPct}%`:"—"}</b></div>
-      <div><span>Average bench</span><b>${avgBench.toFixed(1)} pts</b></div>
-      <div><span>Highest bench</span><b>${highBench} pts</b></div>
-      <div><span>Most-used chip</span><b>${(()=>{const x=Object.entries(chipCounts).sort((a,b)=>b[1]-a[1])[0];return x&&x[1]?`${laChipLabel(x[0])} · ${x[1]}`:"None";})()}</b></div>
+      <article><i class="fa-solid fa-users"></i><span>Managers</span><b>${rows.length}</b></article>
+      <article><i class="fa-solid fa-chart-line"></i><span>Average GW score</span><b>${avg.toFixed(1)}</b></article>
+      <article><i class="fa-solid fa-trophy"></i><span>Highest GW score</span><b>${high}</b></article>
+      <article class="la-chip-stat"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Chip users</span><b>${chipUsers}</b><div class="la-chip-breakdown"><small><strong>Wildcard</strong> ${chipCounts.wildcard}</small><small><strong>Free Hit</strong> ${chipCounts.freehit}</small><small><strong>Bench Boost</strong> ${chipCounts.bboost}</small><small><strong>Triple Captain</strong> ${chipCounts["3xc"]}</small></div></article>
+      <article class="la-stat-wide"><i class="fa-solid fa-c"></i><span>Most captained</span><b>${topCapPlayer?esc(topCapPlayer.web_name):"—"}</b><small>${topCapPlayer?`${topCapPct}% of analysed managers`:"No captain data"}</small></article>
     </div>
     <div class="la-table-card">
       <div class="la-table-head"><div><span>League table</span><h3>Gameweek ${gw} breakdown</h3></div><input id="laSearch" type="search" placeholder="Search team or manager" value="${esc(_laState.search||"")}"></div>

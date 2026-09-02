@@ -93,6 +93,7 @@
 </script>
 <link rel="stylesheet" href="/css/app.css">
 <link rel="stylesheet" href="/css/transfer-stats.css">
+<link rel="stylesheet" href="/css/editorial-entry.css">
 <link rel="stylesheet" href="/css/price-progress.css">
 <link rel="stylesheet" href="/css/market.css">
 </head>
@@ -124,7 +125,6 @@
     <button class="tab hot-tab" data-tab="transfer">Player Compare <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
     <button class="tab" data-tab="fixtures">Fixtures &amp; Results</button>
     <button class="tab" data-tab="players">Players</button>
-    <button class="tab" data-tab="preseason">Pre-season</button>
 
     <div class="tab-label">Gameweek</div>
     <button class="tab hot-tab" data-tab="captains">Captain Picks <span class="tab-hot" title="Popular tool" aria-label="Popular tool">🔥</span></button>
@@ -145,6 +145,11 @@
     <div class="tab-label">Live</div>
     <button class="tab" data-tab="peekteam">FPL Peek Team</button>
     <button class="tab" data-tab="live">Live Center</button>
+
+    <div class="tab-label">Learn</div>
+    <a class="tab editorial-link" href="/analysis/">Gameweek Analysis</a>
+    <a class="tab editorial-link" href="/guides/">FPL Guides</a>
+    <a class="tab editorial-link" href="/methodology.html">How FPL Peek Works</a>
 
     <div class="sidebar-account" id="accountPanel" style="display:none">
       <div class="sidebar-account-status" id="accountStatus">
@@ -213,6 +218,45 @@
       </div>
       <div class="home-fixtures" id="homeFixtures">
         <div class="home-skeleton wide"></div>
+      </div>
+    </div>
+
+    <div class="home-section home-analysis-section">
+      <div class="home-section-head">
+        <div>
+          <div class="home-section-kicker">Weekly editorial</div>
+          <h3>Gameweek Analysis</h3>
+        </div>
+        <a class="home-link-btn home-guide-link" href="/analysis/">Open analysis hub →</a>
+      </div>
+      <div class="home-analysis-feature">
+        <a class="home-analysis-lead" href="/analysis/current-preview.html">
+          <span class="analysis-chip">Current · Decision hub</span>
+          <b>Current Gameweek preview: build the decision before the deadline</b>
+          <small>A structured weekly checklist for transfers, captaincy, fixture swings, minutes risk and bench decisions — refreshed automatically for the current Gameweek.</small>
+          <em>Read the current preview →</em>
+        </a>
+        <div class="home-analysis-mini">
+          <a href="/analysis/current-captaincy.html"><span>Captaincy</span><b>How to build the current captain shortlist</b></a>
+          <a href="/analysis/current-transfer-watch.html"><span>Transfers</span><b>Buy, sell or roll: current transfer watch</b></a>
+          <a href="/analysis/current-differentials.html"><span>Differentials</span><b>Finding useful low-owned picks for the current Gameweek</b></a>
+          <a href="/analysis/current-fixture-focus.html"><span>Fixtures</span><b>Reading the next fixture swing</b></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-section home-learn-section">
+      <div class="home-section-head">
+        <div>
+          <div class="home-section-kicker">Learn</div>
+          <h3>Guides &amp; analysis</h3>
+        </div>
+        <a class="home-link-btn home-guide-link" href="/guides/">View all guides →</a>
+      </div>
+      <div class="home-guide-grid">
+        <a class="home-guide-card" href="/guides/fpl-transfer-strategy.html"><span>Strategy · 10 min</span><b>FPL Transfer Strategy</b><small>A repeatable weekly process for deciding whether to buy, sell, roll or take a hit.</small></a>
+        <a class="home-guide-card" href="/guides/fpl-captaincy-guide.html"><span>Captaincy · 9 min</span><b>How to Choose an FPL Captain</b><small>Balance minutes, involvement, fixture, safety and upside before handing over the armband.</small></a>
+        <a class="home-guide-card" href="/guides/fpl-price-changes-explained.html"><span>Market · 8 min</span><b>FPL Price Changes Explained</b><small>Understand what transfer data tells you—and where price predictions remain estimates.</small></a>
       </div>
     </div>
 
@@ -374,7 +418,9 @@
       <button class="primary-action" id="laRun">Analyze league</button>
     </div>
     <div id="leagueAnalyzerBody" class="tool-output"><div class="tool-empty">Enter a Classic League ID to build a league dashboard.</div></div>
-  </section>
+  
+    <div class="tool-editorial-deep"><div><span>Mini-league context</span><h3>Use league data to understand risk</h3><p>League Analyzer helps you see how your mini-league is actually behaving: captain concentration, chip usage, bench points and Gameweek scoring. Those patterns are more useful than copying another manager's squad because they reveal where your rank is most exposed.</p><p>When chasing, focus on high-upside differences that still make sense in isolation. When protecting a lead, understand which popular captains or players can cause the largest rank swing before deciding where to be different.</p></div><a href="/guides/how-to-analyze-fpl-league.html">Read the mini-league analysis guide →</a></div>
+</section>
 
 
   <!-- ============ FPL MARKET TERMINAL ============ -->
@@ -396,7 +442,9 @@
     </div>
     <div class="tool-guide" aria-label="How Team Rating works"><div class="tool-guide-title"><span>How it works</span><h3>Understand your squad score</h3><p>Team Rating turns your latest public FPL squad into a 0-100 check. It shows where the squad looks strong and where your next decision may deserve attention.</p></div><div class="tool-guide-grid"><article><b>Overall rating</b><p>Combines the starting XI, bench depth, upcoming fixtures, captaincy, availability and squad balance.</p></article><article><b>Projected XI</b><p>An FPL Peek estimate from current public FPL data. It is a comparison aid, not a guaranteed score.</p></article><article><b>Upgrade radar</b><p>Highlights positions or players where the squad may have a weaker profile relative to available alternatives.</p></article></div></div>
     <div id="analyzerBody" class="tool-output"><div class="tool-empty">Enter a Team ID to run a squad check.</div></div>
-  </section>
+  
+    <div class="tool-editorial-deep"><div><span>How to use the rating</span><h3>A squad score is a diagnosis, not a verdict</h3><p>Team Rating combines projected starting-XI strength, captaincy, fixtures, availability, squad balance and bench depth into a compact view. A lower rating does not automatically mean you should make transfers: sometimes the best move is to hold flexibility and let a difficult fixture pass.</p><p>Use the score to identify where the weakness sits, then verify the suggested area with fixtures and player comparisons before acting.</p></div><a href="/guides/fpl-team-rating-methodology.html">See the rating methodology →</a></div>
+</section>
 
   <!-- ============ TRANSFER ANALYZER TAB ============ -->
   <section class="tabpanel" id="tab-transfer">
@@ -551,7 +599,9 @@
     </div>
     <div class="tool-guide compact" aria-label="How Captaincy Matrix works"><div class="tool-guide-title"><span>How to read it</span><h3>Safer profile vs upside profile</h3><p>The safer side favours dependable captain profiles, while upside gives more weight to ceiling and fixture opportunity. Before GW1, current-season form and minutes do not exist, so the matrix intentionally uses a more cautious pre-season shortlist.</p></div><div class="tool-guide-grid"><article><b>Safer</b><p>Balances ownership, fixture, projected return and playing-time confidence.</p></article><article><b>Upside</b><p>Allows lower ownership and favourable fixtures to carry more weight.</p></article><article><b>Top-manager sample</b><p>After the deadline, compare the model shortlist with captains actually used by leading managers.</p></article></div></div>
     <div id="captainBody"></div>
-  </section>
+  
+    <div class="tool-editorial-deep"><div><span>Captaincy context</span><h3>Start with minutes, then compare ceiling</h3><p>Captaincy doubles the impact of one player, so a strong process should reduce avoidable risk before chasing upside. Check expected minutes, role, opponent, routes to points and whether the player remains central to penalties or set pieces where relevant.</p><p>The matrix is designed as a comparison aid rather than a single-answer model. Use the safer profile when protecting against a popular captain and the upside profile when you deliberately want more variance.</p></div><a href="/guides/fpl-captaincy-guide.html">Read the captaincy framework →</a></div>
+</section>
 
   <!-- ============ ONE TO WATCH TAB ============ -->
   <section class="tabpanel" id="tab-onetowatch">
@@ -881,26 +931,6 @@
       </div>
     </div>
   </section>
-
-  <!-- ============ PRE-SEASON TAB ============ -->
-  <section class="tabpanel" id="tab-preseason">
-    <div class="thead">
-      <h2>Pre-season planner</h2>
-      <p>Build your opening squad with confidence — who has the kindest start, and who delivered last year.</p>
-    </div>
-    <div class="ctl">
-      <div class="seg" id="psView">
-        <button data-v="openers" class="active">Season-opener fixtures</button>
-        <button data-v="last">Last season's best</button>
-      </div>
-      <div class="seg" id="psRange" data-for="openers">
-        <button data-n="3" class="active">First 3</button>
-        <button data-n="5">First 5</button>
-      </div>
-    </div>
-    <div id="psBody"></div>
-  </section>
-
   <!-- ============ FIXTURES TAB ============ -->
   <section class="tabpanel" id="tab-fixtures">
     <div class="thead fixtures-head">
@@ -970,7 +1000,9 @@
         <table class="fx-table" id="fxTable" aria-label="Premier League standings"></table>
       </div>
     </div>
-  </section>
+  
+    <div class="tool-editorial-deep"><div><span>Fixture planning</span><h3>Think in windows, not single opponents</h3><p>A strong fixture is useful, but transfers usually last for several Gameweeks. The FDR and rotation views are more valuable when you compare three-to-five-week runs, identify home/away sequences and check whether two squad players cover each other's difficult fixtures.</p><p>Fixture difficulty should sit behind minutes and role. A secure starter in a mixed run can still be a better FPL asset than a rotation risk with one attractive opponent.</p></div><a href="/guides/fpl-fixture-difficulty-guide.html">Read the fixture-planning guide →</a></div>
+</section>
 
   <!-- ============ PLAYERS TAB ============ -->
   <section class="tabpanel" id="tab-players">
@@ -1137,7 +1169,9 @@
       <b>Official FPL data</b>
       <p>Gameweek values use FPL's current <code>transfers_in_event</code> and <code>transfers_out_event</code> fields. Season totals use <code>transfers_in</code> and <code>transfers_out</code>. Net movement is transfers in minus transfers out.</p>
     </div>
-  </section>
+  
+    <div class="tool-editorial-deep"><div><span>Understand the signal</span><h3>Transfers show behaviour, not certainty</h3><p>Transfer activity is one of the clearest ways to see where the FPL community is moving, but it should not be treated as a recommendation by itself. A player can attract heavy buying because of one recent return, a price-change expectation or an easy-looking fixture while still carrying minutes, role or fitness risk.</p><p>Use <b>Gameweek</b> mode for short-term movement and <b>Season</b> mode for longer-term popularity. Net transfers are most useful when read beside ownership, price, fixtures and availability.</p></div><a href="/guides/fpl-transfer-strategy.html">Read the transfer strategy guide →</a></div>
+</section>
 
   <!-- ============ PRICE WATCH TAB ============ -->
   <section class="tabpanel" id="tab-prices">
@@ -1163,7 +1197,9 @@
         <div><div class="col-h down">Most transferred out</div><div id="prOut"></div></div>
       </div>
     </section>
-  </section>
+  
+    <div class="tool-editorial-deep"><div><span>Market context</span><h3>Price movement is a constraint, not the objective</h3><p>Team value matters because it changes which future squad combinations are affordable, but protecting every £0.1m can lead to rushed decisions. The useful question is whether a likely price move changes your plan enough to justify acting before you have complete team news.</p><p>Combine market pressure with expected minutes, role and your next two or three transfers. When a move is marginal, information is often worth more than a small price swing.</p></div><a href="/guides/fpl-price-changes-explained.html">How FPL price changes work →</a></div>
+</section>
 
   <!-- ============ PRICE CHANGE PREDICTION TAB ============ -->
   <section class="tabpanel" id="tab-pricepredict">
@@ -1216,10 +1252,13 @@
 
   <footer class="site-footer">
     <nav class="site-footer-links" aria-label="Footer">
+      <a class="editorial-footer" href="/analysis/">Gameweek Analysis</a>
+      <a class="editorial-footer" href="/guides/">FPL Guides</a>
       <a href="/about.html">About</a>
+      <a href="/methodology.html">Methodology</a>
+      <a href="/contact.html">Contact</a>
       <a href="/privacy.html">Privacy Policy</a>
       <a href="/terms.html">Terms of Service</a>
-      <a href="mailto:account@fplpeek.com">Contact</a>
     </nav>
     <div class="site-footer-note">Data provided via the official Fantasy Premier League API. FPL Peek operates independently and is not affiliated with or endorsed by the Premier League.</div>
   </footer>
@@ -1253,9 +1292,11 @@
     <button data-mobile-tab="transferstats">Transfer Stats</button>
     <button data-mobile-tab="prices">Price Watch</button>
     <button data-mobile-tab="pricepredict">Price Change Prediction</button>
-    <button data-mobile-tab="preseason">Pre-season</button>
     <button data-mobile-tab="peekteam">FPL Peek Team</button>
     <button data-mobile-tab="live">Live Center</button>
+    <a class="mobile-editorial-link" href="/analysis/">Gameweek Analysis</a>
+    <a class="mobile-editorial-link" href="/guides/">FPL Guides</a>
+    <a class="mobile-editorial-link" href="/methodology.html">How FPL Peek Works</a>
     <button id="mobileAccountBtn" class="mobile-account-btn" style="display:none">Account & sync</button>
   </div>
 </div>
@@ -1346,7 +1387,6 @@
 <script defer src="/js/transfer-analyzer.js"></script>
 <script defer src="/js/compare.js"></script>
 <script defer src="/js/card-creator.js"></script>
-<script defer src="/js/preseason.js"></script>
 <script defer src="/js/builder.js"></script>
 <script defer src="/js/planner.js"></script>
 <script defer src="/js/one-to-watch.js"></script>
@@ -1361,6 +1401,7 @@
 <script defer src="/js/insights.js"></script>
 <script defer src="/js/supabase-config.js"></script>
 <script defer src="/js/account.js"></script>
+<script defer src="/js/analysis-pages.js"></script>
 <script defer src="/js/app.js"></script>
 </body>
 </html>

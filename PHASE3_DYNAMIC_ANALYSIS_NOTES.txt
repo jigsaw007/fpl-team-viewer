@@ -1,0 +1,44 @@
+Phase 3 – Dynamic Gameweek Analysis and Richer Editorial Widgets
+
+What changed
+1. Added rolling analysis pages so current content advances automatically:
+   - /analysis/current-preview.html
+   - /analysis/current-captaincy.html
+   - /analysis/current-transfer-watch.html
+   - /analysis/current-differentials.html
+   - /analysis/current-fixture-focus.html
+   - /analysis/latest-review.html
+
+2. Added /js/analysis-pages.js
+   - Detects current / next / latest finished Gameweek from public FPL data.
+   - Updates the analysis hub and home-page analysis links.
+   - Renders richer widgets:
+     * captain spotlights with player headshots and public stats
+     * transfer movement snapshot
+     * differential shortlist
+     * fixture snapshot
+     * preview summary cards
+
+3. Updated /analysis/index.html
+   - Now acts as a dynamic hub with current coverage plus archive links.
+
+4. Updated homepage analysis section in /index.html
+   - Generic current links instead of hardcoded GW3 links.
+
+5. Extended /css/content.css
+   - Added styles for richer article widgets and archive cards.
+
+6. Updated /sitemap.xml
+   - Added new rolling analysis URLs.
+   - Keeps archive-style editorial depth while prioritising current pages.
+
+Behavior after GW3
+- Preview / captaincy / transfer / differential / fixture pages move to the active Gameweek if one is current.
+- If no Gameweek is active but the next one is known, they move to the upcoming Gameweek.
+- Review page points to the latest finished Gameweek context.
+
+AdSense alignment
+- Pages include substantial original editorial copy.
+- Data widgets are supportive context, not the entire page.
+- Methodology / source transparency is preserved.
+- Content avoids thin auto-generated placeholder behavior.

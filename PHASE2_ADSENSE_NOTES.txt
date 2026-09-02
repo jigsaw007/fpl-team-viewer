@@ -1,0 +1,12 @@
+FPL Peek Phase 2 content/SEO upgrade
+
+Key changes:
+- Added /analysis/ Gameweek Analysis hub and six substantial editorial pages.
+- Added Article and BreadcrumbList JSON-LD to analysis articles.
+- Added Home weekly editorial module and richer UI styles.
+- Added explanatory sections to Transfer Stats, Price Watch, Captain Picks, Team Rating, Fixtures and League Analyzer.
+- Removed Pre-season UI and JS reference. /pre-season now 301 redirects to /.
+- Removed Pre-season from sitemap and added analysis pages.
+- Added Gameweek Analysis links across main navigation, mobile navigation, footer and guide pages.
+
+Important: weekly articles should be genuinely updated when facts/picks change. Do not only change the date.

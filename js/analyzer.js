@@ -3,10 +3,6 @@ let _analyzerBound=false;
 
 async function initAnalyzer(){
   await loadBoot();
-  const head=document.querySelector("#tab-analyzer .thead h2");
-  if(head && !head.parentElement.querySelector(".beta-badge-lg")){
-    const wrap=document.createElement("div");wrap.className="title-with-badge";head.parentNode.insertBefore(wrap,head);wrap.appendChild(head);wrap.insertAdjacentHTML("beforeend",'<span class="beta-badge beta-badge-lg">BETA</span>');
-  }
   if(!_analyzerBound){
     _analyzerBound=true;
     const st=savedTeam();
