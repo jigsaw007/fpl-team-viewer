@@ -14,7 +14,7 @@ async function initLeagueAnalyzer(){
 }
 
 function laCurrentGw(){
-  const ev=(boot.events||[]).find(e=>e.is_current)||(boot.events||[]).find(e=>e.is_next)||[...(boot.events||[])].reverse().find(e=>e.finished);
+  const ev=(boot.events||[]).find(e=>e.is_current)||[...(boot.events||[])].reverse().find(e=>eventComplete(e))||(boot.events||[]).find(e=>e.is_next);
   return ev?ev.id:1;
 }
 

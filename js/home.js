@@ -11,6 +11,7 @@ function homeLoadingMarkup(label="Loading FPL data…"){
 function setHomeLoadingStates(){
   if($("homeGameweek")) $("homeGameweek").innerHTML=`<div class="home-card-label">Gameweek</div>${homeLoadingMarkup("Checking Gameweek status…")}`;
   if($("homeFixtures")) $("homeFixtures").innerHTML=homeLoadingMarkup("Loading upcoming fixtures…");
+  if($("homeGwLeaders")){ $("homeGwLeaders").hidden=true; $("homeGwLeaders").innerHTML=""; }
 }
 
 async function initHome(){
@@ -36,6 +37,7 @@ async function initHome(){
 
     renderHomeGameweek(b,fixtures);
     renderHomeInsights(b);
+    renderHomeGwLeaders(b,fixtures).catch(err=>console.warn("Home GW leaders failed",err));
     enrichHomeGameweekRecap(b).catch(err=>{
       console.warn("Home GW recap failed", err);
       const el=$("homeGameweek");
@@ -145,7 +147,8 @@ function renderHomeGameweek(b,fixtures=[]){
   // Between Gameweeks, this Home card is reserved for the user's previous-GW
   // recap + next-GW availability watch. Do not flash generic Average/Highest
   // stats while that recap is being built.
-  if(previous && next && savedTeam()?.id){
+  const activeCurrent=current && !eventComplete(current);
+  if(!activeCurrent && previous && next && savedTeam()?.id){
     el.innerHTML=`<div class="home-card-label">Gameweek recap</div>${homeLoadingMarkup(`Loading GW${previous.id} recap…`)}`;
     return;
   }
@@ -197,7 +200,8 @@ async function enrichHomeGameweekRecap(b){
   if(!last || !next) return;
 
   const current=events.find(e=>e.is_current);
-  if(current && !eventComplete(current) && current.id===next.id) return;
+  // Never replace an active Gameweek with an old recap / future-GW watch card.
+  if(current && !eventComplete(current)) return;
 
   el.innerHTML=`<div class="home-card-label">Gameweek status</div>${homeLoadingMarkup(`Building GW${last.id} recap…`)}`;
 
@@ -254,6 +258,32 @@ async function enrichHomeGameweekRecap(b){
       <span>GW${next.id} availability</span>
       <div class="home-gw-injury-list">${injuryHtml}</div>
     </div>`;
+}
+
+async function renderHomeGwLeaders(b,fixtures=[]){
+  const el=$("homeGwLeaders"); if(!el)return;
+  const events=b.events||[];
+  const current=events.find(e=>e.is_current);
+  if(!current || eventComplete(current)){el.hidden=true;el.innerHTML="";return;}
+  const gwFixtures=(fixtures||[]).filter(f=>Number(f.event)===Number(current.id));
+  const hasStarted=gwFixtures.some(f=>f.started||f.finished||f.finished_provisional);
+  if(!hasStarted){el.hidden=true;el.innerHTML="";return;}
+
+  el.hidden=false;
+  el.innerHTML=`<div class="home-gw-leaders-head"><div><span>Current Gameweek</span><h3>GW${current.id} top performers</h3></div><span class="home-gw-pill live"><i></i> Live points</span></div>${homeLoadingMarkup(`Loading GW${current.id} leaders…`)}`;
+  try{
+    const data=await get(`/event/${current.id}/live/`);
+    const liveById=new Map((data.elements||[]).map(x=>[Number(x.id),x.stats||{}]));
+    const teams=Object.fromEntries((b.teams||[]).map(t=>[t.id,t]));
+    const leaders=(b.elements||[]).map(p=>({p,stats:liveById.get(Number(p.id))||{}}))
+      .filter(x=>Number(x.stats.minutes||0)>0 || Number(x.stats.total_points||0)!==0)
+      .sort((a,c)=>Number(c.stats.total_points||0)-Number(a.stats.total_points||0) || Number(c.stats.bonus||0)-Number(a.stats.bonus||0))
+      .slice(0,5);
+    if(!leaders.length){el.hidden=true;el.innerHTML="";return;}
+    el.innerHTML=`<div class="home-gw-leaders-head"><div><span>Current Gameweek</span><h3>GW${current.id} top performers</h3></div><button class="home-gw-leaders-link" type="button">Open live view <i class="fa-solid fa-arrow-right"></i></button></div>
+      <div class="home-gw-leader-grid">${leaders.map((x,i)=>{const p=x.p,s=x.stats,t=teams[p.team]||{};return `<article class="home-gw-leader-card"><span class="home-gw-leader-rank">${i+1}</span>${faceImg(p,"home-gw-leader-face")}<div class="home-gw-leader-copy"><b>${esc(p.web_name)}</b><small>${esc(t.short_name||t.name||"")} · ${Number(s.minutes||0)} mins</small><span>${Number(s.goals_scored||0)?`${Number(s.goals_scored)} goal${Number(s.goals_scored)===1?'':'s'}`:''}${Number(s.assists||0)?`${Number(s.goals_scored||0)?' · ':''}${Number(s.assists)} assist${Number(s.assists)===1?'':'s'}`:''}${!Number(s.goals_scored||0)&&!Number(s.assists||0)?`${Number(s.bonus||0)} bonus`:''}</span></div><strong>${Number(s.total_points||0)}<small>pts</small></strong></article>`}).join("")}</div>`;
+    el.querySelector('.home-gw-leaders-link').onclick=()=>switchTab('live');
+  }catch(e){el.hidden=true;el.innerHTML="";throw e;}
 }
 
 function homeInsightCard(kind, title, e, t, value, sub){
@@ -426,6 +456,7 @@ async function refreshHomeLiveMatches(){
     const b=await loadBoot();
     const fixtures=await get('/fixtures/');
     renderHomeLiveMatches(b,fixtures);
+    await renderHomeGwLeaders(b,fixtures);
   }catch(_){ }
 }
 
