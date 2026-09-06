@@ -5,6 +5,11 @@ html[data-theme="dark"] .home-gw-status-window.running b,html[data-theme="dark"]
 html[data-theme="dark"] .home-gw-status-window.complete{background:#14271f!important;border-color:#285b45!important}
 html[data-theme="dark"] .home-gw-status-window.primary b,html[data-theme="dark"] .home-gw-status-window.complete b{color:#65d4a4!important}
 html[data-theme="dark"] .home-gw-status-window.upcoming b{color:var(--sub)!important}
+html[data-theme="dark"] .home-gw-stats>div{background:var(--panel2)!important;border-color:var(--line)!important}
+html[data-theme="dark"] .home-gw-stats span{color:var(--dim)!important}
+html[data-theme="dark"] .home-gw-stats b{color:var(--ink)!important}
+html[data-theme="dark"] .home-gw-pill{background:var(--panel2)!important;border-color:var(--line)!important;color:var(--sub)!important}
+html[data-theme="dark"] .home-gw-pill.live{background:#17382d!important;border-color:#2d6b52!important;color:#65d4a4!important}
 html[data-theme="dark"] .planner-empty,html[data-theme="dark"] .fx-match-details,html[data-theme="dark"] .fx-detail-section,html[data-theme="dark"] .fx-detail-empty{background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)!important}
 html[data-theme="dark"] .fx-detail-tabs,html[data-theme="dark"] .fx-detail-team-col{background:var(--panel2)!important;border-color:var(--line)!important}
 html[data-theme="dark"] .fx-detail-tabs button.active{background:#17382d!important;color:#78d7ae!important;box-shadow:none!important}
@@ -15,6 +20,12 @@ html[data-theme="dark"] .peek-gw-tabs button,html[data-theme="dark"] .peek-gw-ar
 html[data-theme="dark"] .peek-gw-tabs button span{color:var(--dim)!important}
 html[data-theme="dark"] .peek-gw-tabs button.active{background:#17382d!important;border-color:#2d7f61!important;color:#8cddb9!important}
 html[data-theme="dark"] .peek-gw-tabs button.active span{color:#75cda7!important}
+html[data-theme="dark"] .otw-context,html[data-theme="dark"] .otw-card,html[data-theme="dark"] .otw-gw-points{background:var(--panel)!important;border-color:var(--line)!important}
+html[data-theme="dark"] .otw-player-top{background:linear-gradient(145deg,#1c332b 0%,#1b2728 42%,var(--panel) 100%)!important}
+html[data-theme="dark"] .otw-metrics{border-color:var(--line)!important}
+html[data-theme="dark"] .otw-metrics>div{border-color:var(--line)!important}
+html[data-theme="dark"] .otw-gw{background:#17382d!important;color:#65d4a4!important}
+html[data-theme="dark"] .otw-availability{background:#2b2417!important;color:#f0bd62!important}
 
 /* Transfer Stats uses the app's data-theme attribute. */
 html[data-theme="dark"] .transfer-stats-summary article,html[data-theme="dark"] .transfer-stats-card,html[data-theme="dark"] .transfer-stats-search,html[data-theme="dark"] .transfer-stats-gw,html[data-theme="dark"] .transfer-stats-pager button{background:var(--panel,#171e24)!important;border-color:var(--line,#2d3740)!important;color:var(--ink,#f2f6f8)!important;box-shadow:none!important}
