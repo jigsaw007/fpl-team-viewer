@@ -335,6 +335,12 @@
     <!-- stat grid -->
     <div class="grid reveal" id="grid"></div>
 
+    <!-- personalised live Gameweek -->
+    <div class="reveal" id="teamLiveSec" style="display:none">
+      <div class="sec"><h3>Live Gameweek impact</h3><span class="ln"></span><span class="badge" id="teamLiveGw"></span></div>
+      <div class="team-live-impact" id="teamLiveImpact"></div>
+    </div>
+
     <!-- weekly recap -->
     <div class="reveal" id="recapSec" style="display:none">
       <div class="sec"><h3>Last gameweek recap</h3><span class="ln"></span><span class="badge" id="recapGw"></span></div>
@@ -1146,6 +1152,11 @@
     </div>
 
     <div class="transfer-stats-summary" id="tsSummary"></div>
+
+    <section class="transfer-outcome" id="tsOutcome">
+      <div class="transfer-outcome-head"><div><span>CROWD VERDICT</span><h3>Did the transfers work?</h3><p>Deadline-locked top three transfers in and out, scored when the Gameweek starts.</p></div><span id="tsOutcomeGw">—</span></div>
+      <div id="tsOutcomeBody"><div class="status"><div class="spinner"></div>Checking the Gameweek snapshot…</div></div>
+    </section>
 
     <div class="transfer-stats-grid">
       <section class="transfer-stats-card">

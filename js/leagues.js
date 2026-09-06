@@ -210,7 +210,7 @@ async function analyseLeague(){
         if(/^\d-\d-\d$/.test(formation)) formations[formation]=(formations[formation]||0)+1;
 
         const pts=Number(p.entry_history&&p.entry_history.points);
-        if(Number.isFinite(pts)) gwScores.push({entry:member.entry,points:pts,chip:p.active_chip||null});
+        if(Number.isFinite(pts)) gwScores.push({entry:member.entry,entry_name:member.entry_name,player_name:member.player_name,points:pts,total:Number(member.total)||0,rank:Number(member.rank)||0,last_rank:Number(member.last_rank)||0,chip:p.active_chip||null});
         const transferCost=Number(p.entry_history&&p.entry_history.event_transfers_cost)||0;
         if(transferCost>0){
           hitManagers.push({
@@ -281,6 +281,8 @@ function renderLeagueAnalysis(data){
   const totalHitCost=hitManagers.reduce((sum,row)=>sum+Number(row.transferCost||0),0);
   const hitRate=counted?Math.round(hitManagers.length/counted*100):0;
   const hitHtml=hitManagers.length?`<div class="lm-hit-summary"><div><span>Managers taking hits</span><b>${hitManagers.length}</b><small>${hitRate}% of analysed managers</small></div><div><span>Total points spent</span><b>−${totalHitCost}</b><small>Transfer deductions in GW${gw}</small></div></div><div class="lm-hit-list">${hitManagers.map((row,i)=>{const managerUrl=`https://fantasy.premierleague.com/entry/${encodeURIComponent(row.entry)}/event/${encodeURIComponent(gw)}`;return `<a class="lm-hit-row" href="${managerUrl}" target="_blank" rel="noopener noreferrer"><span class="lm-hit-rank">${i+1}</span><span class="lm-hit-manager"><b>${esc(cleanLeagueText(row.entry_name||'Unknown team'))}</b><small>${esc(cleanLeagueText(row.player_name||''))} · ${row.transfers} transfer${row.transfers===1?'':'s'}</small></span><span class="lm-hit-score"><b>−${row.transferCost}</b><small>${row.points} GW pts</small></span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`}).join('')}</div>`:'<div class="lm-empty-state lm-no-hits"><i class="fa-solid fa-circle-check"></i><b>No transfer hits</b><span>No analysed manager spent points on extra transfers in GW${gw}.</span></div>';
+  const liveStandings=[...gwScores].sort((a,c)=>c.total-a.total||c.points-a.points).slice(0,10);
+  const liveStandingsHtml=liveStandings.length?`<div class="lm-live-table"><div class="lm-live-head"><span>Live</span><span>Team</span><span>GW</span><span>Total</span></div>${liveStandings.map((row,i)=>`<a href="https://fantasy.premierleague.com/entry/${encodeURIComponent(row.entry)}/event/${gw}" target="_blank" rel="noopener noreferrer"><span class="lm-live-pos">${i+1}</span><span><b>${esc(cleanLeagueText(row.entry_name||'Unknown team'))}</b><small>${esc(cleanLeagueText(row.player_name||''))}${row.chip?` · ${esc(chipLabel(row.chip))}`:''}</small></span><strong>${row.points}</strong><strong>${row.total}</strong></a>`).join('')}</div>`:'<div class="lm-empty-state">Live standings will appear when manager points are available.</div>';
 
   const chipOrder=["wildcard","freehit","bboost","3xc"];
   const thisGwTotal=Object.values(activeChips).reduce((a,n)=>a+n,0);
@@ -300,6 +302,8 @@ function renderLeagueAnalysis(data){
     </div>
 
     <section class="lm-insight-section lm-hit-section"><div class="lm-section-title"><div><b>Transfer hits</b><span>Managers who spent points on transfers this Gameweek</span></div></div>${hitHtml}</section>
+
+    <section class="lm-insight-section"><div class="lm-section-title"><div><b>Live league standings</b><span>Current public league totals with this Gameweek’s points</span></div></div>${liveStandingsHtml}</section>
 
     <section class="lm-insight-section"><div class="lm-section-title"><div><b>Most owned</b><span>League ownership compared with global ownership</span></div></div>${ownHtml||'<div class="lm-empty-state">No ownership data.</div>'}</section>
     <section class="lm-insight-section"><div class="lm-section-title"><div><b>Captaincy split</b><span>Most selected captains this Gameweek</span></div></div>${capHtml||'<div class="lm-empty-state">No captaincy data.</div>'}</section>`;

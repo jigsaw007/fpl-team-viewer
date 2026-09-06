@@ -54,6 +54,7 @@ async function view(tid){
     // enrich header GW stat from picks history
     renderHeader(entry, history, {id:gwUsed}, true, picks.entry_history);
     renderGridFromPicks(entry, picks.entry_history, b);
+    await renderTeamLiveImpact(entry,picks,gwUsed,b,fixtures);
 
     $("msg").innerHTML="";
     $("app").style.display="block"; $("go").disabled=false;
@@ -66,6 +67,31 @@ async function view(tid){
       <small>${notFound?"Check the ID — it's the number in your FPL URL after /entry/.":esc(e.message)+". If the deploy is fresh, the proxy function may still be warming up — try again in a moment."}</small></div></div>`;
     $("app").style.display="none";
   }
+}
+
+async function renderTeamLiveImpact(entry,picks,gw,b,fixtures=[]){
+  const sec=$("teamLiveSec"),box=$("teamLiveImpact");
+  const ev=(b.events||[]).find(e=>Number(e.id)===Number(gw));
+  if(!sec||!box||!ev||eventComplete(ev)||!ev.is_current){if(sec)sec.style.display="none";return;}
+  sec.style.display="block";$("teamLiveGw").textContent=`GW${gw} · LIVE`;
+  box.innerHTML=`<div class="status"><div class="spinner"></div>Calculating live impact…</div>`;
+  try{
+    const live=await get(`/event/${gw}/live/`);
+    const stats=new Map((live.elements||[]).map(x=>[Number(x.id),x.stats||{}]));
+    const byId=Object.fromEntries((b.elements||[]).map(x=>[x.id,x]));
+    const startedTeams=new Set(),finishedTeams=new Set();
+    (fixtures||[]).filter(f=>Number(f.event)===Number(gw)).forEach(f=>{
+      if(f.started||f.finished||f.finished_provisional){startedTeams.add(Number(f.team_h));startedTeams.add(Number(f.team_a));}
+      if(f.finished||f.finished_provisional){finishedTeams.add(Number(f.team_h));finishedTeams.add(Number(f.team_a));}
+    });
+    const scoring=(picks.picks||[]).filter(pk=>picks.active_chip==='bboost'||Number(pk.position)<=11);
+    const livePoints=scoring.reduce((sum,pk)=>sum+Number(stats.get(Number(pk.element))?.total_points||0)*Number(pk.multiplier||1),0);
+    const played=scoring.filter(pk=>startedTeams.has(Number(byId[pk.element]?.team))).length;
+    const remaining=scoring.length-played;
+    const cap=(picks.picks||[]).find(pk=>pk.is_captain),capEl=cap&&byId[cap.element],capRaw=cap?Number(stats.get(Number(cap.element))?.total_points||0):0;
+    const pending=scoring.filter(pk=>finishedTeams.has(Number(byId[pk.element]?.team))&&Number(stats.get(Number(pk.element))?.minutes||0)===0);
+    box.innerHTML=`<div class="team-live-hero"><div><span>Provisional live score</span><b>${livePoints}</b><small>Captaincy and active chip multipliers included</small></div><div class="team-live-rank"><span>Current overall rank</span><b>${entry.summary_overall_rank?short(entry.summary_overall_rank):'Updating'}</b><small>Official rank updates may lag live points</small></div></div><div class="team-live-grid"><article><span>Played</span><b>${played}/${scoring.length}</b><small>${remaining} player${remaining===1?'':'s'} remaining</small></article><article><span>Captain</span><b>${capEl?esc(capEl.web_name):'—'}</b><small>${capRaw} raw · ${capRaw*Number(cap?.multiplier||1)} counted</small></article><article><span>Autosub watch</span><b>${pending.length}</b><small>${pending.length?pending.map(pk=>esc(byId[pk.element]?.web_name||'Player')).join(', '):'No pending no-shows'}</small></article><article><span>Transfer hit</span><b>${Number(picks.entry_history?.event_transfers_cost||0)?`−${Number(picks.entry_history.event_transfers_cost)}`:'None'}</b><small>${Number(picks.entry_history?.event_transfers||0)} transfer${Number(picks.entry_history?.event_transfers||0)===1?'':'s'}</small></article></div>`;
+  }catch(e){box.innerHTML=`<div class="team-live-empty">Live impact is temporarily unavailable. Use Refresh to try again.</div>`;}
 }
 
 function renderHeader(entry, history, gwEvent, started, gwHist){
@@ -339,4 +365,3 @@ function renderLeagues(entry){
     tr.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});
   });
 }
-

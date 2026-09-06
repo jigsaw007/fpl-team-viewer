@@ -18,6 +18,9 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions."transfer-snapshot"]
+  schedule = "*/15 * * * *"
+
 
 # -------------------------
 # SECURITY HEADERS

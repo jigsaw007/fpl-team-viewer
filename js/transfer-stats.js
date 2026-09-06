@@ -105,4 +105,21 @@ async function initTransferStats(){
   tsBindPager("tsOutPrev",()=>{if(_tsOutPage>1){_tsOutPage--;renderTransferStats();}});
   tsBindPager("tsOutNext",()=>{_tsOutPage++;renderTransferStats();});
   renderTransferStats();
+  renderTransferOutcome();
+}
+
+async function renderTransferOutcome(){
+  const body=$("tsOutcomeBody"),label=$("tsOutcomeGw");if(!body)return;
+  const ev=tsEvent(),gw=Number(ev.id)||1;if(label)label.textContent=`GW${gw}`;
+  try{
+    const r=await fetch(`/.netlify/functions/transfer-outcomes?gw=${gw}`,{headers:{Accept:'application/json'}});
+    const data=await r.json();if(!r.ok)throw new Error(data.error||`HTTP ${r.status}`);
+    if(data.status!=='ok'){
+      const deadline=ev.deadline_time?new Date(ev.deadline_time).toLocaleString(undefined,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'the deadline';
+      body.innerHTML=`<div class="transfer-outcome-wait"><i class="fa-regular fa-clock"></i><div><b>${eventComplete(ev)||ev.is_current?'No deadline snapshot is available for this Gameweek.':'Tracking transfer activity'}</b><span>${eventComplete(ev)||ev.is_current?'Automatic snapshots begin with the next deadline after this update.':`The top three will be locked automatically before ${esc(deadline)}.`}</span></div></div>`;return;
+    }
+    const card=(x,type,i)=>{const p=x.player||{},t=(boot.teams||[]).find(z=>z.id===p.team)||{};return `<article class="transfer-outcome-player ${type}"><span class="transfer-outcome-rank">${i+1}</span>${teamKitImg(t,'transfer-outcome-kit',`${t.name||'Club'} kit`)}<div><b>${esc(p.web_name||'Player')}</b><small>${esc(t.short_name||'')} · ${Number(x.transfers||0).toLocaleString()} transferred ${type}</small></div><strong>${Number(x.points||0)}<small>pts</small></strong></article>`;};
+    const inPts=(data.incoming||[]).reduce((s,x)=>s+Number(x.points||0),0),outPts=(data.outgoing||[]).reduce((s,x)=>s+Number(x.points||0),0),diff=inPts-outPts;
+    body.innerHTML=`<div class="transfer-outcome-score"><div><span>Top 3 bought</span><b>${inPts} pts</b></div><div class="${diff>=0?'worked':'backfired'}"><span>Crowd result</span><b>${diff>0?'Worked':diff<0?'Backfired':'Level'}</b><small>${diff===0?'Same combined return':`${diff>0?'+':''}${diff} points vs sold players`}</small></div><div><span>Top 3 sold</span><b>${outPts} pts</b></div></div><div class="transfer-outcome-columns"><div><h4><i class="fa-solid fa-arrow-trend-up"></i> Most transferred in</h4>${(data.incoming||[]).map((x,i)=>card(x,'in',i)).join('')}</div><div><h4><i class="fa-solid fa-arrow-trend-down"></i> Most transferred out</h4>${(data.outgoing||[]).map((x,i)=>card(x,'out',i)).join('')}</div></div><div class="transfer-outcome-foot">Snapshot locked ${new Date(data.captured_at).toLocaleString()} · ${data.final?'Final':'Live'} GW points</div>`;
+  }catch(e){body.innerHTML=`<div class="transfer-outcome-wait"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Transfer outcome unavailable</b><span>The snapshot service could not be reached. Try again shortly.</span></div></div>`;}
 }
