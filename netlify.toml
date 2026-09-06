@@ -235,3 +235,29 @@
   from = "/fpl-market"
   to = "/index.html"
   status = 200
+
+
+[[redirects]]
+  from = "/my-team"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/fpl-insights"
+  to = "/index.html"
+  status = 200
+
+
+[[redirects]]
+  from = "/fpl-scout"
+  to = "/index.html"
+  status = 200
+
+
+# SPA fallback: lets every client-side app route survive a direct visit or refresh.
+# Existing static files and the earlier API redirects continue to take priority.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
