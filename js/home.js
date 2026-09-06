@@ -12,6 +12,7 @@ function setHomeLoadingStates(){
   if($("homeGameweek")) $("homeGameweek").innerHTML=`<div class="home-card-label">Gameweek</div>${homeLoadingMarkup("Checking Gameweek status…")}`;
   if($("homeFixtures")) $("homeFixtures").innerHTML=homeLoadingMarkup("Loading upcoming fixtures…");
   if($("homeGwLeaders")){ $("homeGwLeaders").hidden=true; $("homeGwLeaders").innerHTML=""; }
+  if($("homeGwStatusStrip")) $("homeGwStatusStrip").innerHTML=homeLoadingMarkup("Checking current Gameweek…");
 }
 
 async function initHome(){
@@ -36,6 +37,7 @@ async function initHome(){
     }
 
     renderHomeGameweek(b,fixtures);
+    renderHomeGwStatusStrip(b,fixtures);
     renderHomeInsights(b);
     renderHomeGwLeaders(b,fixtures).catch(err=>console.warn("Home GW leaders failed",err));
     enrichHomeGameweekRecap(b).catch(err=>{
@@ -61,6 +63,26 @@ async function initHome(){
     if($("homeInsights")) $("homeInsights").innerHTML=msg;
     if($("homeFixtures")) $("homeFixtures").innerHTML=msg;
   }
+}
+
+function renderHomeGwStatusStrip(b,fixtures=[]){
+  const el=$("homeGwStatusStrip"); if(!el)return;
+  const events=b.events||[];
+  const flaggedCurrent=events.find(e=>e.is_current);
+  const next=events.find(e=>e.is_next);
+  const last=[...events].reverse().find(e=>eventComplete(e));
+  const ev=flaggedCurrent||next||last;
+  if(!ev){el.innerHTML="";el.hidden=true;return;}
+  const games=(fixtures||[]).filter(f=>Number(f.event)===Number(ev.id));
+  const done=games.filter(f=>f.finished||f.finished_provisional).length;
+  const live=games.filter(f=>f.started&&!f.finished&&!f.finished_provisional).length;
+  const complete=eventComplete(ev)||(games.length>0&&done===games.length);
+  const running=!complete&&(live>0||games.some(f=>f.started));
+  const state=complete?'Complete':running?'Running':'Upcoming';
+  const cls=complete?'complete':running?'running':'upcoming';
+  const progress=games.length?`${done}/${games.length} complete`:'Fixtures pending';
+  el.hidden=false;
+  el.innerHTML=`<div class="home-gw-status-window primary"><span>Gameweek</span><b>GW${ev.id}</b></div><div class="home-gw-status-window ${cls}"><span>Status</span><b><i></i>${state}</b></div><div class="home-gw-status-window"><span>Match progress</span><b>${progress}</b></div>${live?`<div class="home-gw-status-window live"><span>Live now</span><b>${live} match${live===1?'':'es'}</b></div>`:''}`;
 }
 
 function bindHomeActions(){
@@ -456,6 +478,7 @@ async function refreshHomeLiveMatches(){
     const b=await loadBoot();
     const fixtures=await get('/fixtures/');
     renderHomeLiveMatches(b,fixtures);
+    renderHomeGwStatusStrip(b,fixtures);
     await renderHomeGwLeaders(b,fixtures);
   }catch(_){ }
 }
