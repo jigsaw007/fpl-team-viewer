@@ -1,5 +1,13 @@
 
 (function(){
+  try{
+    const saved=localStorage.getItem('fplpeek_theme');
+    const dark=saved?saved==='dark':!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme=dark?'dark':'light';
+    if(!document.querySelector('link[href="/css/dark-fixes.css"]')){
+      const themeStyles=document.createElement('link');themeStyles.rel='stylesheet';themeStyles.href='/css/dark-fixes.css';document.head.appendChild(themeStyles);
+    }
+  }catch(_){ }
   const FPL_PROXY = '/.netlify/functions/fpl?path=';
   const CAPTAINS_API = '/.netlify/functions/captains';
 
