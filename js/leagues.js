@@ -175,7 +175,7 @@ async function analyseLeague(){
 
     const own={}, cap={}, benched={}, benchPointsByPlayer={}, activeChips={}, chipUses={}, managersUsed={}, formations={};
     const chipLists={wildcard:[],freehit:[],bboost:[],'3xc':[]};
-    const gwScores=[], benchManagers=[];
+    const gwScores=[], benchManagers=[], hitManagers=[];
     const elementMap=new Map((b.elements||[]).map(e=>[Number(e.id),e]));
     let counted=0;
     managerData.forEach(({member,p,h})=>{
@@ -211,6 +211,18 @@ async function analyseLeague(){
 
         const pts=Number(p.entry_history&&p.entry_history.points);
         if(Number.isFinite(pts)) gwScores.push({entry:member.entry,points:pts,chip:p.active_chip||null});
+        const transferCost=Number(p.entry_history&&p.entry_history.event_transfers_cost)||0;
+        if(transferCost>0){
+          hitManagers.push({
+            entry:member.entry,
+            entry_name:member.entry_name,
+            player_name:member.player_name,
+            transferCost,
+            transfers:Number(p.entry_history&&p.entry_history.event_transfers)||0,
+            points:Number.isFinite(pts)?pts:0,
+            gw
+          });
+        }
       }
       if(h&&Array.isArray(h.chips)){
         const seen=new Set();
@@ -233,7 +245,8 @@ async function analyseLeague(){
 
     benchManagers.sort((a,c)=>c.benchPoints-a.benchPoints||String(a.entry_name||'').localeCompare(String(c.entry_name||'')));
     benchManagers.forEach((x,i)=>x.rank=i+1);
-    const payload={members,counted,gw,own,cap,benched,benchPointsByPlayer,benchManagers,formations,gwScores,activeChips,chipUses,managersUsed,chipLists};
+    hitManagers.sort((a,c)=>c.transferCost-a.transferCost||c.points-a.points);
+    const payload={members,counted,gw,own,cap,benched,benchPointsByPlayer,benchManagers,hitManagers,formations,gwScores,activeChips,chipUses,managersUsed,chipLists};
     _leagueAnalysisCache.set(cacheKey,payload);
     renderLeagueAnalysis(payload);
   }catch(e){
@@ -242,7 +255,7 @@ async function analyseLeague(){
 }
 
 function renderLeagueAnalysis(data){
-  const {members,counted,gw,own,cap,benched={},benchPointsByPlayer={},benchManagers=[],formations={},gwScores=[],activeChips,chipUses,managersUsed,chipLists}=data;
+  const {members,counted,gw,own,cap,benched={},benchPointsByPlayer={},benchManagers=[],hitManagers=[],formations={},gwScores=[],activeChips,chipUses,managersUsed,chipLists}=data;
   _leagueChipLists=chipLists||{};
   _leagueBenchManagers=benchManagers||[];
   _leagueBenchPage=1;
@@ -265,6 +278,10 @@ function renderLeagueAnalysis(data){
   const formationRows=Object.entries(formations).sort((a,c)=>c[1]-a[1]).slice(0,6);
   const formationHtml=formationRows.length?`<div class="lm-formation-list">${formationRows.map(([formation,n],i)=>`<div class="lm-formation-row"><div><b>${formation}</b><span>${n} manager${n===1?'':'s'}</span></div><div class="lm-formation-track"><i style="width:${pct(n)}%"></i></div><strong>${pct(n)}%</strong></div>`).join('')}</div>`:'<div class="lm-empty-state">No formation data.</div>';
 
+  const totalHitCost=hitManagers.reduce((sum,row)=>sum+Number(row.transferCost||0),0);
+  const hitRate=counted?Math.round(hitManagers.length/counted*100):0;
+  const hitHtml=hitManagers.length?`<div class="lm-hit-summary"><div><span>Managers taking hits</span><b>${hitManagers.length}</b><small>${hitRate}% of analysed managers</small></div><div><span>Total points spent</span><b>−${totalHitCost}</b><small>Transfer deductions in GW${gw}</small></div></div><div class="lm-hit-list">${hitManagers.map((row,i)=>{const managerUrl=`https://fantasy.premierleague.com/entry/${encodeURIComponent(row.entry)}/event/${encodeURIComponent(gw)}`;return `<a class="lm-hit-row" href="${managerUrl}" target="_blank" rel="noopener noreferrer"><span class="lm-hit-rank">${i+1}</span><span class="lm-hit-manager"><b>${esc(cleanLeagueText(row.entry_name||'Unknown team'))}</b><small>${esc(cleanLeagueText(row.player_name||''))} · ${row.transfers} transfer${row.transfers===1?'':'s'}</small></span><span class="lm-hit-score"><b>−${row.transferCost}</b><small>${row.points} GW pts</small></span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`}).join('')}</div>`:'<div class="lm-empty-state lm-no-hits"><i class="fa-solid fa-circle-check"></i><b>No transfer hits</b><span>No analysed manager spent points on extra transfers in GW${gw}.</span></div>';
+
   const chipOrder=["wildcard","freehit","bboost","3xc"];
   const thisGwTotal=Object.values(activeChips).reduce((a,n)=>a+n,0);
   const chipCards=chipOrder.map(name=>{ const usedManagers=managersUsed[name]||0; const active=activeChips[name]||0; return `<button type="button" class="lm-chip-card compact" data-chip-name="${name}" data-chip-scope="season"><span class="lm-chip-icon"><i class="${chipIcon(name)}"></i></span><span class="lm-chip-card-copy"><span class="lm-chip-name">${chipLabel(name)}</span><small><b>${usedManagers}</b> used${active?` · <b>${active}</b> this GW`:''}</small></span><i class="fa-solid fa-chevron-right lm-chip-chevron"></i></button>`; }).join('');
@@ -282,6 +299,8 @@ function renderLeagueAnalysis(data){
       <section class="lm-insight-section"><div class="lm-section-title"><div><b>Bench points</b><span>Most points left on the bench · Bench Boost users excluded</span></div></div><div id="lmBenchManagers"></div></section>
     </div>
 
+    <section class="lm-insight-section lm-hit-section"><div class="lm-section-title"><div><b>Transfer hits</b><span>Managers who spent points on transfers this Gameweek</span></div></div>${hitHtml}</section>
+
     <section class="lm-insight-section"><div class="lm-section-title"><div><b>Most owned</b><span>League ownership compared with global ownership</span></div></div>${ownHtml||'<div class="lm-empty-state">No ownership data.</div>'}</section>
     <section class="lm-insight-section"><div class="lm-section-title"><div><b>Captaincy split</b><span>Most selected captains this Gameweek</span></div></div>${capHtml||'<div class="lm-empty-state">No captaincy data.</div>'}</section>`;
   $("lmMore").style.display="none";
@@ -294,4 +313,3 @@ function closeLeague(){
   $("leagueModal").style.display="none";
   document.body.style.overflow="";
 }
-
